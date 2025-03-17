@@ -172,7 +172,7 @@ router.get('/getRouteInfoVersion', (req, res) => {
 });
 
 router.get('/getRouteInformation', (req, res) => {
-    const { isColorblind } = req.query;
+    const isColorblind = req.query.colorblind;
     const infoToSend = {
         routeIdToName: metadata.routeIdToName,
         routeImages: metadata.routeImages,
