@@ -172,7 +172,7 @@ router.get('/getRouteInfoVersion', (req, res) => {
 });
 
 router.get('/getRouteInformation', (req, res) => {
-    const { isColorblind } = req.query;
+    const isColorblind = req.query.colorblind;
     const infoToSend = {
         routeIdToName: metadata.routeIdToName,
         routeImages: metadata.routeImages,
@@ -188,7 +188,7 @@ router.get('/getRouteInformation', (req, res) => {
 });
 
 router.get('/getUpdateNotes', (req, res) => {
-    res.send({message: "- ·Support new routes\n- ·Added route names to arrivals at shared stops\n- ·General improvements", version: "6"});
+    res.send({message: "- ·Fixed Northeast Shuttle Icons\n- ·Working bus icons for Northeast Shuttle\n- ·General improvements", version: "7"});
 });
 
 router.get('/getBusPredictions/:busId', (req, res) => {

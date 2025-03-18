@@ -22,7 +22,7 @@
     "DD": "0xFF920000",
     "MX": "0xFFb6dbff",
     "NE": "0xFF6db6ff",
-    "NES": "0xFF098200",
+    "NES": "0xFF6db6ff",
     "NW": "0xFFb66dff",
     "NX": "0xFF006ddb",
     "OS": "0xFF490092",
@@ -52,6 +52,7 @@
     "DD": "Diag-to-Diag",
     "MX": "Med Express",
     "NE": "Northeast Shuttle",
+    "NES": "Northeast Shuttle",
     "NW": "Northwood",
     "NX": "Northwood Express",
     "OS": "Oxford Shuttle",
@@ -59,6 +60,6 @@
     "WX": "Wall Street Express"
   },
   "metadata": {
-    "version": 3
+    "version": 4
   }
 }
