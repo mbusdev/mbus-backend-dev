@@ -200,6 +200,67 @@ router.get('/getBusPredictions/:busId', (req, res) => {
     });
 });
 
+router.get('/getAllPredictions', async (req, res) => {
+    try {
+        const buses = curBusPositions.buses;
+        const chunks = [];
+        
+        for (let i = 0; i < buses.length; i += 10) {
+            chunks.push(buses.slice(i, i + 10));
+        }
+
+        const predictions = await Promise.all(
+            chunks.map(async (chunk) => {
+                const vids = chunk.map(bus => bus.vid).join(',');
+                const response = await axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions`, {
+                    params: {
+                        requestType: 'getpredictions',
+                        locale: 'en',
+                        vid: vids,
+                        tmres: 's',
+                        rtpidatafeed: 'bustime',
+                        key: API_KEY,
+                        format: 'json'
+                    }
+                });
+                return response.data;
+            })
+        );
+
+        const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
+            if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
+                predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
+                    const vid = prd.vid;
+                    const stopName = prd.stpnm;
+                    const stopId = prd.stpid;
+                    let prdctdn = prd.prdctdn;
+                    prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
+
+                    let bus = acc.find((b: any) => b.vid === vid);
+                    if (!bus) {
+                        bus = { vid, stops: [] };
+                        acc.push(bus);
+                    }
+
+                    let stop = bus.stops.find((s: any) => s.name === stopName && s.id === stopId);
+                    if (!stop) {
+                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null };
+                        bus.stops.push(stop);
+                    }
+
+                    stop.prdctdn = prdctdn;
+                });
+            }
+            return acc;
+        }, []);
+
+        res.send(formattedPredictions);
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+});
+
 router.get('/get-startup-messages', (req, res) => {
     res.send(JSON.stringify(message));
 });
