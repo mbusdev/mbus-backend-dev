@@ -4,6 +4,21 @@ import express from "express";
 import axios from 'axios';
 import dotenv from "dotenv";
 import { Route } from "@/types";
+import { 
+    Trip, 
+    StopTime, 
+    TimetableLeg, 
+    Transfer, 
+    StopID, 
+    Time, 
+    TransfersByOrigin, 
+    Interchange
+} from "./raptor/types";
+import { RaptorAlgorithm } from "./raptor/RaptorAlgorithm";
+import { RaptorAlgorithmFactory } from "./raptor/RaptorAlgorithmFactory";
+import { JourneyFactory } from "./results/JourneyFactory";
+import { DepartAfterQuery } from "./query/DepartAfterQuery";
+import { Journey, AnyLeg } from "./results/Journey";
 
 import * as metadata from "./assets/route-data.json";
 import * as valid_assets from "./assets/valid_assets.json";
@@ -263,6 +278,169 @@ router.get('/getAllPredictions', async (req, res) => {
 
 router.get('/get-startup-messages', (req, res) => {
     res.send(JSON.stringify(message));
+});
+
+router.get('/plan-journey', async (req, res) => {
+    try {
+        const { origin, destination } = req.query;
+        if (!origin || !destination) {
+            return res.status(400).json({ error: 'Origin and destination are required' });
+        }
+
+        const now = new Date();
+        const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+        const predictionsResponse = await axios.get('http://localhost:3000/mbus/api/v3/getAllPredictions');
+        const predictions = predictionsResponse.data;
+
+        if (!predictions || predictions.length === 0) {
+            return res.status(404).json({ error: 'No buses available at this time' });
+        }
+
+        const transfers: TransfersByOrigin = {};
+        const interchange: Interchange = {};
+        
+        const allStops = new Set<StopID>();
+        predictions.forEach((bus: any) => {
+            bus.stops.forEach((stop: any) => {
+                allStops.add(stop.stpid);
+            });
+        });
+        
+        allStops.forEach(stopId => {
+            transfers[stopId] = [];
+            interchange[stopId] = 60; // 1 minute interchange time
+        });
+        
+        const stopPredictions: Record<string, any[]> = {};
+        predictions.forEach((bus: any) => {
+            bus.stops.forEach((stop: any) => {
+                if (!stopPredictions[stop.stpid]) {
+                    stopPredictions[stop.stpid] = [];
+                }
+                stopPredictions[stop.stpid].push({
+                    stpid: stop.stpid,
+                    prdctdn: stop.prdctdn,
+                    tatripid: bus.vid
+                });
+            });
+        });
+
+        allStops.forEach(stopId => {
+            allStops.forEach(otherStopId => {
+                if (stopId !== otherStopId) {
+                    (stopPredictions[stopId] || []).forEach((pred: any) => {
+                        const transfer: Transfer = {
+                            origin: stopId,
+                            destination: otherStopId,
+                            duration: 6000, 
+                            startTime: currentTime + (parseInt(pred.prdctdn) * 60), 
+                            endTime: Number.MAX_SAFE_INTEGER 
+                        };
+                        transfers[stopId].push(transfer);
+                    });
+                }
+            });
+        });
+
+        const trips: Trip[] = [];
+        const tripPredictions: Record<string, any[]> = {};
+        
+        predictions.forEach((bus: any) => {
+            if (!tripPredictions[bus.vid]) {
+                tripPredictions[bus.vid] = [];
+            }
+            bus.stops.forEach((stop: any) => {
+                tripPredictions[bus.vid].push({
+                    stpid: stop.stpid,
+                    prdctdn: stop.prdctdn
+                });
+            });
+        });
+
+        Object.entries(tripPredictions).forEach(([tripId, preds]) => {
+            const firstLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
+                stop: pred.stpid,
+                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60),
+                departureTime: currentTime + (parseInt(pred.prdctdn) * 60),
+                pickUp: true,
+                dropOff: true
+            }));
+
+            // Create second loop
+            const secondLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
+                stop: pred.stpid,
+                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800, // 30 minutes later
+                departureTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800,
+                pickUp: true,
+                dropOff: true
+            }));
+
+            const combinedStopTimes = [...firstLoopStopTimes, ...secondLoopStopTimes];
+
+            trips.push({
+                tripId,
+                stopTimes: combinedStopTimes
+            });
+        });
+
+        RaptorAlgorithm.setDebug(false);
+        const raptor = RaptorAlgorithmFactory.create(trips, transfers, interchange);
+        
+        const journeyPlanner = new DepartAfterQuery(raptor, {
+            getResults: (kConnections, dest) => {
+                if (!kConnections || !kConnections[dest]) {
+                    return [];
+                }
+                
+                const connections = kConnections[dest];
+                if (!connections || Object.keys(connections).length === 0) {
+                    return [];
+                }
+
+                return Object.entries(connections).map(([k, connection]) => {
+                    if (!connection) return null;
+                    
+                    if (Array.isArray(connection)) {
+                        const [trip, startIndex, endIndex] = connection;
+                        return {
+                            legs: [{
+                                origin: trip.stopTimes[startIndex].stop,
+                                destination: trip.stopTimes[endIndex].stop,
+                                stopTimes: trip.stopTimes.slice(startIndex, endIndex + 1),
+                                trip
+                            }],
+                            departureTime: trip.stopTimes[startIndex].departureTime,
+                            arrivalTime: trip.stopTimes[endIndex].arrivalTime
+                        };
+                    } else {
+                        return {
+                            legs: [{
+                                origin: connection.origin,
+                                destination: connection.destination,
+                                duration: connection.duration,
+                                startTime: connection.startTime,
+                                endTime: connection.endTime
+                            }],
+                            departureTime: connection.startTime,
+                            arrivalTime: connection.startTime + connection.duration
+                        };
+                    }
+                }).filter(Boolean) as Journey[];
+            }
+        });
+        
+        const journeys = journeyPlanner.plan(
+            origin as StopID,
+            destination as StopID,
+            currentTime
+        );
+
+        res.json({ journeys });
+    } catch (error) {
+        console.error('Error planning journey:', error);
+        res.status(500).json({ error: 'Failed to plan journey' });
+    }
 });
 
 export default router;
