@@ -53,35 +53,44 @@ export class JourneyFactory implements ResultsFactory {
   }
 
   private getDepartureTime(legs: AnyLeg[]): Time {
-    let transferDuration = 0;
-
     for (const leg of legs) {
-      if (!this.isTimetableLeg(leg)) {
-        transferDuration += leg.duration;
-      }
-      else {
+      if (this.isTimetableLeg(leg)) {
+        let transferDuration = 0;
+        for (const l of legs) {
+          if (!this.isTimetableLeg(l)) {
+            transferDuration += l.duration;
+          } else {
+            break;
+          }
+        }
         return leg.stopTimes[0].departureTime - transferDuration;
       }
     }
-
-    return 0;
+    // Transfer-only: use startTime of first transfer
+    const firstTransfer = legs.find(leg => !this.isTimetableLeg(leg));
+    return firstTransfer && 'startTime' in firstTransfer ? firstTransfer.startTime : 0;
   }
 
   private getArrivalTime(legs: AnyLeg[]): Time {
-    let transferDuration = 0;
-
     for (let i = legs.length - 1; i >= 0; i--) {
       const leg = legs[i];
-
-      if (!this.isTimetableLeg(leg)) {
-        transferDuration += leg.duration;
-      }
-      else {
+      if (this.isTimetableLeg(leg)) {
+        let transferDuration = 0;
+        for (let j = legs.length - 1; j >= 0; j--) {
+          const l = legs[j];
+          if (!this.isTimetableLeg(l)) {
+            transferDuration += l.duration;
+          } else {
+            break;
+          }
+        }
         return leg.stopTimes[leg.stopTimes.length - 1].arrivalTime + transferDuration;
       }
     }
-
-    return 0;
+    // Transfer-only: use startTime of first transfer + sum of durations
+    const firstTransfer = legs.find(leg => !this.isTimetableLeg(leg));
+    const totalDuration = legs.reduce((sum, leg) => sum + (!this.isTimetableLeg(leg) ? leg.duration : 0), 0);
+    return firstTransfer && 'startTime' in firstTransfer ? firstTransfer.startTime + totalDuration : totalDuration;
   }
 
   private isTimetableLeg(connection: AnyLeg): connection is TimetableLeg {

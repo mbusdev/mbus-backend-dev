@@ -7,22 +7,22 @@ import { Route } from "@/types";
 import { 
     Trip, 
     StopTime, 
-    TimetableLeg, 
     Transfer, 
     StopID, 
-    Time, 
     TransfersByOrigin, 
     Interchange
 } from "./raptor/types";
 import { RaptorAlgorithm } from "./raptor/RaptorAlgorithm";
 import { RaptorAlgorithmFactory } from "./raptor/RaptorAlgorithmFactory";
-import { JourneyFactory } from "./results/JourneyFactory";
 import { DepartAfterQuery } from "./query/DepartAfterQuery";
 import { Journey, AnyLeg } from "./results/Journey";
+import { JourneyFactory } from "./results/JourneyFactory";
+import { earliestArrival, leastChanges, leastWalking } from "./results/filter/MultipleCriteriaFilter";
 
 import * as metadata from "./assets/route-data.json";
 import * as valid_assets from "./assets/valid_assets.json";
 import * as path from "node:path";
+import { transferableAbortSignal } from "node:util";
 
 dotenv.config();
 const router = express.Router();
@@ -44,8 +44,201 @@ const cachedRoutes: {[k: string]: any} = {};
 const validRoutes = new Set();
 let curRouteSelections = {};
 const routes = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
+let cachedStopLocations: { [stopId: string]: { lat: number, lon: number } } = {};
 
 const message = {id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99'}
+
+let cachedGraph: {
+    trips: Trip[];
+    transfers: TransfersByOrigin;
+    interchange: Interchange;
+}
+
+const rebuildGraph = async () => {
+    try {
+        const predictions = await getAllBusPredictions();
+        if (!predictions || predictions.length === 0) {
+            return;
+        }
+
+        const now = new Date();
+        const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+        const transfers = cachedGraph?.transfers || {};
+        const interchange = cachedGraph?.interchange || {};
+        
+        const allStops = new Set<StopID>();
+        predictions.forEach((bus: any) => {
+            bus.stops.forEach((stop: any) => {
+                allStops.add(stop.stpid);
+            });
+        });
+        
+        allStops.forEach(stopId => {
+            if (!transfers[stopId]) {
+                transfers[stopId] = [];
+            }
+            if (!interchange[stopId]) {
+                interchange[stopId] = 60; // 1 minute interchange time
+            }
+        });
+        
+        const stopPredictions: Record<string, any[]> = {};
+        predictions.forEach((bus: any) => {
+            bus.stops.forEach((stop: any) => {
+                if (!stopPredictions[stop.stpid]) {
+                    stopPredictions[stop.stpid] = [];
+                }
+                stopPredictions[stop.stpid].push({
+                    stpid: stop.stpid,
+                    prdctdn: stop.prdctdn,
+                    tatripid: bus.vid
+                });
+            });
+        });
+
+        const trips: Trip[] = [];
+        const tripPredictions: Record<string, any[]> = {};
+        
+        predictions.forEach((bus: any) => {
+            if (!tripPredictions[bus.vid]) {
+                tripPredictions[bus.vid] = [];
+            }
+            bus.stops.forEach((stop: any) => {
+                tripPredictions[bus.vid].push({
+                    stpid: stop.stpid,
+                    prdctdn: stop.prdctdn
+                });
+            });
+        });
+
+        Object.entries(tripPredictions).forEach(([tripId, preds]) => {
+            const firstLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
+                stop: pred.stpid,
+                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60),
+                departureTime: currentTime + (parseInt(pred.prdctdn) * 60),
+                pickUp: true,
+                dropOff: true
+            }));
+
+            // Create second loop
+            const secondLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
+                stop: pred.stpid,
+                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800, // 30 minutes later
+                departureTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800,
+                pickUp: true,
+                dropOff: true
+            }));
+
+            const combinedStopTimes = [...firstLoopStopTimes, ...secondLoopStopTimes];
+
+            trips.push({
+                tripId,
+                stopTimes: combinedStopTimes
+            });
+        });
+
+        cachedGraph = {
+            trips,
+            transfers,
+            interchange
+        };
+
+        // Add virtual stops and their interchange
+        const originStopId = 'VIRTUAL_ORIGIN';
+        const destStopId = 'VIRTUAL_DESTINATION';
+        cachedGraph.transfers[originStopId] = [];
+        cachedGraph.transfers[destStopId] = [];
+        cachedGraph.interchange[originStopId] = 60;
+        cachedGraph.interchange[destStopId] = 60;
+        const virtualOriginTrip = {
+            tripId: 'VIRTUAL_ORIGIN_TRIP',
+            stopTimes: [{
+                stop: originStopId,
+                arrivalTime: 0,
+                departureTime: 0,
+                pickUp: true,
+                dropOff: true
+            }]
+        };
+        const virtualDestTrip = {
+            tripId: 'VIRTUAL_DESTINATION_TRIP',
+            stopTimes: [{
+                stop: destStopId,
+                arrivalTime: 0,
+                departureTime: 0,
+                pickUp: true,
+                dropOff: true
+            }]
+        };
+        cachedGraph.trips.push(virtualOriginTrip);
+        cachedGraph.trips.push(virtualDestTrip);
+        
+    } catch (error) {
+        console.error('Error rebuilding graph:', error);
+    }
+};
+
+const getAllBusPredictions = async () => {
+    try {
+        const buses = curBusPositions.buses;
+        const chunks = [];
+        
+        for (let i = 0; i < buses.length; i += 10) {
+            chunks.push(buses.slice(i, i + 10));
+        }
+
+        const predictions = await Promise.all(
+            chunks.map(async (chunk) => {
+                const vids = chunk.map(bus => bus.vid).join(',');
+                const response = await axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions`, {
+                    params: {
+                        requestType: 'getpredictions',
+                        locale: 'en',
+                        vid: vids,
+                        tmres: 's',
+                        rtpidatafeed: 'bustime',
+                        key: API_KEY,
+                        format: 'json'
+                    }
+                });
+                return response.data;
+            })
+        );
+
+        const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
+            if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
+                predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
+                    const vid = prd.vid;
+                    const stopName = prd.stpnm;
+                    const stopId = prd.stpid;
+                    let prdctdn = prd.prdctdn;
+                    prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
+
+                    let bus = acc.find((b: any) => b.vid === vid);
+                    if (!bus) {
+                        bus = { vid, stops: [] };
+                        acc.push(bus);
+                    }
+
+                    let stop = bus.stops.find((s: any) => s.name === stopName && s.id === stopId);
+                    if (!stop) {
+                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null };
+                        bus.stops.push(stop);
+                    }
+
+                    stop.prdctdn = prdctdn;
+                });
+            }
+            return acc;
+        }, []);
+
+        return formattedPredictions;
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
 
 const client = axios.create({
     baseURL: 'https://mbus.ltp.umich.edu/bustime/api/v3/',
@@ -135,12 +328,121 @@ const getSelectableRoutes = () => {
 
         }
     })
-        .catch((err) => console.log(`Error while getting selectable routes: ${err}`));
+        .catch((err) => console.log(`Error while getting selectable routes: ${err}`))
+        .finally(async () => {
+            // Update transfers
+            try {
+                if (!cachedGraph) {
+                    cachedGraph = {
+                        trips: [],
+                        transfers: {},
+                        interchange: {}
+                    };
+                }
+                // Rebuild stop locations cache from cached routes
+                cachedStopLocations = {};
+                console.log("Caching Transfers..")
+                Object.values(cachedRoutes).forEach((routePatterns: any) => {
+                    if (Array.isArray(routePatterns)) {
+                        routePatterns.forEach((pattern: any) => {
+                            if (pattern.pt && Array.isArray(pattern.pt)) {
+                                pattern.pt.forEach((point: any) => {
+                                    if (point.stpid && point.lat && point.lon) {
+                                        cachedStopLocations[point.stpid] = {
+                                            lat: parseFloat(point.lat),
+                                            lon: parseFloat(point.lon)
+                                        };
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                console.log(`Number of stop locations: ${Object.keys(cachedStopLocations).length}`);
+
+                const WALKING_SPEED_KMH = 5;
+                const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
+
+                const routeStops = new Set<string>();
+                Object.values(cachedRoutes).forEach((routePatterns: any) => {
+                    if (Array.isArray(routePatterns)) {
+                        routePatterns.forEach((pattern: any) => {
+                            if (pattern.pt && Array.isArray(pattern.pt)) {
+                                pattern.pt.forEach((point: any) => {
+                                    if (point.stpid) {
+                                        routeStops.add(point.stpid);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+                routeStops.forEach(stopId => {
+                    cachedGraph.transfers[stopId] = [];
+                });
+
+                routeStops.forEach(stopId => {
+                    if (!cachedGraph.interchange[stopId]) {
+                        cachedGraph.interchange[stopId] = 60; // 1 minute interchange time
+                    }
+                });
+
+                // Create transfers between all stops
+                routeStops.forEach(stopId => {
+                    routeStops.forEach(otherStopId => {
+                        if (stopId !== otherStopId) {
+                            const stop1 = cachedStopLocations[stopId];
+                            const stop2 = cachedStopLocations[otherStopId];
+                            
+                            let transferDuration: number;
+                            
+                            if (stop1 && stop2) {
+                                // Compute diff with lat and lon
+                                const latDiff = (stop2.lat - stop1.lat) * 111320; 
+                                const lonDiff = (stop2.lon - stop1.lon) * 111320 * Math.cos(stop1.lat * Math.PI / 180);
+                                const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);                                                        
+                                let walkingTimeSeconds = distance / WALKING_SPEED_MS;                                
+                                if (distance > 1200) {
+                                    walkingTimeSeconds *= 1.5; // penatly for too big distances
+                                }
+                                transferDuration = Math.round(walkingTimeSeconds);
+                            } else {
+                                console.log('Invalid stop');
+                                transferDuration = 60000; 
+                            }
+                            const existingTransfer = cachedGraph.transfers[stopId].find(t => t.destination === otherStopId);
+                            
+                            if (existingTransfer) {
+                                existingTransfer.duration = transferDuration;
+                            } else {
+                                const transfer: Transfer = {
+                                    origin: stopId,
+                                    destination: otherStopId,
+                                    duration: transferDuration,
+                                    startTime: 0,
+                                    endTime: Number.MAX_SAFE_INTEGER 
+                                };
+                                cachedGraph.transfers[stopId].push(transfer);
+                            }
+                        }
+                    });
+                });
+                
+                const totalTransfers = Object.values(cachedGraph.transfers).reduce((total, transfers) => total + transfers.length, 0);
+                console.log(`Total transfers in cachedGraph: ${totalTransfers}`);
+            } catch (error) {
+                console.error('Error updating transfers:', error);
+            }
+        });
 }
 
 setInterval(updateBusPositions, 7500);
-setInterval(getSelectableRoutes, 60000);
+setInterval(getSelectableRoutes, 6000);
+setInterval(rebuildGraph, 2 * 60 * 1000);
 getSelectableRoutes();
+rebuildGraph(); 
 
 
 router.get('/getBusPositions', (req, res) => {
@@ -217,59 +519,8 @@ router.get('/getBusPredictions/:busId', (req, res) => {
 
 router.get('/getAllPredictions', async (req, res) => {
     try {
-        const buses = curBusPositions.buses;
-        const chunks = [];
-        
-        for (let i = 0; i < buses.length; i += 10) {
-            chunks.push(buses.slice(i, i + 10));
-        }
-
-        const predictions = await Promise.all(
-            chunks.map(async (chunk) => {
-                const vids = chunk.map(bus => bus.vid).join(',');
-                const response = await axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions`, {
-                    params: {
-                        requestType: 'getpredictions',
-                        locale: 'en',
-                        vid: vids,
-                        tmres: 's',
-                        rtpidatafeed: 'bustime',
-                        key: API_KEY,
-                        format: 'json'
-                    }
-                });
-                return response.data;
-            })
-        );
-
-        const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
-            if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
-                predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
-                    const vid = prd.vid;
-                    const stopName = prd.stpnm;
-                    const stopId = prd.stpid;
-                    let prdctdn = prd.prdctdn;
-                    prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
-
-                    let bus = acc.find((b: any) => b.vid === vid);
-                    if (!bus) {
-                        bus = { vid, stops: [] };
-                        acc.push(bus);
-                    }
-
-                    let stop = bus.stops.find((s: any) => s.name === stopName && s.id === stopId);
-                    if (!stop) {
-                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null };
-                        bus.stops.push(stop);
-                    }
-
-                    stop.prdctdn = prdctdn;
-                });
-            }
-            return acc;
-        }, []);
-
-        res.send(formattedPredictions);
+        const predictions = await getAllBusPredictions();
+        res.send(predictions);
     } catch (err) {
         console.log(err);
         res.sendStatus(500);
@@ -282,161 +533,146 @@ router.get('/get-startup-messages', (req, res) => {
 
 router.get('/plan-journey', async (req, res) => {
     try {
-        const { origin, destination } = req.query;
-        if (!origin || !destination) {
-            return res.status(400).json({ error: 'Origin and destination are required' });
+        const originStopId = 'VIRTUAL_ORIGIN';
+        const destStopId = 'VIRTUAL_DESTINATION';
+
+        const { originLat, originLon, destLat, destLon } = req.query;
+        if (!originLat || !originLon || !destLat || !destLon) {
+            return res.status(400).json({ error: 'Origin and destination coordinates are required' });
         }
 
         const now = new Date();
         const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
-        const predictionsResponse = await axios.get('http://localhost:3000/mbus/api/v3/getAllPredictions');
-        const predictions = predictionsResponse.data;
-
-        if (!predictions || predictions.length === 0) {
-            return res.status(404).json({ error: 'No buses available at this time' });
+        if (!cachedGraph || !cachedGraph.trips || cachedGraph.trips.length === 0) {
+            await rebuildGraph(); // try to build
+            if (!cachedGraph) {
+                return res.status(404).json({ error: 'No routes available at this time' });
+            }
         }
 
-        const transfers: TransfersByOrigin = {};
-        const interchange: Interchange = {};
-        
-        const allStops = new Set<StopID>();
-        predictions.forEach((bus: any) => {
-            bus.stops.forEach((stop: any) => {
-                allStops.add(stop.stpid);
-            });
-        });
-        
-        allStops.forEach(stopId => {
-            transfers[stopId] = [];
-            interchange[stopId] = 60; // 1 minute interchange time
-        });
-        
-        const stopPredictions: Record<string, any[]> = {};
-        predictions.forEach((bus: any) => {
-            bus.stops.forEach((stop: any) => {
-                if (!stopPredictions[stop.stpid]) {
-                    stopPredictions[stop.stpid] = [];
-                }
-                stopPredictions[stop.stpid].push({
-                    stpid: stop.stpid,
-                    prdctdn: stop.prdctdn,
-                    tatripid: bus.vid
-                });
-            });
+        // Clear all transfers from the virtual origin
+        cachedGraph.transfers[originStopId] = [];
+        cachedGraph.transfers[destStopId] = [];
+        // Clear all transfers to virtual destination
+        Object.keys(cachedGraph.transfers).forEach(stopId => {
+            cachedGraph.transfers[stopId] = cachedGraph.transfers[stopId].filter(
+                t => t.destination !== destStopId
+            );
         });
 
-        allStops.forEach(stopId => {
-            allStops.forEach(otherStopId => {
-                if (stopId !== otherStopId) {
-                    (stopPredictions[stopId] || []).forEach((pred: any) => {
-                        const transfer: Transfer = {
-                            origin: stopId,
-                            destination: otherStopId,
-                            duration: 6000, 
-                            startTime: currentTime + (parseInt(pred.prdctdn) * 60), 
-                            endTime: Number.MAX_SAFE_INTEGER 
-                        };
-                        transfers[stopId].push(transfer);
-                    });
-                }
-            });
-        });
+        // Update the times for the virtual trips
+        const vOriginTrip = cachedGraph.trips.find(t => t.tripId === 'VIRTUAL_ORIGIN_TRIP');
+        if (vOriginTrip) {
+            vOriginTrip.stopTimes[0].arrivalTime = currentTime;
+            vOriginTrip.stopTimes[0].departureTime = currentTime;
+        }
+        const vDestTrip = cachedGraph.trips.find(t => t.tripId === 'VIRTUAL_DESTINATION_TRIP');
+        if (vDestTrip) {
+            vDestTrip.stopTimes[0].arrivalTime = currentTime;
+            vDestTrip.stopTimes[0].departureTime = currentTime;
+        }
 
-        const trips: Trip[] = [];
-        const tripPredictions: Record<string, any[]> = {};
-        
-        predictions.forEach((bus: any) => {
-            if (!tripPredictions[bus.vid]) {
-                tripPredictions[bus.vid] = [];
-            }
-            bus.stops.forEach((stop: any) => {
-                tripPredictions[bus.vid].push({
-                    stpid: stop.stpid,
-                    prdctdn: stop.prdctdn
-                });
-            });
-        });
+        // Calculate transfers from origin to all real stops
+        const originLatNum = parseFloat(originLat as string);
+        const originLonNum = parseFloat(originLon as string);
+        const destLatNum = parseFloat(destLat as string);
+        const destLonNum = parseFloat(destLon as string);
 
-        Object.entries(tripPredictions).forEach(([tripId, preds]) => {
-            const firstLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
-                stop: pred.stpid,
-                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60),
-                departureTime: currentTime + (parseInt(pred.prdctdn) * 60),
-                pickUp: true,
-                dropOff: true
-            }));
+        const WALKING_SPEED_KMH = 5;
+        const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
 
-            // Create second loop
-            const secondLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
-                stop: pred.stpid,
-                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800, // 30 minutes later
-                departureTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800,
-                pickUp: true,
-                dropOff: true
-            }));
-
-            const combinedStopTimes = [...firstLoopStopTimes, ...secondLoopStopTimes];
-
-            trips.push({
-                tripId,
-                stopTimes: combinedStopTimes
-            });
-        });
-
-        RaptorAlgorithm.setDebug(false);
-        const raptor = RaptorAlgorithmFactory.create(trips, transfers, interchange);
-        
-        const journeyPlanner = new DepartAfterQuery(raptor, {
-            getResults: (kConnections, dest) => {
-                if (!kConnections || !kConnections[dest]) {
-                    return [];
+        // Add transfers from origin to all real stops
+        Object.keys(cachedStopLocations).forEach(stopId => {
+            const stopLocation = cachedStopLocations[stopId];
+            if (stopLocation) {
+                const latDiff = (stopLocation.lat - originLatNum) * 111320;
+                const lonDiff = (stopLocation.lon - originLonNum) * 111320 * Math.cos(originLatNum * Math.PI / 180);
+                const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
+                
+                let walkingTimeSeconds = distance / WALKING_SPEED_MS;
+                if (distance > 1200) {
+                    walkingTimeSeconds *= 1.5; // penalty for too big distances
                 }
                 
-                const connections = kConnections[dest];
-                if (!connections || Object.keys(connections).length === 0) {
-                    return [];
-                }
-
-                return Object.entries(connections).map(([k, connection]) => {
-                    if (!connection) return null;
-                    
-                    if (Array.isArray(connection)) {
-                        const [trip, startIndex, endIndex] = connection;
-                        return {
-                            legs: [{
-                                origin: trip.stopTimes[startIndex].stop,
-                                destination: trip.stopTimes[endIndex].stop,
-                                stopTimes: trip.stopTimes.slice(startIndex, endIndex + 1),
-                                trip
-                            }],
-                            departureTime: trip.stopTimes[startIndex].departureTime,
-                            arrivalTime: trip.stopTimes[endIndex].arrivalTime
-                        };
-                    } else {
-                        return {
-                            legs: [{
-                                origin: connection.origin,
-                                destination: connection.destination,
-                                duration: connection.duration,
-                                startTime: connection.startTime,
-                                endTime: connection.endTime
-                            }],
-                            departureTime: connection.startTime,
-                            arrivalTime: connection.startTime + connection.duration
-                        };
-                    }
-                }).filter(Boolean) as Journey[];
+                const transferDuration = Math.round(walkingTimeSeconds);
+                
+                const transfer: Transfer = {
+                    origin: originStopId,
+                    destination: stopId,
+                    duration: transferDuration,
+                    startTime: currentTime,
+                    endTime: Number.MAX_SAFE_INTEGER
+                };
+                cachedGraph.transfers[originStopId].push(transfer);
             }
         });
+
+        // Add transfers from all real stops to destination
+        Object.keys(cachedStopLocations).forEach(stopId => {
+            const stopLocation = cachedStopLocations[stopId];
+            if (stopLocation) {
+                const latDiff = (destLatNum - stopLocation.lat) * 111320;
+                const lonDiff = (destLonNum - stopLocation.lon) * 111320 * Math.cos(stopLocation.lat * Math.PI / 180);
+                const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
+                
+                let walkingTimeSeconds = distance / WALKING_SPEED_MS;
+                if (distance > 1200) {
+                    walkingTimeSeconds *= 1.5;
+                }
+                
+                const transferDuration = Math.round(walkingTimeSeconds);
+                
+                const transfer: Transfer = {
+                    origin: stopId,
+                    destination: destStopId,
+                    duration: transferDuration,
+                    startTime: currentTime,
+                    endTime: Number.MAX_SAFE_INTEGER
+                };
+                cachedGraph.transfers[stopId].push(transfer);
+            }
+        });
+
+        // Direct transfer from VIRTUAL_ORIGIN to VIRTUAL_DESTINATION
+        const directLatDiff = (destLatNum - originLatNum) * 111320;
+        const directLonDiff = (destLonNum - originLonNum) * 111320 * Math.cos(originLatNum * Math.PI / 180);
+        const directDistance = Math.sqrt(directLatDiff * directLatDiff + directLonDiff * directLonDiff);
+
+        let directWalkingTimeSeconds = directDistance / WALKING_SPEED_MS;
+        if (directDistance > 1200) {
+            directWalkingTimeSeconds *= 1.5;
+        }
         
+        const directTransferDuration = Math.round(directWalkingTimeSeconds);
+        console.log(`Walking Distance: ${directTransferDuration}`);
+
+        const directTransfer: Transfer = {
+            origin: originStopId,
+            destination: destStopId,
+            duration: directTransferDuration,
+            startTime: currentTime,
+            endTime: Number.MAX_SAFE_INTEGER
+        };
+        cachedGraph.transfers[originStopId].push(directTransfer);
+
+        RaptorAlgorithm.setDebug(false);
+        const raptor = RaptorAlgorithmFactory.create(cachedGraph.trips, cachedGraph.transfers, cachedGraph.interchange);
+        
+        const resultsFactory = new JourneyFactory();
+        const journeyPlanner = new DepartAfterQuery(raptor, resultsFactory);
         const journeys = journeyPlanner.plan(
-            origin as StopID,
-            destination as StopID,
+            originStopId as StopID,
+            destStopId as StopID,
             currentTime
         );
 
-        res.json({ journeys });
+        const fastest = journeys.length > 0 ? journeys.reduce((best, j) => earliestArrival(best, j) ? j : best, journeys[0]) : null;
+        const leastTransfers = journeys.length > 0 ? journeys.reduce((best, j) => leastChanges(best, j) ? j : best, journeys[0]) : null;
+        const leastWalk = journeys.length > 0 ? journeys.reduce((best, j) => leastWalking(best, j) ? j : best, journeys[0]) : null;
+        const uniqueJourneys = [fastest, leastTransfers, leastWalk]
+          .filter((j, i, arr) => j && arr.findIndex(x => x === j) === i);
+        res.json({ journeys: uniqueJourneys.slice(0, 3) });
     } catch (error) {
         console.error('Error planning journey:', error);
         res.status(500).json({ error: 'Failed to plan journey' });

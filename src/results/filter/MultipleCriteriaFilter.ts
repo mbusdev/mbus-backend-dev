@@ -4,12 +4,21 @@ import { JourneyFilter } from "./JourneyFilter";
 /**
  * Returns true if b arrives before or at the same time as a
  */
-export const earliestArrival = (a, b) => b.arrivalTime <= a.arrivalTime;
+export const earliestArrival = (a: Journey, b: Journey) => b.arrivalTime <= a.arrivalTime;
 
 /**
  * Returns true if b has the same or fewer changes than a
  */
-export const leastChanges = (a, b) => b.legs.length <= a.legs.length;
+export const leastChanges = (a: Journey, b: Journey) => b.legs.length <= a.legs.length;
+
+/**
+ * Returns true if b has less walking time than a
+ */
+export const leastWalking = (a: Journey, b: Journey) => {
+  const sumWalking = (j: Journey) =>
+    j.legs.reduce((sum, leg) => ('duration' in leg ? sum + leg.duration : sum), 0);
+  return sumWalking(b) <= sumWalking(a);
+};
 
 /**
  * Filters journeys based on a number of configurable criteria
@@ -17,7 +26,7 @@ export const leastChanges = (a, b) => b.legs.length <= a.legs.length;
 export class MultipleCriteriaFilter implements JourneyFilter {
 
   constructor(
-    private readonly criteria: FilterCriteria[] = [earliestArrival, leastChanges]
+    private readonly criteria: FilterCriteria[] = [earliestArrival, leastChanges, leastWalking]
   ) {}
 
   /**

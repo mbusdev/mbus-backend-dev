@@ -7,7 +7,6 @@ const BASE_URL = `http://localhost:${SERVER_PORT}/mbus/api/v3`;
 describe('API Endpoints', () => {
     beforeAll(async () => {
         try {
-            // Check if server is running
             await axios.get(`${BASE_URL}/getAllPredictions`);
         } catch (error) {
             console.error('Server is not running! Please start the server with: npm start');
@@ -50,9 +49,15 @@ describe('API Endpoints', () => {
 
     it('should get path between main stops', async () => {
         try {
-            const response = await axios.get(`${BASE_URL}/plan-journey?origin=N428&destination=M309`);
+            // Test path from one location to another using coordinates
+            const response = await axios.get(`${BASE_URL}/plan-journey?originLat=42.264356&originLon=-83.744353999999&destLat=42.268067999999&destLon=-83.747307000001`);
             expect(response.status).toBe(200);
-            console.log('Path M305 -> C211:', JSON.stringify(response.data, null, 2));
+            console.log('Path test 1:', JSON.stringify(response.data, null, 2));
+            
+            // Test another path with different coordinates
+            const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.277682&originLon=-83.734936&destLat=42.290425&destLon=-83.718150999999`);
+            expect(response2.status).toBe(200);
+            console.log('Path test 2:', JSON.stringify(response2.data, null, 2));
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error('Error fetching path:', error.message);
