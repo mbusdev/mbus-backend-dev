@@ -1,0 +1,2126 @@
+[
+  {
+    "buildingName": "1100 North University Building",
+    "abbrev": "NUB",
+    "lat": 42.2776656,
+    "long": -83.73540882,
+    "address": "1100 N. UNIVERSITY AVE Ann Arbor, MI 48109",
+    "altName": "Central Campus Transit Center",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "1310 North University Court Building",
+    "abbrev": "",
+    "lat": 42.27824008,
+    "long": -83.73230606,
+    "address": "1310 UNIVERSITY CT Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "1327 Geddes Building",
+    "abbrev": "",
+    "lat": 42.27770148,
+    "long": -83.73210711,
+    "address": "1327 GEDDES AVE Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "305 W Liberty",
+    "abbrev": "",
+    "lat": 42.27902384,
+    "long": -83.75161589,
+    "address": "305 LIBERTY ST Ann Arbor, MI",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Stephen M. Ross Academic Center",
+    "abbrev": "ROSS AC",
+    "lat": 42.26849092,
+    "long": -83.7408973,
+    "address": "1110 STATE ST Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Angel Hall",
+    "abbrev": "AH",
+    "lat": 42.2767642,
+    "long": -83.73998921,
+    "address": "435 S. State Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Art and Architecture Building",
+    "abbrev": "A&AB",
+    "lat": 42.28996955,
+    "long": -83.71729728,
+    "address": "2000 BONISTEEL BLVD Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "1021 East Huron Building",
+    "abbrev": "",
+    "lat": 42.28159305,
+    "long": -83.73619056,
+    "address": "1021 HURON ST Ann Arbor, MI 48109",
+    "altName": "Association For Asian Studies",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Bob and Betty Beyster Building",
+    "abbrev": "BBB",
+    "lat": 42.29303061,
+    "long": -83.7163671,
+    "address": "2260 HAYWARD ST Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Biological Sciences Building",
+    "abbrev": "BSB",
+    "lat": 42.2789394,
+    "long": -83.73444175,
+    "address": "1105 N University Ave. Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Bonisteel Interdisciplinary Research Building",
+    "abbrev": "BIRB",
+    "lat": 42.28998628,
+    "long": -83.71363441,
+    "address": "2360 BONISTEEL BLVD Ann Arbor, MI 48109",
+    "altName": "Functional MRI Laboratory",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Burton Memorial Tower",
+    "abbrev": "SMTD",
+    "lat": 42.27539443,
+    "long": -83.73833416,
+    "address": "881 UNIVERSITY AVE Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 100",
+    "abbrev": "NCRC",
+    "lat": 42.29991164,
+    "long": -83.70190909,
+    "address": "1600 HURON PKWY Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Center for Academic Innovation",
+    "abbrev": "AI",
+    "lat": 42.27876876,
+    "long": -83.74187455,
+    "address": "317 Maynard Street Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Central Campus Classroom Building",
+    "abbrev": "CCCB",
+    "lat": 42.27815182,
+    "long": -83.73469516,
+    "address": "1225 Geddes Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Willard H Dow Chemistry & Laboratory",
+    "abbrev": "",
+    "lat": 42.27802856,
+    "long": -83.73656809,
+    "address": "930 UNIVERSITY AVE Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Chrysler Center Continuing Engineering Education",
+    "abbrev": "CHRYS",
+    "lat": 42.29061674,
+    "long": -83.71666301,
+    "address": "2121 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Climate and Space Research Building",
+    "abbrev": "SRB",
+    "lat": 42.29441507,
+    "long": -83.71152662,
+    "address": "2455 Hayward St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mortimer E Cooley Building",
+    "abbrev": "COOL",
+    "lat": 42.29063226,
+    "long": -83.71364779,
+    "address": "2355 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Samuel Trask Dana Building",
+    "abbrev": "DANA",
+    "lat": 42.27737694,
+    "long": -83.73661718,
+    "address": "440 CHURCH ST Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Dance Building",
+    "abbrev": "DANCE",
+    "lat": 42.29038545,
+    "long": -83.72100853,
+    "address": "1100 Baits Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Dental Building and W K Kellogg Foundation Institute",
+    "abbrev": "DENT",
+    "lat": 42.27897644,
+    "long": -83.73645402,
+    "address": "1011 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Duderstadt Center",
+    "abbrev": "DC",
+    "lat": 42.29120995,
+    "long": -83.7157401,
+    "address": "2281 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Earl V. Moore Building",
+    "abbrev": "SM",
+    "lat": 42.28986546,
+    "long": -83.72082058,
+    "address": "1100 Baits Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "East Hall",
+    "abbrev": "EH",
+    "lat": 42.27601512,
+    "long": -83.73498094,
+    "address": "530 Church St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Electrical Engineering and Computer Science Building",
+    "abbrev": "EECS",
+    "lat": 42.29232773,
+    "long": -83.71365964,
+    "address": "1301 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Engineering Auxillary Building",
+    "abbrev": "EAB",
+    "lat": 42.28905052,
+    "long": -83.71419297,
+    "address": "1075 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Engineering Research Building",
+    "abbrev": "ERB",
+    "lat": 42.28963391,
+    "long": -83.71488152,
+    "address": "2200 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Environmental and Water Resources Building",
+    "abbrev": "EWRE",
+    "lat": 42.29278858,
+    "long": -83.71337563,
+    "address": "1351 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Family Assessment Clinic",
+    "abbrev": "",
+    "lat": 42.27532873,
+    "long": -83.73282176,
+    "address": "555 S Forest Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ford Robotics Building",
+    "abbrev": "FMCRB",
+    "lat": 42.2945371,
+    "long": -83.70966123,
+    "address": "2505 Hayward St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Francois-Xavier Bagnoud Building",
+    "abbrev": "FXB",
+    "lat": 42.29376391,
+    "long": -83.71193855,
+    "address": "1320 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "GG Brown Laboratory",
+    "abbrev": "GGBL",
+    "lat": 42.29324074,
+    "long": -83.71373761,
+    "address": "2350 Hayward St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Gerstacker Building",
+    "abbrev": "",
+    "lat": 43.63966881,
+    "long": -84.2601416,
+    "address": "4611 Campus Ridge Dr, Midland, MI 48640",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Gorguze Family Laboratory",
+    "abbrev": "GFL",
+    "lat": 42.29335068,
+    "long": -83.71071425,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Haven Hall",
+    "abbrev": "HH",
+    "lat": 42.27635444,
+    "long": -83.73938131,
+    "address": "505 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Herbert H. Dow Building",
+    "abbrev": "DOW",
+    "lat": 42.29300389,
+    "long": -83.71543033,
+    "address": "2300 Hayward St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Hutchins Hall",
+    "abbrev": "HUTCH",
+    "lat": 42.27375994,
+    "long": -83.74046777,
+    "address": "625 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Industrial and Operations Engineering Building",
+    "abbrev": "IOE",
+    "lat": 42.29106614,
+    "long": -83.71369551,
+    "address": "Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ingalls Mall",
+    "abbrev": "",
+    "lat": 42.27968547,
+    "long": -83.73820713,
+    "address": "881 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Institute for Social Research",
+    "abbrev": "ISR",
+    "lat": 42.27704813,
+    "long": -83.74362926,
+    "address": "426 Thompson St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Institute of Continuing Legal Education",
+    "abbrev": "ICLE",
+    "lat": 42.2687255,
+    "long": -83.74770384,
+    "address": "1020 Greene St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Jeff T. Blau Hall",
+    "abbrev": "",
+    "lat": 42.27331788,
+    "long": -83.73606027,
+    "address": "700 E University Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lane Hall",
+    "abbrev": "LANE",
+    "lat": 42.27992128,
+    "long": -83.74122465,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lorch Hall",
+    "abbrev": "LORCH",
+    "lat": 42.27389558,
+    "long": -83.73739576,
+    "address": "611 Tappan Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Marsal Family School of Education",
+    "abbrev": "SEB",
+    "lat": 42.274258,
+    "long": -83.73602812,
+    "address": "610 E University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mason Hall",
+    "abbrev": "MH",
+    "lat": 42.27726221,
+    "long": -83.73928366,
+    "address": "419 S State St Mason Hall, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mcity",
+    "abbrev": "",
+    "lat": 42.29871476,
+    "long": -83.70195703,
+    "address": "2905 Baxter Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical Science Unit 1",
+    "abbrev": "",
+    "lat": 42.28403837,
+    "long": -83.73228889,
+    "address": "1301 Catherine St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical Science Unit 2",
+    "abbrev": "",
+    "lat": 42.28403837,
+    "long": -83.73228889,
+    "address": "1301 Catherine St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Michigan Memorial Phoenix Project",
+    "abbrev": "",
+    "lat": 42.29103428,
+    "long": -83.71461626,
+    "address": "2301 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Modern Languages Building",
+    "abbrev": "MLB",
+    "lat": 42.28024107,
+    "long": -83.73896747,
+    "address": "812 E Washington St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Naval Architecture and Marine Engineering",
+    "abbrev": "NAME",
+    "lat": 42.29332202,
+    "long": -83.70922658,
+    "address": "2600 Draper Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 10",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 16",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 18",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 28",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 32",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 35",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 36",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 50",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 520",
+    "abbrev": "",
+    "lat": 42.29997917,
+    "long": -83.70304927,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 60",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Research Complex Building 90",
+    "abbrev": "",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Nuclear Engineering Laboratories",
+    "abbrev": "",
+    "lat": 42.29107397,
+    "long": -83.71438022,
+    "address": "2301 Bonisteel Blvd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "College of Pharmacy Building",
+    "abbrev": "",
+    "lat": 42.27789838,
+    "long": -83.73460131,
+    "address": "428 Church St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Vaughan School of Public Health",
+    "abbrev": "",
+    "lat": 42.28095601,
+    "long": -83.72927006,
+    "address": "1415 Washington Heights, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Thomas Francis Jr. Building/School of Public Health",
+    "abbrev": "",
+    "lat": 42.28038643,
+    "long": -83.72994734,
+    "address": "1420 Washington Heights, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Rackham School Of Graduate Studies",
+    "abbrev": "",
+    "lat": 42.28100142,
+    "long": -83.73801488,
+    "address": "915 E Washington St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Randall Laboratory",
+    "abbrev": "RAND",
+    "lat": 42.27669174,
+    "long": -83.73619565,
+    "address": "450 Church St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ross School of Business",
+    "abbrev": "R-BUS",
+    "lat": 42.2731993,
+    "long": -83.73787363,
+    "address": "701 Tappan Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "School of Information",
+    "abbrev": "UMSI",
+    "lat": 42.28062191,
+    "long": -83.73974341,
+    "address": "105 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "School of Kinesiology",
+    "abbrev": "NS",
+    "lat": 42.27845691,
+    "long": -83.73879614,
+    "address": "830 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "School of Nursing",
+    "abbrev": "SNB",
+    "lat": 42.28530848,
+    "long": -83.73856743,
+    "address": "426 N Ingalls St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "School of Public Health",
+    "abbrev": "SPH",
+    "lat": 42.28111611,
+    "long": -83.72994347,
+    "address": "1415 Washington Heights, Ann Arbor, MI 48109",
+    "altName": "Henry Frieze Vaughan Public Health Building",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "School of Social Work",
+    "abbrev": "SSWB",
+    "lat": 42.27480448,
+    "long": -83.73637781,
+    "address": "1080 S University Ave, Ann Arbor, MI 48109",
+    "altName": "University of Michigan Child & Adolescent Data Lab",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Tappan Hall",
+    "abbrev": "TAP",
+    "lat": 42.27527897,
+    "long": -83.73905807,
+    "address": "855 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Thayer Academic Building",
+    "abbrev": "STB",
+    "lat": 42.28015085,
+    "long": -83.73957238,
+    "address": "202 S Thayer St, Ann Arbor, MI 48104",
+    "altName": "Institute for The Humanities",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Law Quadrangle",
+    "abbrev": "",
+    "lat": 42.2745022,
+    "long": -83.7390298,
+    "address": "625 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Tisch Hall",
+    "abbrev": "TISCH",
+    "lat": 42.2768105,
+    "long": -83.73954848,
+    "address": "435 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Towsley Center",
+    "abbrev": "",
+    "lat": 42.28374349,
+    "long": -83.72873175,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Transportation Research Institute",
+    "abbrev": "UMTRI",
+    "lat": 42.2978232,
+    "long": -83.70257239,
+    "address": "2901 Baxter Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Undergraduate Science Building",
+    "abbrev": "USB",
+    "lat": 42.2800606,
+    "long": -83.73487939,
+    "address": "204 Washtenaw Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Walter E. Lay Automotive Engineering Laboratory",
+    "abbrev": "AL",
+    "lat": 42.29211913,
+    "long": -83.71332202,
+    "address": "1231 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Weill Hall",
+    "abbrev": "WEILL",
+    "lat": 42.27232555,
+    "long": -83.74022526,
+    "address": "735 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "West Hall",
+    "abbrev": "WH",
+    "lat": 42.27590872,
+    "long": -83.73630173,
+    "address": "1085 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Wilson Center",
+    "abbrev": "",
+    "lat": 42.29345115,
+    "long": -83.71001101,
+    "address": "2603 Draper Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Wyly Hall",
+    "abbrev": "W-Bus",
+    "lat": 42.27284091,
+    "long": -83.7357545,
+    "address": "770 E University Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "1027 East Huron Building",
+    "abbrev": "",
+    "lat": 42.28170865,
+    "long": -83.73554675,
+    "address": "1027 I-94BL, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Madison Building",
+    "abbrev": "",
+    "lat": 42.27432066,
+    "long": -83.74787437,
+    "address": "109 E Madison St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Parking Customer Service",
+    "abbrev": "",
+    "lat": 42.27567829,
+    "long": -83.74396781,
+    "address": "523 S Division St, Ann Arbor, MI 48104",
+    "altName": "523 South Division Street Building",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Arbor Lakes",
+    "abbrev": "AL",
+    "lat": 42.31077208,
+    "long": -83.67550132,
+    "address": "4251 Plymouth Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Argus Building 2",
+    "abbrev": "",
+    "lat": 42.27783172,
+    "long": -83.75542309,
+    "address": "400 4th St, Ann Arbor, MI 48103",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Boyer Building",
+    "abbrev": "",
+    "lat": 42.26998629,
+    "long": -83.74708881,
+    "address": "201 E Hoover Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Campus Safety Services Building",
+    "abbrev": "CSSB",
+    "lat": 42.2653046,
+    "long": -83.74389312,
+    "address": "401 E Stadium Blvd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Central Power Plant",
+    "abbrev": "",
+    "lat": 42.28110014,
+    "long": -83.7343303,
+    "address": "1120 E Huron St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Clinical Faculty Office Building",
+    "abbrev": "",
+    "lat": 42.28354182,
+    "long": -83.73768094,
+    "address": "300 N Ingalls St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Executive Residence (Ross Business School)",
+    "abbrev": "",
+    "lat": 42.27281769,
+    "long": -83.73520711,
+    "address": "710 E University Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Hartwig Administration Building",
+    "abbrev": "",
+    "lat": 42.26895141,
+    "long": -83.74100022,
+    "address": "1100 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Jeffries Hall",
+    "abbrev": "LSSH",
+    "lat": 42.27343202,
+    "long": -83.73959058,
+    "address": "701 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Key Office",
+    "abbrev": "",
+    "lat": 42.27632971,
+    "long": -83.73432195,
+    "address": "525 Church St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "LSA Administration Annex",
+    "abbrev": "",
+    "lat": 42.28154305,
+    "long": -83.7367668,
+    "address": "1007 E Huron St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "LSA Building",
+    "abbrev": "LSA",
+    "lat": 42.27685553,
+    "long": -83.7403432,
+    "address": "500 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lawyer's Club and Munger Residences",
+    "abbrev": "",
+    "lat": 42.27489492,
+    "long": -83.73920118,
+    "address": "551 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lurie Engineering Center",
+    "abbrev": "LEC",
+    "lat": 42.29148177,
+    "long": -83.713372,
+    "address": "1221 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Michigan News Building",
+    "abbrev": "NIS",
+    "lat": 42.2776667,
+    "long": -83.74232229,
+    "address": "412 Maynard St, Ann Arbor, MI 48109",
+    "altName": "News and Information Services Building",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Administrative Complex",
+    "abbrev": "NCAC",
+    "lat": 42.29661587,
+    "long": -83.7024218,
+    "address": "2901 Hubbard Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Facilities Services Building",
+    "abbrev": "",
+    "lat": 42.29852625,
+    "long": -83.69752693,
+    "address": "3231 Baxter Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Housing Service Building",
+    "abbrev": "",
+    "lat": 42.29797279,
+    "long": -83.6954661,
+    "address": "3261 Baxter Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Northwood Community Center",
+    "abbrev": "",
+    "lat": 42.29743278,
+    "long": -83.70897654,
+    "address": "1000 McIntyre, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "One North Main",
+    "abbrev": "",
+    "lat": 42.28180995,
+    "long": -83.74842019,
+    "address": "W Huron St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": "77J2+MF Ann Arbor, Michigan"
+  },
+  {
+    "buildingName": "Palmer Commons",
+    "abbrev": "PALM",
+    "lat": 42.2808835,
+    "long": -83.73309516,
+    "address": "100 Washtenaw Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Perry Building",
+    "abbrev": "",
+    "lat": 42.27466697,
+    "long": -83.74457004,
+    "address": "330 Packard St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Physical Properties Building",
+    "abbrev": "",
+    "lat": 42.26917182,
+    "long": -83.74668595,
+    "address": "326 E Hoover Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ruthven Administration Building",
+    "abbrev": "RUTHVEN",
+    "lat": 42.27850952,
+    "long": -83.73459373,
+    "address": "1109 Geddes Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Shared Services Center",
+    "abbrev": "",
+    "lat": 42.23906038,
+    "long": -83.73065718,
+    "address": "1000 Victors Way, Ann Arbor, MI 48108",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Simpson Institute",
+    "abbrev": "",
+    "lat": 42.28205365,
+    "long": -83.73044953,
+    "address": "109 Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Stearns Building",
+    "abbrev": "STRNS",
+    "lat": 42.29551659,
+    "long": -83.72598727,
+    "address": "2005 Baits Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Towsley Center for Children",
+    "abbrev": "",
+    "lat": 42.27353235,
+    "long": -83.73323934,
+    "address": "710 S Forest Ave, Ann Arbor, MI 48104",
+    "altName": "Towsley Children's House",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Transportation Services Building",
+    "abbrev": "",
+    "lat": 42.26658223,
+    "long": -83.74476477,
+    "address": "1213 Kipke Dr, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Victor C. Vaughan House",
+    "abbrev": "",
+    "lat": 42.28356145,
+    "long": -83.73505733,
+    "address": "1111 Catherine St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Wolverine Tower",
+    "abbrev": "",
+    "lat": 42.2427641,
+    "long": -83.73726221,
+    "address": "3003 S State St # G395, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Alumni Field",
+    "abbrev": "",
+    "lat": 42.26663187,
+    "long": -83.74237857,
+    "address": "1255 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Bahna Wrestling Center",
+    "abbrev": "",
+    "lat": 42.25225841,
+    "long": -83.74250669,
+    "address": "2350 S State St, Ann Arbor, MI 48103",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Cliff Keen Arena",
+    "abbrev": "",
+    "lat": 42.26936332,
+    "long": -83.74106345,
+    "address": "616 E Hoover Ave St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Crisler Arena",
+    "abbrev": "",
+    "lat": 42.26599829,
+    "long": -83.74555252,
+    "address": "333 E Stadium Blvd, Ann Arbor, MI 48109",
+    "altName": "Crisler Center",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Donald B Canham Natatorium",
+    "abbrev": "",
+    "lat": 42.269602,
+    "long": -83.74225186,
+    "address": "500 E Hoover Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Elbel Field Locker Building",
+    "abbrev": "",
+    "lat": 42.27350765,
+    "long": -83.7462801,
+    "address": "214 E Madison St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Indoor Training Center",
+    "abbrev": "",
+    "lat": 42.26797462,
+    "long": -83.74353891,
+    "address": "1150 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Junge Champions Center",
+    "abbrev": "",
+    "lat": 42.26505131,
+    "long": -83.74632917,
+    "address": "333 E Stadium Blvd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Michigan Stadium",
+    "abbrev": "",
+    "lat": 42.26594763,
+    "long": -83.74837374,
+    "address": "1201 S Main St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Phyllis Ocker Field Hockey Field",
+    "abbrev": "",
+    "lat": 42.26339731,
+    "long": -83.74082055,
+    "address": "537 E Stadium Blvd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Radrick Farms",
+    "abbrev": "",
+    "lat": 42.28421492,
+    "long": -83.66306731,
+    "address": "4875 Geddes Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ray Fisher Baseball Stadium",
+    "abbrev": "",
+    "lat": 42.26832273,
+    "long": -83.74177106,
+    "address": "1114 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Revelli Hall",
+    "abbrev": "REVELLI",
+    "lat": 42.269397,
+    "long": -83.74418705,
+    "address": "350 E Hoover Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Schembechler Hall",
+    "abbrev": "SCHEM",
+    "lat": 42.26646531,
+    "long": -83.74088231,
+    "address": "1200 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "U-M Lacrosse Stadium",
+    "abbrev": "",
+    "lat": 42.251831,
+    "long": -83.7401151,
+    "address": "2500 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "U-M Soccer Stadium",
+    "abbrev": "",
+    "lat": 42.25272598,
+    "long": -83.74650501,
+    "address": "2250 S State St, Ann Arbor, MI 48103",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "U-M Track and Field Stadium",
+    "abbrev": "",
+    "lat": 42.25120632,
+    "long": -83.74133299,
+    "address": "2540 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "UM Golf Course",
+    "abbrev": "",
+    "lat": 42.26303545,
+    "long": -83.74372547,
+    "address": "500 E Stadium Blvd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Varsity Tennis Building",
+    "abbrev": "",
+    "lat": 42.25378122,
+    "long": -83.74232226,
+    "address": "2250 S State St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Weidenbach Hall",
+    "abbrev": "",
+    "lat": 42.26943312,
+    "long": -83.740825,
+    "address": "1000 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Yost Ice Arena",
+    "abbrev": "",
+    "lat": 42.26789009,
+    "long": -83.74004705,
+    "address": "1116 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Alice Lloyd Hall",
+    "abbrev": "ALH",
+    "lat": 42.2817001,
+    "long": -83.73060124,
+    "address": "100 Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Betsy Barbour House",
+    "abbrev": "",
+    "lat": 42.27744381,
+    "long": -83.74180135,
+    "address": "420 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Bursley Hall",
+    "abbrev": "BURS",
+    "lat": 42.29386078,
+    "long": -83.72083009,
+    "address": "1931 Duffield St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Couzens Hall",
+    "abbrev": "COUZENS",
+    "lat": 42.28211521,
+    "long": -83.73235833,
+    "address": "1300 E Ann St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "East Quadrangle",
+    "abbrev": "EQ",
+    "lat": 42.27308378,
+    "long": -83.73428847,
+    "address": "701 E University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Fletcher Hall",
+    "abbrev": "",
+    "lat": 42.27039727,
+    "long": -83.74154741,
+    "address": "915 Sybil St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Henderson House",
+    "abbrev": "",
+    "lat": 42.27211777,
+    "long": -83.72963132,
+    "address": "1330 Hill St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Martha Cook Residence",
+    "abbrev": "",
+    "lat": 42.27513165,
+    "long": -83.73680059,
+    "address": "906 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mary Markley Hall",
+    "abbrev": "MARKLEY",
+    "lat": 42.2811272,
+    "long": -83.72784914,
+    "address": "1482 E Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mosher-Jordan Hall",
+    "abbrev": "MOJO",
+    "lat": 42.28046284,
+    "long": -83.73135953,
+    "address": "200 Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Munger Graduate Residences",
+    "abbrev": "",
+    "lat": 42.27479785,
+    "long": -83.74296493,
+    "address": "540 Thompson St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Newberry Residence",
+    "abbrev": "",
+    "lat": 42.27711999,
+    "long": -83.74151639,
+    "address": "432 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Quad",
+    "abbrev": "NQ",
+    "lat": 42.28059786,
+    "long": -83.7401702,
+    "address": "105 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Northwood I Apartments",
+    "abbrev": "",
+    "lat": 42.29643424,
+    "long": -83.71388306,
+    "address": "",
+    "altName": "",
+    "plusCode": "77WP+GC Ann Arbor, Michigan"
+  },
+  {
+    "buildingName": "Northwood II Apartments",
+    "abbrev": "",
+    "lat": 42.29590818,
+    "long": -83.7153924,
+    "address": "2243 Hubbard Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Northwood III Apartments",
+    "abbrev": "",
+    "lat": 42.29635845,
+    "long": -83.71792353,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Northwood IV Apartments",
+    "abbrev": "",
+    "lat": 42.29924882,
+    "long": -83.71088453,
+    "address": "1543 McIntyre, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Northwood V Apartments",
+    "abbrev": "",
+    "lat": 42.29418446,
+    "long": -83.6999511,
+    "address": "Stone Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Oxford Housing",
+    "abbrev": "",
+    "lat": 42.27448672,
+    "long": -83.72471425,
+    "address": "623 Oxford Rd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "South Quad",
+    "abbrev": "SQ",
+    "lat": 42.27418293,
+    "long": -83.74133633,
+    "address": "600 E Madison St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Stockwell Hall",
+    "abbrev": "STOCKWELL",
+    "lat": 42.27888284,
+    "long": -83.73104178,
+    "address": "Stockwell, 324 Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Vera Baits Housing",
+    "abbrev": "",
+    "lat": 42.29379204,
+    "long": -83.72326919,
+    "address": "1440 Hubbard Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "West Quadrangle",
+    "abbrev": "WQ",
+    "lat": 42.27490065,
+    "long": -83.74254235,
+    "address": "541 Thompson St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Bentley Historical Library",
+    "abbrev": "",
+    "lat": 42.28963535,
+    "long": -83.71225252,
+    "address": "1150 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Buhr Building",
+    "abbrev": "",
+    "lat": 42.27041364,
+    "long": -83.74675693,
+    "address": "839 Greene St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Detroit Observatory",
+    "abbrev": "",
+    "lat": 42.28213227,
+    "long": -83.73099656,
+    "address": "1398 E Ann St, Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Gerald Ford Library",
+    "abbrev": "FORD LIB",
+    "lat": 42.28864961,
+    "long": -83.71203785,
+    "address": "1000 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Hatcher Graduate Library",
+    "abbrev": "",
+    "lat": 42.27663583,
+    "long": -83.73731592,
+    "address": "913 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Kelsey Museom of Archaeology",
+    "abbrev": "KELSEY",
+    "lat": 42.27726261,
+    "long": -83.74009694,
+    "address": "434 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Kresge Hall",
+    "abbrev": "K-BUS",
+    "lat": 42.27316086,
+    "long": -83.73691652,
+    "address": "700 East University Ave, Kresge Hall 4 East K4511, Ann Arbor, MI 48109",
+    "altName": "Kresge Business Administration Library",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Law Library",
+    "abbrev": "",
+    "lat": 42.27385917,
+    "long": -83.73894326,
+    "address": "801 Monroe St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Museum of Natural History",
+    "abbrev": "",
+    "lat": 42.27954987,
+    "long": -83.73411051,
+    "address": "1105 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Research Museums Center",
+    "abbrev": "RMC",
+    "lat": 42.23655357,
+    "long": -83.72781213,
+    "address": "3600 Varsity Dr, Ann Arbor, MI 48108",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Shapiro Library",
+    "abbrev": "UGLI",
+    "lat": 42.27594839,
+    "long": -83.73634575,
+    "address": "919 S University Ave, Ann Arbor, MI 48109",
+    "altName": "Undergraduate Library",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Taubman Library",
+    "abbrev": "TAUBL",
+    "lat": 42.28370964,
+    "long": -83.73311855,
+    "address": "1135 Catherine St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "William Clements Library",
+    "abbrev": "",
+    "lat": 42.27588012,
+    "long": -83.73743468,
+    "address": "909 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Bradford House",
+    "abbrev": "",
+    "lat": 42.28306192,
+    "long": -83.73604192,
+    "address": "1010 Catherine St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Brehm Tower",
+    "abbrev": "",
+    "lat": 42.28858747,
+    "long": -83.7363819,
+    "address": "1000 Wall St, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lawrence D Buhl Research Center For Human Genetics",
+    "abbrev": "",
+    "lat": 42.28374808,
+    "long": -83.73308556,
+    "address": "1241 Catherine St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Rogel Cancer Center",
+    "abbrev": "",
+    "lat": 42.28455736,
+    "long": -83.73102408,
+    "address": "1500 E Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Samuel And Jean Frankel Cardiovascular Center",
+    "abbrev": "CVC",
+    "lat": 42.28344406,
+    "long": -83.73160993,
+    "address": "1425 E Ann St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Health Management Research Center",
+    "abbrev": "",
+    "lat": 42.28177104,
+    "long": -83.73641236,
+    "address": "1015 E Huron St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "University Health Services",
+    "abbrev": "UHS",
+    "lat": 42.27978518,
+    "long": -83.7366853,
+    "address": "207 Fletcher St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Kellogg Eye Center",
+    "abbrev": "KEC",
+    "lat": 42.28850451,
+    "long": -83.7372581,
+    "address": "1000 Wall St, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Kresge Hearing Research",
+    "abbrev": "KHRI",
+    "lat": 42.28468809,
+    "long": -83.73299743,
+    "address": "Medical Science Unit II, Ann Arbor, MI 4605",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mary Sue Coleman Hall",
+    "abbrev": "LSI",
+    "lat": 42.28036735,
+    "long": -83.73382688,
+    "address": "210 Washtenaw Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical Inn",
+    "abbrev": "",
+    "lat": 42.28395254,
+    "long": -83.72979621,
+    "address": "1500 E Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "Med-Inn",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical Science Research Building 1",
+    "abbrev": "MSRB1",
+    "lat": 42.28428861,
+    "long": -83.73442739,
+    "address": "1150 W Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "MSC1",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical Science Research Building 2",
+    "abbrev": "MSRB2",
+    "lat": 42.28497235,
+    "long": -83.73361173,
+    "address": "1150 W Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "MSC2",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical Science Research Building 3",
+    "abbrev": "MSRB3",
+    "lat": 42.28430454,
+    "long": -83.734346,
+    "address": "1150 W Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "MSC3",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Medical and Behavioral Neuroscience Institute",
+    "abbrev": "",
+    "lat": 42.283324,
+    "long": -83.7340712,
+    "address": "205 Zina Pitcher Pl, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mott's Children's Hospital",
+    "abbrev": "MOTT",
+    "lat": 42.28231788,
+    "long": -83.72643366,
+    "address": "1540 E Hospital Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Rachel Upjohn Building",
+    "abbrev": "",
+    "lat": 42.30793278,
+    "long": -83.67482766,
+    "address": "4250 Plymouth Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "School of Nursing Building",
+    "abbrev": "NIB",
+    "lat": 42.28550691,
+    "long": -83.73832067,
+    "address": "426 N Ingalls St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Taubman Biomedical Science Research Building",
+    "abbrev": "BSRB",
+    "lat": 42.28180806,
+    "long": -83.7340536,
+    "address": "109 Zina Pitcher Pl, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "University Hospitals",
+    "abbrev": "UM HOSP",
+    "lat": 42.28478654,
+    "long": -83.72862249,
+    "address": "1500 E Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Von Voigtlander Women's Hospital",
+    "abbrev": "WOMEN'S HOSP",
+    "lat": 42.28206549,
+    "long": -83.7270845,
+    "address": "1540 E Hospital Dr, Ann Arbor, MI 48109",
+    "altName": "Neuroscience Hospital Unit 1",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "1443 Washtenaw Avenue Building",
+    "abbrev": "",
+    "lat": 42.27464478,
+    "long": -83.72999439,
+    "address": "1443 Washtenaw Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Alumni Center",
+    "abbrev": "",
+    "lat": 42.27464478,
+    "long": -83.72999439,
+    "address": "200 Fletcher St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Argus I Building",
+    "abbrev": "",
+    "lat": 42.2776693,
+    "long": -83.75231288,
+    "address": "535 W William St, Ann Arbor, MI 48103",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Burnham House",
+    "abbrev": "",
+    "lat": 42.28047775,
+    "long": -83.72642934,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Campus Farm",
+    "abbrev": "",
+    "lat": 42.29903197,
+    "long": -83.66484429,
+    "address": "1800 N Dixboro Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Center for the Education of Women",
+    "abbrev": "CEW",
+    "lat": 42.27940622,
+    "long": -83.74438687,
+    "address": "330 E Liberty St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Central Campus Recreation Building",
+    "abbrev": "CCRB",
+    "lat": 42.29562304,
+    "long": -83.71948219,
+    "address": "2375 Hubbard Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Sports Coliseum",
+    "abbrev": "",
+    "lat": 42.27254638,
+    "long": -83.74426255,
+    "address": "721 S 5th Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Diag - Central Campus",
+    "abbrev": "",
+    "lat": 42.27706617,
+    "long": -83.73816752,
+    "address": "913 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Elbel Field",
+    "abbrev": "",
+    "lat": 42.27351558,
+    "long": -83.74611916,
+    "address": "214 E Madison St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Galleria Building",
+    "abbrev": "",
+    "lat": 42.27486746,
+    "long": -83.7338677,
+    "address": "1214 S University Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ginsberg Center for Community Service and Learning",
+    "abbrev": "",
+    "lat": 42.27949862,
+    "long": -83.73651138,
+    "address": "911 N University Ave B6, Ann Arbor, MI 48104",
+    "altName": "Madelon Pond House",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Hill Auditorium",
+    "abbrev": "",
+    "lat": 42.27923579,
+    "long": -83.73830563,
+    "address": "825 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mandell L Berman Center",
+    "abbrev": "",
+    "lat": 42.27283451,
+    "long": -83.73027002,
+    "address": "1429 Hill St, Ann Arbor, MI 48104",
+    "altName": "Hillel",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "International Center",
+    "abbrev": "",
+    "lat": 42.27514099,
+    "long": -83.74145581,
+    "address": "530 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Intramural Sports Building",
+    "abbrev": "IMSB",
+    "lat": 42.26957048,
+    "long": -83.74191308,
+    "address": "606 E Hoover Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lipsey Student Publications Building",
+    "abbrev": "",
+    "lat": 42.27749016,
+    "long": -83.74146811,
+    "address": "420 Maynard St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Ann and Robert H. Lurie Tower",
+    "abbrev": "",
+    "lat": 42.29215263,
+    "long": -83.71599304,
+    "address": "1230 Murfin Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lydia Mendelssohn Theatre",
+    "abbrev": "",
+    "lat": 42.27975289,
+    "long": -83.7368042,
+    "address": "911 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Matthei Botanical Gardens",
+    "abbrev": "BOT GARD",
+    "lat": 42.30241628,
+    "long": -83.6625705,
+    "address": "1800 N Dixboro Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Michigan League",
+    "abbrev": "LEAG",
+    "lat": 42.27934989,
+    "long": -83.73648259,
+    "address": "911 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Michigan Union",
+    "abbrev": "UNION",
+    "lat": 42.27525557,
+    "long": -83.74037744,
+    "address": "530 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mike and Mary Wallace House",
+    "abbrev": "",
+    "lat": 42.27470297,
+    "long": -83.72588662,
+    "address": "620 Oxford Rd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mitchell Field",
+    "abbrev": "",
+    "lat": 42.28631665,
+    "long": -83.7210992,
+    "address": "1900 Fuller Rd, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Nichols Arboretum",
+    "abbrev": "",
+    "lat": 42.28026911,
+    "long": -83.72114703,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Campus Recreation Building",
+    "abbrev": "NCRB",
+    "lat": 42.29569446,
+    "long": -83.71996499,
+    "address": "2375 Hubbard Rd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Palmer Field",
+    "abbrev": "",
+    "lat": 42.28084051,
+    "long": -83.73251417,
+    "address": "401 Washtenaw Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Palmer Field Temporary Facility",
+    "abbrev": "",
+    "lat": 42.28111481,
+    "long": -83.73264113,
+    "address": "105 Washtenaw Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Pierpont Commons",
+    "abbrev": "PIER",
+    "lat": 42.29129244,
+    "long": -83.7171633,
+    "address": "2101 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Power Center for the Performing Arts",
+    "abbrev": "POWER CTR",
+    "lat": 42.28106815,
+    "long": -83.73560324,
+    "address": "121 Fletcher St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Regents Plaza",
+    "abbrev": "",
+    "lat": 42.27654072,
+    "long": -83.74130408,
+    "address": "Fleming Administration Bldg, 503 Thompson St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Student Activities Building",
+    "abbrev": "SAB",
+    "lat": 42.27733133,
+    "long": -83.74257152,
+    "address": "515 E Jefferson St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Tappan Auxiliary Building",
+    "abbrev": "TSAB",
+    "lat": 42.27403627,
+    "long": -83.73771812,
+    "address": "659-699 Tappan Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "The Grove",
+    "abbrev": "",
+    "lat": 42.29234605,
+    "long": -83.71552295,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Trotter Multicultural Center",
+    "abbrev": "",
+    "lat": 42.27727117,
+    "long": -83.74074924,
+    "address": "428 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Walgreen Drama Center",
+    "abbrev": "WDC",
+    "lat": 42.29196585,
+    "long": -83.71624545,
+    "address": "1226 Murfin Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  }
+]

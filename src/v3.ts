@@ -210,6 +210,7 @@ const getAllBusPredictions = async () => {
             if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
                 predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
                     const vid = prd.vid;
+                    const tatripid = prd.tatripid;
                     const stopName = prd.stpnm;
                     const stopId = prd.stpid;
                     let prdctdn = prd.prdctdn;
@@ -217,7 +218,7 @@ const getAllBusPredictions = async () => {
 
                     let bus = acc.find((b: any) => b.vid === vid);
                     if (!bus) {
-                        bus = { vid, stops: [] };
+                        bus = { vid, tatripid, stops: [] };
                         acc.push(bus);
                     }
 
@@ -525,6 +526,10 @@ router.get('/getAllPredictions', async (req, res) => {
         console.log(err);
         res.sendStatus(500);
     }
+});
+
+router.get('/getBuildingLocations', (req, res) => {
+    res.sendFile(path.join(import.meta.dirname, 'assets', 'building-data.json'));
 });
 
 router.get('/get-startup-messages', (req, res) => {
