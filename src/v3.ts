@@ -54,6 +54,13 @@ let cachedGraph: {
     interchange: Interchange;
 }
 
+const sortStopTimesByRouteSequence = (stopTimes: StopTime[]): StopTime[] => {
+    if (stopTimes.length <= 1) return stopTimes;
+    
+    // Sort by arrival time
+    return stopTimes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+};
+
 const rebuildGraph = async () => {
     try {
         const predictions = await getAllBusPredictions();
@@ -68,8 +75,8 @@ const rebuildGraph = async () => {
         const interchange = cachedGraph?.interchange || {};
         
         const allStops = new Set<StopID>();
-        predictions.forEach((bus: any) => {
-            bus.stops.forEach((stop: any) => {
+        predictions.forEach((trip: any) => {
+            trip.stops.forEach((stop: any) => {
                 allStops.add(stop.stpid);
             });
         });
@@ -84,15 +91,15 @@ const rebuildGraph = async () => {
         });
         
         const stopPredictions: Record<string, any[]> = {};
-        predictions.forEach((bus: any) => {
-            bus.stops.forEach((stop: any) => {
+        predictions.forEach((trip: any) => {
+            trip.stops.forEach((stop: any) => {
                 if (!stopPredictions[stop.stpid]) {
                     stopPredictions[stop.stpid] = [];
                 }
                 stopPredictions[stop.stpid].push({
                     stpid: stop.stpid,
                     prdctdn: stop.prdctdn,
-                    tatripid: bus.vid
+                    tatripid: trip.tatripid
                 });
             });
         });
@@ -100,12 +107,12 @@ const rebuildGraph = async () => {
         const trips: Trip[] = [];
         const tripPredictions: Record<string, any[]> = {};
         
-        predictions.forEach((bus: any) => {
-            if (!tripPredictions[bus.vid]) {
-                tripPredictions[bus.vid] = [];
+        predictions.forEach((trip: any) => {
+            if (!tripPredictions[trip.tatripid]) {
+                tripPredictions[trip.tatripid] = [];
             }
-            bus.stops.forEach((stop: any) => {
-                tripPredictions[bus.vid].push({
+            trip.stops.forEach((stop: any) => {
+                tripPredictions[trip.tatripid].push({
                     stpid: stop.stpid,
                     prdctdn: stop.prdctdn
                 });
@@ -113,7 +120,8 @@ const rebuildGraph = async () => {
         });
 
         Object.entries(tripPredictions).forEach(([tripId, preds]) => {
-            const firstLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
+            // Create stop times with prediction times
+            const stopTimes: StopTime[] = preds.map((pred: any) => ({
                 stop: pred.stpid,
                 arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60),
                 departureTime: currentTime + (parseInt(pred.prdctdn) * 60),
@@ -121,20 +129,12 @@ const rebuildGraph = async () => {
                 dropOff: true
             }));
 
-            // Create second loop
-            const secondLoopStopTimes: StopTime[] = preds.map((pred: any) => ({
-                stop: pred.stpid,
-                arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800, // 30 minutes later
-                departureTime: currentTime + (parseInt(pred.prdctdn) * 60) + 1800,
-                pickUp: true,
-                dropOff: true
-            }));
-
-            const combinedStopTimes = [...firstLoopStopTimes, ...secondLoopStopTimes];
+            // Sort stop times by their sequence in the route
+            const sortedStopTimes = sortStopTimesByRouteSequence(stopTimes);
 
             trips.push({
                 tripId,
-                stopTimes: combinedStopTimes
+                stopTimes: sortedStopTimes
             });
         });
 
@@ -181,21 +181,38 @@ const rebuildGraph = async () => {
 
 const getAllBusPredictions = async () => {
     try {
-        const buses = curBusPositions.buses;
+        // Get all unique stop IDs from cached routes
+        const allStopIds = new Set<string>();
+        Object.values(cachedRoutes).forEach((routePatterns: any) => {
+            if (Array.isArray(routePatterns)) {
+                routePatterns.forEach((pattern: any) => {
+                    if (pattern.pt && Array.isArray(pattern.pt)) {
+                        pattern.pt.forEach((point: any) => {
+                            if (point.stpid) {
+                                allStopIds.add(point.stpid);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        const stopIdsArray = Array.from(allStopIds);
         const chunks = [];
         
-        for (let i = 0; i < buses.length; i += 10) {
-            chunks.push(buses.slice(i, i + 10));
+        for (let i = 0; i < stopIdsArray.length; i += 10) {
+            chunks.push(stopIdsArray.slice(i, i + 10));
         }
 
         const predictions = await Promise.all(
             chunks.map(async (chunk) => {
-                const vids = chunk.map(bus => bus.vid).join(',');
+                const stopIds = chunk.join(',');
                 const response = await axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions`, {
                     params: {
                         requestType: 'getpredictions',
                         locale: 'en',
-                        vid: vids,
+                        stpid: stopIds,
+                        rt: routes.join(','),
                         tmres: 's',
                         rtpidatafeed: 'bustime',
                         key: API_KEY,
@@ -209,23 +226,22 @@ const getAllBusPredictions = async () => {
         const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
             if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
                 predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
-                    const vid = prd.vid;
                     const tatripid = prd.tatripid;
                     const stopName = prd.stpnm;
                     const stopId = prd.stpid;
                     let prdctdn = prd.prdctdn;
                     prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
 
-                    let bus = acc.find((b: any) => b.vid === vid);
-                    if (!bus) {
-                        bus = { vid, tatripid, stops: [] };
-                        acc.push(bus);
+                    let trip = acc.find((t: any) => t.tatripid === tatripid);
+                    if (!trip) {
+                        trip = { tatripid, stops: [] };
+                        acc.push(trip);
                     }
 
-                    let stop = bus.stops.find((s: any) => s.name === stopName && s.id === stopId);
+                    let stop = trip.stops.find((s: any) => s.name === stopName && s.id === stopId);
                     if (!stop) {
                         stop = { stpnm: stopName, stpid: stopId, prdctdn: null };
-                        bus.stops.push(stop);
+                        trip.stops.push(stop);
                     }
 
                     stop.prdctdn = prdctdn;
@@ -363,7 +379,7 @@ const getSelectableRoutes = () => {
                 console.log(`Number of stop locations: ${Object.keys(cachedStopLocations).length}`);
 
                 const WALKING_SPEED_KMH = 5;
-                const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
+const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
 
                 const routeStops = new Set<string>();
                 Object.values(cachedRoutes).forEach((routePatterns: any) => {
