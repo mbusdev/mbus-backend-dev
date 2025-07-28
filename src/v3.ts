@@ -251,18 +251,25 @@ const getAllBusPredictions = async () => {
                     const stopName = prd.stpnm;
                     const stopId = prd.stpid;
                     const rt = prd.rt;
+                    const vid = prd.vid;
                     let prdctdn = prd.prdctdn;
                     prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
 
-                    let trip = acc.find((t: any) => t.tatripid === tatripid);
+                    // Find trip by vid
+                    let trip = acc.find((t: any) => t.vid === vid);
                     if (!trip) {
-                        trip = { tatripid, stops: [] };
+                        trip = { tatripid, vid, stops: [] };
                         acc.push(trip);
+                    } else {
+                        // If tatripid is not set, set it to the first one encountered
+                        if (!trip.tatripid) {
+                            trip.tatripid = tatripid;
+                        }
                     }
 
-                    let stop = trip.stops.find((s: any) => s.name === stopName && s.id === stopId);
+                    let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
                     if (!stop) {
-                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt : null};
+                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null };
                         trip.stops.push(stop);
                     }
                     stop.rt = rt;
@@ -477,7 +484,7 @@ const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
         });
 }
 
-setInterval(updateBusPositions, 75000);
+setInterval(updateBusPositions, 7500);
 setInterval(getSelectableRoutes, 60000);
 setInterval(rebuildGraph, 2 * 60 * 1000);
 getSelectableRoutes();
