@@ -54,6 +54,9 @@ let cachedGraph: {
     interchange: Interchange;
 }
 
+let stopIdToName: Record<string, string> = {};
+let tatripidToRt: Record<string, string> = {};
+
 const sortStopTimesByRouteSequence = (stopTimes: StopTime[]): StopTime[] => {
     if (stopTimes.length <= 1) return stopTimes;
     
@@ -68,6 +71,24 @@ const rebuildGraph = async () => {
             return;
         }
 
+        // Build stopIdToName and tatripidToRt maps
+        stopIdToName = {};
+        tatripidToRt = {};
+        predictions.forEach((trip: any) => {
+            if (trip.tatripid && trip.stops && trip.stops.length > 0) {
+                // Find first stop with rt
+                const firstStopWithRt = trip.stops.find((stop: any) => stop.rt);
+                if (firstStopWithRt && firstStopWithRt.rt) {
+                    tatripidToRt[trip.tatripid] = firstStopWithRt.rt;
+                }
+            }
+            trip.stops.forEach((stop: any) => {
+                if (stop.stpid && stop.stpnm) {
+                    stopIdToName[stop.stpid] = stop.stpnm;
+                }
+            });
+        });
+        
         const now = new Date();
         const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
@@ -229,6 +250,7 @@ const getAllBusPredictions = async () => {
                     const tatripid = prd.tatripid;
                     const stopName = prd.stpnm;
                     const stopId = prd.stpid;
+                    const rt = prd.rt;
                     let prdctdn = prd.prdctdn;
                     prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
 
@@ -240,10 +262,10 @@ const getAllBusPredictions = async () => {
 
                     let stop = trip.stops.find((s: any) => s.name === stopName && s.id === stopId);
                     if (!stop) {
-                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null };
+                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt : null};
                         trip.stops.push(stop);
                     }
-
+                    stop.rt = rt;
                     stop.prdctdn = prdctdn;
                 });
             }
@@ -378,7 +400,7 @@ const getSelectableRoutes = () => {
                 
                 console.log(`Number of stop locations: ${Object.keys(cachedStopLocations).length}`);
 
-                const WALKING_SPEED_KMH = 5;
+                const WALKING_SPEED_KMH = 4;
 const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
 
                 const routeStops = new Set<string>();
@@ -455,8 +477,8 @@ const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
         });
 }
 
-setInterval(updateBusPositions, 7500);
-setInterval(getSelectableRoutes, 6000);
+setInterval(updateBusPositions, 75000);
+setInterval(getSelectableRoutes, 60000);
 setInterval(rebuildGraph, 2 * 60 * 1000);
 getSelectableRoutes();
 rebuildGraph(); 
@@ -600,7 +622,7 @@ router.get('/plan-journey', async (req, res) => {
         const destLatNum = parseFloat(destLat as string);
         const destLonNum = parseFloat(destLon as string);
 
-        const WALKING_SPEED_KMH = 5;
+        const WALKING_SPEED_KMH = 3;
         const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
 
         // Add transfers from origin to all real stops
@@ -688,11 +710,45 @@ router.get('/plan-journey', async (req, res) => {
             currentTime
         );
 
+        // Enrich journey legs with stop names
+        const formatJourney = (journey: any) => {
+            if (!journey) return null;
+            return {
+                ...journey,
+                legs: journey.legs.map((leg: any) => {
+                    const formattedLeg: any = {
+                        ...leg,
+                        origin_id: leg.origin,
+                        origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.origin] || leg.origin)),
+                        destination_id: leg.destination,
+                        destination: leg.destination === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination))
+                    };
+                    if (leg.trip && leg.trip.tripId) {
+                        formattedLeg.tripId = leg.trip.tripId;
+                        if (tatripidToRt[leg.trip.tripId]) {
+                            formattedLeg.rt = tatripidToRt[leg.trip.tripId];
+                        }
+                        // Add duration for bus legs
+                        if (leg.stopTimes && leg.stopTimes.length > 0) {
+                            const firstStop = leg.stopTimes[0];
+                            const lastStop = leg.stopTimes[leg.stopTimes.length - 1];
+                            formattedLeg.duration = lastStop.arrivalTime - firstStop.departureTime;
+                        }
+                    } else if (typeof leg.duration === 'number') {
+                        // Add duration for transfer legs
+                        formattedLeg.duration = leg.duration;
+                    }
+                    return formattedLeg;
+                })
+            };
+        };
+
         const fastest = journeys.length > 0 ? journeys.reduce((best, j) => earliestArrival(best, j) ? j : best, journeys[0]) : null;
         const leastTransfers = journeys.length > 0 ? journeys.reduce((best, j) => leastChanges(best, j) ? j : best, journeys[0]) : null;
         const leastWalk = journeys.length > 0 ? journeys.reduce((best, j) => leastWalking(best, j) ? j : best, journeys[0]) : null;
         const uniqueJourneys = [fastest, leastTransfers, leastWalk]
-          .filter((j, i, arr) => j && arr.findIndex(x => x === j) === i);
+          .filter((j, i, arr) => j && arr.findIndex(x => x === j) === i)
+          .map(formatJourney);
         res.json({ journeys: uniqueJourneys.slice(0, 3) });
     } catch (error) {
         console.error('Error planning journey:', error);
