@@ -245,38 +245,47 @@ const getAllBusPredictions = async () => {
         );
 
         const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
-            if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
-                predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
-                    const tatripid = prd.tatripid;
-                    const stopName = prd.stpnm;
-                    const stopId = prd.stpid;
-                    const rt = prd.rt;
-                    const vid = prd.vid;
-                    let prdctdn = prd.prdctdn;
-                    prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
+        if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
+            predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
+            const tatripid = prd.tatripid;
+            const stopName = prd.stpnm;
+            const stopId = prd.stpid;
+            const rt = prd.rt;
+            const vid = prd.vid;
+            let prdctdn = prd.prdctdn;
+            prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
 
-                    // Find trip by vid
-                    let trip = acc.find((t: any) => t.vid === vid);
-                    if (!trip) {
-                        trip = { tatripid, vid, stops: [] };
-                        acc.push(trip);
-                    } else {
-                        // If tatripid is not set, set it to the first one encountered
-                        if (!trip.tatripid) {
-                            trip.tatripid = tatripid;
-                        }
-                    }
+            let trip = acc.find((t: any) => t.tatripid === tatripid);
 
-                    let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
-                    if (!stop) {
-                        stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null };
-                        trip.stops.push(stop);
-                    }
-                    stop.rt = rt;
-                    stop.prdctdn = prdctdn;
-                });
+            if (!trip) {
+                if (vid) {
+                trip = acc.find((t: any) => t.vid === vid);
+                }
             }
-            return acc;
+
+            if (!trip) {
+                trip = { tatripid, vid, stops: [] };
+                acc.push(trip);
+            } else {
+                if (!trip.tatripid) {
+                trip.tatripid = tatripid;
+                }
+                if (!trip.vid && vid) {
+                trip.vid = vid;
+                }
+            }
+
+            let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
+            if (!stop) {
+                stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null };
+                trip.stops.push(stop);
+            }
+
+            stop.rt = rt;
+            stop.prdctdn = prdctdn;
+            });
+        }
+        return acc;
         }, []);
 
         return formattedPredictions;
@@ -408,7 +417,7 @@ const getSelectableRoutes = () => {
                 console.log(`Number of stop locations: ${Object.keys(cachedStopLocations).length}`);
 
                 const WALKING_SPEED_KMH = 4;
-const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
+                const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
 
                 const routeStops = new Set<string>();
                 Object.values(cachedRoutes).forEach((routePatterns: any) => {
@@ -450,9 +459,9 @@ const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
                                 const lonDiff = (stop2.lon - stop1.lon) * 111320 * Math.cos(stop1.lat * Math.PI / 180);
                                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);                                                        
                                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;                                
-                                if (distance > 1200) {
-                                    walkingTimeSeconds *= 1.5; // penatly for too big distances
-                                }
+                                // if (distance > 1200) {
+                                //     walkingTimeSeconds *= 1.5; // penatly for too big distances
+                                // }
                                 transferDuration = Math.round(walkingTimeSeconds);
                             } else {
                                 console.log('Invalid stop');
@@ -641,9 +650,9 @@ router.get('/plan-journey', async (req, res) => {
                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
                 
                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;
-                if (distance > 1200) {
-                    walkingTimeSeconds *= 1.5; // penalty for too big distances
-                }
+                // if (distance > 1200) {
+                //     walkingTimeSeconds *= 1.5; // penalty for too big distances
+                // }
                 
                 const transferDuration = Math.round(walkingTimeSeconds);
                 
@@ -667,9 +676,9 @@ router.get('/plan-journey', async (req, res) => {
                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
                 
                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;
-                if (distance > 1200) {
-                    walkingTimeSeconds *= 1.5;
-                }
+                // if (distance > 1200) {
+                //     walkingTimeSeconds *= 1.5;
+                // }
                 
                 const transferDuration = Math.round(walkingTimeSeconds);
                 
@@ -690,9 +699,9 @@ router.get('/plan-journey', async (req, res) => {
         const directDistance = Math.sqrt(directLatDiff * directLatDiff + directLonDiff * directLonDiff);
 
         let directWalkingTimeSeconds = directDistance / WALKING_SPEED_MS;
-        if (directDistance > 1200) {
-            directWalkingTimeSeconds *= 1.5;
-        }
+        // if (directDistance > 1200) {
+        //     directWalkingTimeSeconds *= 1.5;
+        // }
         
         const directTransferDuration = Math.round(directWalkingTimeSeconds);
         console.log(`Walking Distance: ${directTransferDuration}`);

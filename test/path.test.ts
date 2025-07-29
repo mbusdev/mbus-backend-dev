@@ -55,7 +55,9 @@ describe('API Endpoints', () => {
             console.log('Path test 1:', JSON.stringify(response.data, null, 2));
             
             // Test another path with different coordinates
-            const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.277682&originLon=-83.734936&destLat=42.290425&destLon=-83.718150999999`);
+            // const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.277682&originLon=-83.734936&destLat=42.290425&destLon=-83.718150999999`);
+            const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671`);
+
             expect(response2.status).toBe(200);
             console.log('Path test 2:', JSON.stringify(response2.data, null, 2));
         } catch (error) {
