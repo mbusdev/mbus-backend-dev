@@ -582,6 +582,47 @@ router.get('/getAllPredictions', async (req, res) => {
     }
 });
 
+router.get('/getAllStops', async (req, res) => {
+    try {
+        const stopIds = Object.keys(cachedStopLocations);
+        const batchSize = 10;
+        const batches = [];
+        for (let i = 0; i < stopIds.length; i += batchSize) {
+            batches.push(stopIds.slice(i, i + batchSize));
+        }
+
+        const stops: { stpid: string; name: string; lat: number; lon: number }[] = [];
+
+        for (const batch of batches) {
+            const stopIdsParam = batch.join(',');
+            const apiRes = await axios.get('https://mbus.ltp.umich.edu/bustime/api/v3/getstops', {
+                params: {
+                    stpid: stopIdsParam,
+                    rtpidatafeed: 'bustime',
+                    key: API_KEY,
+                    format: 'json'
+                }
+            });
+            if (apiRes.data['bustime-response'] && apiRes.data['bustime-response']['stops']) {
+                apiRes.data['bustime-response']['stops'].forEach((stop: any) => {
+                    if (stop.stpid && stop.stpnm && stop.lat && stop.lon) {
+                        stops.push({
+                            stpid: stop.stpid,
+                            name: stop.stpnm,
+                            lat: parseFloat(stop.lat),
+                            lon: parseFloat(stop.lon)
+                        });
+                    }
+                });
+            }
+        }
+        res.send(JSON.stringify(stops));
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+});
+
 router.get('/getBuildingLocations', (req, res) => {
     res.sendFile(path.join(import.meta.dirname, 'assets', 'building-data.json'));
 });
