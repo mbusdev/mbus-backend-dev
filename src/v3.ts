@@ -41,10 +41,15 @@ const curBusPositions: {
 }
 
 const cachedRoutes: {[k: string]: any} = {};
+type Prediction = { vid: string; stpid: string } & Record<string, any>;
+
+let cachedPredsByVid: Record<string, Prediction[]> = {};
+let cachedPredsByStopId: Record<string, Prediction[]> = {};
+
 const validRoutes = new Set();
 let curRouteSelections = {};
 const routes = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
-let cachedStopLocations: { [stopId: string]: { lat: number, lon: number } } = {};
+let cachedStopLocations: { [stopId: string]: {stpname : string, lat: number, lon: number } } = {};
 
 const message = {id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99'}
 
@@ -258,15 +263,15 @@ const getAllBusPredictions = async () => {
             let trip = acc.find((t: any) => t.tatripid === tatripid);
 
             if (!trip) {
-                if (vid) {
+                if (vid) { // if no trip, go by vid
                 trip = acc.find((t: any) => t.vid === vid);
                 }
             }
 
-            if (!trip) {
+            if (!trip) { // if no trip, create one
                 trip = { tatripid, vid, stops: [] };
                 acc.push(trip);
-            } else {
+            } else { // merge with existing trip
                 if (!trip.tatripid) {
                 trip.tatripid = tatripid;
                 }
@@ -287,6 +292,28 @@ const getAllBusPredictions = async () => {
         }
         return acc;
         }, []);
+
+        predictions.flat().forEach((predictionChunk) => {
+            const prds = predictionChunk['bustime-response']?.['prd'];
+            if (!prds) return;
+
+            prds.forEach((prd: Prediction) => {
+                const { vid, stpid } = prd;
+                if (!vid) return;
+
+                // vid -> [pred, pred...]
+                if (!cachedPredsByVid[vid]) {
+                cachedPredsByVid[vid] = [];
+                }
+                cachedPredsByVid[vid].push(prd);
+
+                // stpid -> [pred, pred...]
+                if (!cachedPredsByStopId[stpid]) {
+                cachedPredsByStopId[stpid] = [];
+                }
+                cachedPredsByStopId[stpid].push(prd); // store reference
+            });
+        });
 
         return formattedPredictions;
     } catch (err) {
@@ -334,21 +361,19 @@ const updateBusPositions = async () => {
     curBusPositions.buses = await getBuses();
 }
 
-router.get('/getStopPredictions/:stopId', async (req, res) => {
-    const { stopId } = req.params;
+router.get('/getStopPredictions/:stopId', (req, res) => {
+    const stopId = req.params.stopId;
+    const preds = cachedPredsByStopId[stopId];
 
-    const stopPreds = await client.get('/getpredictions', {
-        params: {
-            requestType: 'getpredictions',
-            locale: 'en',
-            stpid: stopId,
-            rt: routes.join(','),
-            rtpidatafeed: 'bustime',
-            top: 4,
-        }
+    if (!preds) {
+        return res.json({
+            "bustime-response": { "prd": [] }
+        });
+    }
+
+    res.json({
+        "bustime-response": { "prd": preds }
     });
-
-    res.send(stopPreds.data);
 });
 
 
@@ -404,6 +429,7 @@ const getSelectableRoutes = () => {
                                 pattern.pt.forEach((point: any) => {
                                     if (point.stpid && point.lat && point.lon) {
                                         cachedStopLocations[point.stpid] = {
+                                            stpname: point.stpnm,
                                             lat: parseFloat(point.lat),
                                             lon: parseFloat(point.lon)
                                         };
@@ -531,7 +557,6 @@ router.get('/getVehicleImage/:route', (req, res) => {
         return res.sendStatus(400);
     }
 
-
     if (isColorblind) {
         res.sendFile(path.join(colorBlindPath, routeImages[route]));
     } else {
@@ -564,11 +589,16 @@ router.get('/getUpdateNotes', (req, res) => {
 });
 
 router.get('/getBusPredictions/:busId', (req, res) => {
-    axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions?requestType=getpredictions&locale=en&vid=${req.params.busId}&top=4&tmres=s&rtpidatafeed=bustime&key=${API_KEY}&format=json&xtime=1626028950462`).then(apiRes => {
-        res.send(apiRes.data);
-    }).catch(err => {
-        console.log(err);
-        res.sendStatus(500);
+    const busId = req.params.busId;
+    const preds = cachedPredsByVid[busId];
+
+    if (!preds) {
+        return res.json({
+            "bustime-response": { "prd": [] }
+        });
+    }
+    res.json({
+        "bustime-response": { "prd": preds }
     });
 });
 
@@ -582,45 +612,8 @@ router.get('/getAllPredictions', async (req, res) => {
     }
 });
 
-router.get('/getAllStops', async (req, res) => {
-    try {
-        const stopIds = Object.keys(cachedStopLocations);
-        const batchSize = 10;
-        const batches = [];
-        for (let i = 0; i < stopIds.length; i += batchSize) {
-            batches.push(stopIds.slice(i, i + batchSize));
-        }
-
-        const stops: { stpid: string; name: string; lat: number; lon: number }[] = [];
-
-        for (const batch of batches) {
-            const stopIdsParam = batch.join(',');
-            const apiRes = await axios.get('https://mbus.ltp.umich.edu/bustime/api/v3/getstops', {
-                params: {
-                    stpid: stopIdsParam,
-                    rtpidatafeed: 'bustime',
-                    key: API_KEY,
-                    format: 'json'
-                }
-            });
-            if (apiRes.data['bustime-response'] && apiRes.data['bustime-response']['stops']) {
-                apiRes.data['bustime-response']['stops'].forEach((stop: any) => {
-                    if (stop.stpid && stop.stpnm && stop.lat && stop.lon) {
-                        stops.push({
-                            stpid: stop.stpid,
-                            name: stop.stpnm,
-                            lat: parseFloat(stop.lat),
-                            lon: parseFloat(stop.lon)
-                        });
-                    }
-                });
-            }
-        }
-        res.send(JSON.stringify(stops));
-    } catch (err) {
-        console.log(err);
-        res.sendStatus(500);
-    }
+router.get('/getAllStops', (req, res) => {
+    res.json(cachedStopLocations);
 });
 
 router.get('/getBuildingLocations', (req, res) => {
