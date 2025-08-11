@@ -9,6 +9,8 @@ import { ScanResultsFactory } from "./ScanResultsFactory";
  */
 export class RaptorAlgorithm {
   private static DEBUG = false;
+  private walkingPenalty: number = 1;
+  private bestHeuristicCosts: Record<StopID, number> = {};
 
   constructor(
     private readonly routeStopIndex: RouteStopIndex,
@@ -27,6 +29,14 @@ export class RaptorAlgorithm {
     RaptorAlgorithm.DEBUG = debug;
   }
 
+  public setWalkingPenalty(penalty: number) {
+    this.walkingPenalty = penalty;
+  }
+
+  private computeHeuristicCost(stop: StopID, arrival: Time, walkingDuration: number, isTransfer: boolean): number {
+    return isTransfer ? (arrival - walkingDuration) + walkingDuration * this.walkingPenalty : arrival;
+  }
+
   /**
    * Perform a plan of the routes at a given time and return the resulting kConnections index
    */
@@ -35,6 +45,11 @@ export class RaptorAlgorithm {
       console.log('Starting Raptor scan with origins:', origins);
       console.log('Available routes:', Object.keys(this.routePath));
       console.log('Available transfers:', Object.keys(this.transfers));
+    }
+
+    // Initialize best heuristic costs
+    for (const stop in origins) {
+      this.bestHeuristicCosts[stop] = origins[stop];
     }
 
     const routeScanner = this.routeScannerFactory.create();
@@ -106,11 +121,17 @@ export class RaptorAlgorithm {
           console.log(`    Current best arrival: ${results.bestArrival(stopPi)}`);
         }
 
-        if (trip && trip.stopTimes[pi].dropOff && trip.stopTimes[pi].arrivalTime + i < results.bestArrival(stopPi)) {
-          if (RaptorAlgorithm.DEBUG) {
-            console.log(`    Found better arrival via trip ${trip.tripId}`);
+        if (trip && trip.stopTimes[pi].dropOff) {
+          const newHeuristicCost = this.computeHeuristicCost(stopPi, trip.stopTimes[pi].arrivalTime + i, 0, false);
+          const currentBestHeuristic = this.bestHeuristicCosts[stopPi] ?? results.bestArrival(stopPi);
+
+          if (newHeuristicCost < currentBestHeuristic) {
+            if (RaptorAlgorithm.DEBUG) {
+              console.log(`    Found better arrival via trip ${trip.tripId} with heuristic cost ${newHeuristicCost}`);
+            }
+            results.setTrip(trip, boardingPoint, pi, i);
+            this.bestHeuristicCosts[stopPi] = newHeuristicCost;
           }
-          results.setTrip(trip, boardingPoint, pi, i);
         }
         else if (previousArrival && (!trip || previousArrival < trip.stopTimes[pi].arrivalTime + i)) {
           const newTrip = routeScanner.getTrip(routeId, pi, previousArrival);
@@ -124,6 +145,7 @@ export class RaptorAlgorithm {
           }
         }
       }
+
     }
   }
 
@@ -141,6 +163,8 @@ export class RaptorAlgorithm {
       for (const transfer of transfers) {
         const stopPi = transfer.destination;
         const arrival = results.previousArrival(stopP) + transfer.duration + this.interchange[stopPi];
+        const newHeuristicCost = this.computeHeuristicCost(stopPi, arrival, transfer.duration, true);
+        const currentBestHeuristic = this.bestHeuristicCosts[stopPi] ?? Infinity;
 
         if (RaptorAlgorithm.DEBUG) {
           console.log(`  Transfer to ${stopPi}:`);
@@ -151,11 +175,12 @@ export class RaptorAlgorithm {
           console.log(`    Current best: ${results.bestArrival(stopPi)}`);
         }
 
-        if (transfer.startTime <= arrival && transfer.endTime >= arrival && arrival < results.bestArrival(stopPi)) {
+        if (transfer.startTime <= arrival && transfer.endTime >= arrival && newHeuristicCost < currentBestHeuristic) {
           if (RaptorAlgorithm.DEBUG) {
             console.log(`    Found better arrival via transfer`);
           }
           results.setTransfer(transfer, arrival);
+          this.bestHeuristicCosts[stopPi] = newHeuristicCost;
         }
       }
     }

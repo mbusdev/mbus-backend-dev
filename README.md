@@ -13,3 +13,6 @@ To install dependencies, run `npm i`
 To run the backend, run `npm start`.
 
 By default, the service runs on port 3000. To define a port for the service to run on, define an environment variable called `PORT` before running the backend.
+
+## Tests
+To run tests, run `npm test`.
