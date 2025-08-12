@@ -243,10 +243,6 @@ router.get('/plan-journey', async (req, res) => {
                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
                 
                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;
-                // if (distance > 1200) {
-                //     walkingTimeSeconds *= 1.5; // penalty for too big distances
-                // }
-                
                 const transferDuration = Math.round(walkingTimeSeconds);
                 
                 const transfer: Transfer = {
@@ -269,10 +265,6 @@ router.get('/plan-journey', async (req, res) => {
                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
                 
                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;
-                // if (distance > 1200) {
-                //     walkingTimeSeconds *= 1.5;
-                // }
-                
                 const transferDuration = Math.round(walkingTimeSeconds);
                 
                 const transfer: Transfer = {
@@ -292,9 +284,6 @@ router.get('/plan-journey', async (req, res) => {
         const directDistance = Math.sqrt(directLatDiff * directLatDiff + directLonDiff * directLonDiff);
 
         let directWalkingTimeSeconds = directDistance / WALKING_SPEED_MS;
-        // if (directDistance > 1200) {
-        //     directWalkingTimeSeconds *= 1.5;
-        // }
         
         const directTransferDuration = Math.round(directWalkingTimeSeconds);
         console.log(`Walking Distance: ${directTransferDuration}`);
@@ -327,7 +316,6 @@ router.get('/plan-journey', async (req, res) => {
             currentTime
         );
 
-        // Enrich journey legs with stop names
         const formatJourney = (journey: any) => {
             if (!journey) return null;
             return {
