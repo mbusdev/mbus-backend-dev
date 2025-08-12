@@ -23,6 +23,7 @@ export interface StopTime {
   pickUp: boolean;
   dropOff: boolean;
   heursticCost?: number; // Optional heuristic cost
+  rt? : string;
 }
 
 /**

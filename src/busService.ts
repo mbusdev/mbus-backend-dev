@@ -149,7 +149,8 @@ const rebuildGraph = async () => {
             trip.stops.forEach((stop: any) => {
                 tripPredictions[trip.tatripid].push({
                     stpid: stop.stpid,
-                    prdctdn: stop.prdctdn
+                    prdctdn: stop.prdctdn,
+                    rt: stop.rt
                 });
             });
         });
@@ -161,9 +162,9 @@ const rebuildGraph = async () => {
                 arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60),
                 departureTime: currentTime + (parseInt(pred.prdctdn) * 60),
                 pickUp: true,
-                dropOff: true
+                dropOff: true,
+                rt : pred.rt
             }));
-
             // Sort stop times by their sequence in the route
             const sortedStopTimes = sortStopTimesByRouteSequence(stopTimes);
 

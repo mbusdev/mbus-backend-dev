@@ -328,16 +328,13 @@ router.get('/plan-journey', async (req, res) => {
                         destination_id: leg.destination,
                         destination: leg.destination === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination))
                     };
-                    if (leg.trip && leg.trip.tripId) {
-                        formattedLeg.tripId = leg.trip.tripId;
-                        if (tatripidToRt[leg.trip.tripId]) {
-                            formattedLeg.rt = tatripidToRt[leg.trip.tripId];
-                        }
+                    if(leg.trip && leg.trip.tripId){
                         // Add duration for bus legs
                         if (leg.stopTimes && leg.stopTimes.length > 0) {
                             const firstStop = leg.stopTimes[0];
                             const lastStop = leg.stopTimes[leg.stopTimes.length - 1];
                             formattedLeg.duration = lastStop.arrivalTime - firstStop.departureTime;
+                            formattedLeg.rt = firstStop.rt;
                         }
                     } else if (typeof leg.duration === 'number') {
                         // Add duration for transfer legs
