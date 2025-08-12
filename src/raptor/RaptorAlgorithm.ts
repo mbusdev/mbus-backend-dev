@@ -122,8 +122,8 @@ export class RaptorAlgorithm {
         }
 
         if (trip && trip.stopTimes[pi].dropOff) {
-          const newHeuristicCost = this.computeHeuristicCost(stopPi, trip.stopTimes[pi].arrivalTime + i, 0, false);
-          const currentBestHeuristic = this.bestHeuristicCosts[stopPi] ?? results.bestArrival(stopPi);
+          const newHeuristicCost = trip.stopTimes[pi].arrivalTime + i;
+          const currentBestHeuristic = results.bestArrival(stopPi);
 
           if (newHeuristicCost < currentBestHeuristic) {
             if (RaptorAlgorithm.DEBUG) {
@@ -163,9 +163,10 @@ export class RaptorAlgorithm {
       for (const transfer of transfers) {
         const stopPi = transfer.destination;
         const arrival = results.previousArrival(stopP) + transfer.duration + this.interchange[stopPi];
-        const newHeuristicCost = this.computeHeuristicCost(stopPi, arrival, transfer.duration, true);
-        const currentBestHeuristic = this.bestHeuristicCosts[stopPi] ?? Infinity;
-
+        const newHeuristicCost = arrival;
+        //const currentBestHeuristic = this.bestHeuristicCosts[stopPi] ?? Infinity;
+        const currentBestHeuristic = results.bestArrival(stopPi);
+        
         if (RaptorAlgorithm.DEBUG) {
           console.log(`  Transfer to ${stopPi}:`);
           console.log(`    Previous arrival: ${results.previousArrival(stopP)}`);

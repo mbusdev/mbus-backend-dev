@@ -30,6 +30,8 @@ type Prediction = { vid: string; stpid: string } & Record<string, any>;
 
 let cachedPredsByVid: Record<string, Prediction[]> = {};
 let cachedPredsByStopId: Record<string, Prediction[]> = {};
+// routeTimingCache: route -> fromStop -> toStop -> latest diff (minutes)
+const routeTimingCache: Record<string, Record<string, Record<string, {diff : number, rtdir : string}>>> = {};
 
 const validRoutes = new Set();
 let curRouteSelections = {};
@@ -241,6 +243,7 @@ const getAllBusPredictions = async () => {
             const stopName = prd.stpnm;
             const stopId = prd.stpid;
             const rt = prd.rt;
+            const rtdir = prd.rtdir;
             const vid = prd.vid;
             let prdctdn = prd.prdctdn;
             prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
@@ -267,18 +270,20 @@ const getAllBusPredictions = async () => {
 
             let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
             if (!stop) {
-                stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null };
+                stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null, rtdir : null };
                 trip.stops.push(stop);
             }
-
+            stop.rtdir = rtdir;
             stop.rt = rt;
             stop.prdctdn = prdctdn;
             });
         }
         return acc;
         }, []);
-        cachedPredsByStopId = {};
+
+        // Cache predictions by vid and stopId
         cachedPredsByVid = {};
+        cachedPredsByStopId = {};
         predictions.flat().forEach((predictionChunk) => {
             const prds = predictionChunk['bustime-response']?.['prd'];
             if (!prds) return;
@@ -299,6 +304,103 @@ const getAllBusPredictions = async () => {
                 }
                 cachedPredsByStopId[stpid].push(prd); // store reference
             });
+        });
+        // Record of stop ids in order using routes
+        const routeInfoFilter: Record<string, { stpid: string; rtdir: string }[]> = {};
+        for (const [routeKey, routeList] of Object.entries(cachedRoutes as Record<string, any[]>)) {
+            routeInfoFilter[routeKey] = [];
+            for (const route of routeList) {
+                const rtdir = route.rtdir;
+                for (const point of route.pt) {
+                if (point.typ !== "W" && point.stpid) {
+                    routeInfoFilter[routeKey].push({ stpid: point.stpid, rtdir });
+                }
+                }
+            }
+        }
+
+        const stopIdToName: Record<string, string> = {};
+        formattedPredictions.forEach((trip: any) => {
+            trip.stops.forEach((stop: any) => {
+                if (stop.stpid && stop.stpnm) stopIdToName[stop.stpid] = stop.stpnm;
+            });
+        });
+
+        // Create indices for route -> stop order
+        const routeStopIndexMaps = new Map<string, Map<string, number>>();
+
+        for (const [routeId, stopOrder] of Object.entries(routeInfoFilter)) {
+            const stopIndexMap = new Map(stopOrder.map(({ stpid }, i) => [stpid, i]));
+            routeStopIndexMaps.set(routeId, stopIndexMap);
+        }
+
+        formattedPredictions.forEach((trip: any) => {
+            if(trip.stops.length == 0) return;   
+            const firstRoute = trip.stops[0].rt;
+            if (!firstRoute) return;
+            // Sort by predicted time
+            trip.stops.sort((a: any, b: any) => {
+                const diffTime = parseInt(a.prdctdn, 10) - parseInt(b.prdctdn, 10);
+                if (diffTime !== 0) return diffTime; // primary sort
+
+                // If not same route, put first route in front
+                if (a.rt !== b.rt) {
+                    if (a.rt === firstRoute) return -1;
+                    if (b.rt === firstRoute) return 1;
+
+                    return a.rt.localeCompare(b.rt);
+                }        
+                // If same time and route, sort by stop order 
+                const aMap = routeStopIndexMaps.get(a.rt);
+                const bMap = routeStopIndexMaps.get(b.rt);
+        
+                const aIdx = aMap?.get(a.stpid) ?? Number.MAX_SAFE_INTEGER;
+                const bIdx = bMap?.get(b.stpid) ?? Number.MAX_SAFE_INTEGER;
+                return aIdx - bIdx;
+            });
+
+            for (let i = 0; i < trip.stops.length - 1; i++) {
+                const from = trip.stops[i];
+                const to = trip.stops[i + 1];
+                const diff = parseInt(to.prdctdn, 10) - parseInt(from.prdctdn, 10);
+                const rt = from.rt;
+
+                if (!routeTimingCache[rt]) routeTimingCache[rt] = {};
+                const fromKey = from.stpid + (from.rtdir || "");
+                if (!routeTimingCache[rt][fromKey]) routeTimingCache[rt][fromKey] = {};
+                routeTimingCache[rt][fromKey][to.stpid] = {
+                    diff : diff,
+                    rtdir: to.rtdir
+                };
+            }
+        });
+
+      formattedPredictions.forEach((trip: any) => {
+            let stopsAdded = 0;
+            while (stopsAdded < 20 && trip.stops.length > 0) {
+                const lastStop = trip.stops[trip.stops.length - 1];
+                const rt = lastStop.rt;
+                if (!rt) break;
+
+                const fromKey = lastStop.stpid + (lastStop.rtdir || "");
+                const nextStops = routeTimingCache[rt]?.[fromKey];
+                if (!nextStops) break;
+
+                const nextEntries = Object.entries(nextStops);
+                if (nextEntries.length === 0) break;
+
+                const [nextStopId, { diff, rtdir }] = nextEntries[0];
+                const nextPrdctdn = (parseInt(lastStop.prdctdn, 10) + diff).toString();
+
+                trip.stops.push({
+                    stpnm: stopIdToName[nextStopId] || nextStopId,
+                    stpid: nextStopId,
+                    prdctdn: nextPrdctdn,
+                    rt : rt,
+                    rtdir : rtdir
+                });
+                stopsAdded++;
+            }
         });
 
         return formattedPredictions;
@@ -498,6 +600,7 @@ export {
     curRouteSelections, 
     routes, 
     cachedStopLocations, 
+    routeTimingCache,
     cachedGraph, 
     stopIdToName, 
     tatripidToRt,

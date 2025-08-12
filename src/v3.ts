@@ -24,6 +24,7 @@ import {
     stopIdToName,
     tatripidToRt,
     getAllBusPredictions,
+    routeTimingCache,
     cachedGraph,
     updateBusPositions,
     getSelectableRoutes,
@@ -75,6 +76,10 @@ router.get('/getSelectableRoutes', (req, res) => {
 
 router.get('/getAllRoutes', (req, res) => {
     res.send({routes: cachedRoutes});
+});
+
+router.get('/getrouteCache', (req, res) => {
+    res.send({routes: routeTimingCache});
 });
 
 router.get('/getVehicleImage/:route', (req, res) => {
