@@ -436,9 +436,10 @@ const getAllBusPredictions = async () => {
         });
 
         return formattedPredictions;
-    } catch (err) {
-        console.log(err);
-        throw err;
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("Error in getAllBusPredictions:", message);
+        return [];
     }
 };
 
@@ -451,20 +452,25 @@ const client = axios.create({
 });
 
 const getBuses = async () => {
-    const getChunk = async (routes: string[]) => {
+    const getChunk = async (routesChunk: string[]) => {
+    try {
         const res = await client.get('/getvehicles', {
-            params: {
-                requestType: 'getvehicles',
-                rt: routes.join(',')
-            }
+        params: { requestType: 'getvehicles', rt: routesChunk.join(',') },
         });
 
-        if ('bustime-response' in res.data && 'vehicle' in res.data['bustime-response']) {
-            return res.data['bustime-response']['vehicle'];
+        if (
+        'bustime-response' in res.data &&
+        'vehicle' in res.data['bustime-response']
+        ) {
+        return res.data['bustime-response']['vehicle'];
         }
-        
+
+        return [];
+    } catch (error) {
+        console.warn('getChunk failed for routes', routesChunk, error instanceof Error ? error.message : error);
         return [];
     }
+    };
 
     const chunks = []
     for (let i = 0; i < routes.length; i += 10) {
