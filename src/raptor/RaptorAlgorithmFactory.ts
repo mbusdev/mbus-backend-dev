@@ -50,6 +50,13 @@ export class RaptorAlgorithmFactory {
 
       tripsByRoute[routeId].push(trip);
     }
+  if (trips.length === 0) {
+    for (const stopId of Object.keys(transfers)) {
+      usefulTransfers[stopId] = transfers[stopId] || [];
+      interchange[stopId] = interchange[stopId] ?? RaptorAlgorithmFactory.DEFAULT_INTERCHANGE_TIME;
+      routesAtStop[stopId] = routesAtStop[stopId] || [];
+    }
+  }
 
     return new RaptorAlgorithm(
       routeStopIndex,
