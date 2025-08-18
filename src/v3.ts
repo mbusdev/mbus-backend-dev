@@ -32,6 +32,52 @@ import {
 } from './busService';
 import axios from "axios";
 
+// Simple Bus Color System
+interface BusRoute {
+    routeId: string;
+    color: string;
+    image: string;
+}
+
+class BusColorManager {
+    private readonly routes: BusRoute[] = [
+        { routeId: "BB", color: "#00AA44", image: "bus_BB.png" },
+        { routeId: "CN", color: "#800080", image: "bus_CN.png" },
+        { routeId: "CS", color: "#0066CC", image: "bus_CS.png" },
+        { routeId: "CSX", color: "#808080", image: "bus_CSX.png" },
+        { routeId: "DD", color: "#006400", image: "bus_DD.png" },
+        { routeId: "MX", color: "#FF6600", image: "bus_MX.png" },
+        { routeId: "NE", color: "#90EE90", image: "bus_NE.png" },
+        { routeId: "NW", color: "#FF0000", image: "bus_NW.png" },
+        { routeId: "NX", color: "#8B4513", image: "bus_NX.png" },
+        { routeId: "OS", color: "#FFFF00", image: "bus_OS.png" },
+        { routeId: "NES", color: "#90EE90", image: "bus_NES.png" },
+        { routeId: "WS", color: "#FF4500", image: "bus_WS.png" },
+        { routeId: "WX", color: "#FF4500", image: "bus_WX.png" }
+    ];
+
+    public getRouteColor(routeId: string): string | null {
+        const route = this.routes.find(r => r.routeId === routeId);
+        return route ? route.color : null;
+    }
+
+    public getRouteImage(routeId: string): string | null {
+        const route = this.routes.find(r => r.routeId === routeId);
+        return route ? route.image : null;
+    }
+
+    public getAllRoutes(): BusRoute[] {
+        return [...this.routes];
+    }
+
+    public getRouteInfo(routeId: string): BusRoute | null {
+        return this.routes.find(r => r.routeId === routeId) || null;
+    }
+}
+
+// Initialize bus color manager
+const busColorManager = new BusColorManager();
+
 dotenv.config();
 const router = express.Router();
 const routeImages: {[k: string]: string} = metadata.routeImages;
@@ -84,24 +130,17 @@ router.get('/getrouteCache', (req, res) => {
 
 router.get('/getVehicleImage/:route', (req, res) => {
    const { route } = req.params;
-   const isColorblind = req.query.colorblind === "Y";
 
    const dirname = import.meta.dirname;
-
    const assetPath = path.join(dirname, 'assets');
-   const colorBlindPath = path.join(assetPath, 'colorblind');
-   const regularPath = path.join(assetPath, 'grad-24');
+   const imagePath = path.join(assetPath, 'grad-24');
 
     if (!route || !(route in routeImages)) {
         res.sendFile(path.join(assetPath, 'bus_CN.png'));
         return res.sendStatus(400);
     }
 
-    if (isColorblind) {
-        res.sendFile(path.join(colorBlindPath, routeImages[route]));
-    } else {
-        res.sendFile(path.join(regularPath, routeImages[route]));
-    }
+    res.sendFile(path.join(imagePath, routeImages[route]));
 });
 
 router.get('/getRouteInfoVersion', (req, res) => {
@@ -109,17 +148,15 @@ router.get('/getRouteInfoVersion', (req, res) => {
 });
 
 router.get('/getRouteInformation', (req, res) => {
-    const isColorblind = req.query.colorblind;
     const infoToSend = {
         routeIdToName: metadata.routeIdToName,
         routeImages: metadata.routeImages,
         metadata: metadata.metadata,
-        routeColors: {}
-    }
-    if (isColorblind === "Y") {
-        infoToSend.routeColors = metadata.routeColorsColorblind;
-    } else {
-        infoToSend.routeColors = metadata.routeColorsRegular;
+        routeColors: busColorManager.getAllRoutes().map(route => ({
+            routeId: route.routeId,
+            color: route.color,
+            image: route.image
+        }))
     }
     res.send(infoToSend);
 });
@@ -181,6 +218,58 @@ router.get('/getBuildingLocations', (req, res) => {
 
 router.get('/get-startup-messages', (req, res) => {
     res.send(JSON.stringify(message));
+});
+
+// Simple bus color endpoints
+router.get('/getRouteColors', (req, res) => {
+    const routes = busColorManager.getAllRoutes();
+    res.json({
+        routes: routes.map(route => ({
+            routeId: route.routeId,
+            color: route.color,
+            image: route.image
+        }))
+    });
+});
+
+router.get('/getRouteColor/:routeId', (req, res) => {
+    const { routeId } = req.params;
+    const routeInfo = busColorManager.getRouteInfo(routeId);
+    
+    if (!routeInfo) {
+        return res.status(404).json({ error: `Route '${routeId}' not found` });
+    }
+    
+    res.json({
+        routeId: routeInfo.routeId,
+        color: routeInfo.color,
+        image: routeInfo.image
+    });
+});
+
+// Simple endpoint for frontend, gets everything needed for UI
+router.get('/getFrontendData', (req, res) => {
+    try {
+        const routes = busColorManager.getAllRoutes();
+        
+        const response = {
+            routes: routes.map(route => ({
+                routeId: route.routeId,
+                name: (metadata.routeIdToName as any)[route.routeId] || route.routeId,
+                image: route.image,
+                color: route.color,
+                imageUrl: `/mbus/api/v3/getVehicleImage/${route.routeId}`
+            })),
+            metadata: {
+                ...metadata.metadata,
+                lastUpdated: new Date().toISOString()
+            }
+        };
+        
+        res.json(response);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to get frontend data' });
+    }
 });
 
 router.get('/plan-journey', async (req, res) => {
