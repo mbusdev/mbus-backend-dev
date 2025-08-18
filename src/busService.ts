@@ -395,6 +395,19 @@ const getAllBusPredictions = async () => {
                 const diff = parseInt(to.prdctdn, 10) - parseInt(from.prdctdn, 10);
                 const rt = from.rt;
 
+                const stopIndexMap = routeStopIndexMaps.get(from.rt + from.rtdir);
+                if (!stopIndexMap) continue;
+
+                const fromIdx = stopIndexMap.get(from.stpid);
+                const toIdx   = stopIndexMap.get(to.stpid);
+                // Ensure valid follow up stop by idx or end of idx
+                const isValidFollowUp = (
+                    fromIdx !== undefined &&
+                    toIdx   !== undefined &&
+                    (toIdx === fromIdx + 1 || fromIdx === stopIndexMap.size - 1)
+                );
+                if (!isValidFollowUp) continue;
+
                 if (!routeTimingCache[rt]) routeTimingCache[rt] = {};
                 const fromKey = from.stpid + (from.rtdir || "");
                 if (!routeTimingCache[rt][fromKey]) routeTimingCache[rt][fromKey] = {};
