@@ -107,6 +107,36 @@ router.get('/getBusPredictions1/:busId', (req, res) => {
     });
 });
 
+// Endpoint: GET /getArrivalsForStop?stpid=<STOP_ID>
+// Returns: { arrivals: [ { rt, arrivalTime } ] }
+router.get('/getArrivalsForStop', (req, res) => {
+    const stpid = req.query.stpid;
+    if (!stpid || typeof stpid !== 'string') {
+        return res.status(400).json({ error: 'Missing or invalid stpid parameter' });
+    }
+    const preds = cachedPredsByStopId[stpid];
+    if (!preds || !Array.isArray(preds) || preds.length === 0) {
+        return res.json({ arrivals: [] });
+    }
+    // Map predictions to required fields
+    const arrivals = preds.map(pred => {
+        // Try to find route id and arrival time in various possible fields
+        const rt = pred.rt || pred.route || pred.routeId || pred.rid || null;
+        // Try to find arrival time in ms or seconds
+        let arrivalTime = pred.arrivalTime || pred.eta || pred.time || pred.prdtm || null;
+        // If prdtm is a string (e.g., ISO), try to convert to ms
+        if (typeof arrivalTime === 'string') {
+            const parsed = Date.parse(arrivalTime);
+            if (!isNaN(parsed)) arrivalTime = parsed;
+        }
+        // If arrivalTime is in seconds, convert to ms (heuristic: < 10_000_000_000)
+        if (typeof arrivalTime === 'number' && arrivalTime < 10000000000) {
+            arrivalTime = arrivalTime * 1000;
+        }
+        return { rt, arrivalTime };
+    }).filter(a => a.rt && a.arrivalTime);
+    res.json({ arrivals });
+});
 router.get('/getBusPositions', (req, res) => {
     res.send(curBusPositions);
 });
