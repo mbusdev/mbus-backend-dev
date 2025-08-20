@@ -87,7 +87,7 @@ const message = {id: "gradamatation", title: "Congrats Grads 🥳", message: "Co
 
 setInterval(updateBusPositions, 7500);
 setInterval(getSelectableRoutes, 60000);
-setInterval(rebuildGraph, 2 * 60 * 1000);
+setInterval(rebuildGraph, 60 * 1000);
 getSelectableRoutes();
 rebuildGraph(); 
 
