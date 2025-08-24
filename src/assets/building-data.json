@@ -1,5 +1,23 @@
 [
   {
+    "buildingName": "Bursley Dining Hall",
+    "abbrev": "BURS",
+    "lat": 42.29386078,
+    "long": -83.72083009,
+    "address": "1931 Duffield St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "East Quadrangle Dining Hall",
+    "abbrev": "EQ",
+    "lat": 42.27308378,
+    "long": -83.73428847,
+    "address": "701 E University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
     "buildingName": "1100 North University Building",
     "abbrev": "NUB",
     "lat": 42.2776656,
@@ -945,6 +963,15 @@
     "plusCode": ""
   },
   {
+    "buildingName": "Lawyer's Club Dining Hall",
+    "abbrev": "",
+    "lat": 42.27489492,
+    "long": -83.73920118,
+    "address": "551 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
     "buildingName": "Lurie Engineering Center",
     "abbrev": "LEC",
     "lat": 42.29148177,
@@ -1269,6 +1296,15 @@
     "plusCode": ""
   },
   {
+    "buildingName": "Petrovich Family Grill",
+    "abbrev": "",
+    "lat": 42.26363427,
+    "long": -83.74411256,
+    "address": "500 E Stadium Blvd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
     "buildingName": "Varsity Tennis Building",
     "abbrev": "",
     "lat": 42.25378122,
@@ -1368,7 +1404,25 @@
     "plusCode": ""
   },
   {
+    "buildingName": "Martha Cook Dining Hall",
+    "abbrev": "",
+    "lat": 42.27513165,
+    "long": -83.73680059,
+    "address": "906 S University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
     "buildingName": "Mary Markley Hall",
+    "abbrev": "MARKLEY",
+    "lat": 42.2811272,
+    "long": -83.72784914,
+    "address": "1482 E Medical Center Dr, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mary Markley Dining Hall",
     "abbrev": "MARKLEY",
     "lat": 42.2811272,
     "long": -83.72784914,
@@ -1379,6 +1433,15 @@
   {
     "buildingName": "Mosher-Jordan Hall",
     "abbrev": "MOJO",
+    "lat": 42.28046284,
+    "long": -83.73135953,
+    "address": "200 Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Mosher-Jordan Dining Hall",
+    "abbrev": "MOJO DINING HALL",
     "lat": 42.28046284,
     "long": -83.73135953,
     "address": "200 Observatory St, Ann Arbor, MI 48109",
@@ -1405,6 +1468,15 @@
   },
   {
     "buildingName": "North Quad",
+    "abbrev": "NQ",
+    "lat": 42.28059786,
+    "long": -83.7401702,
+    "address": "105 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "North Quad Dining Hall",
     "abbrev": "NQ",
     "lat": 42.28059786,
     "long": -83.7401702,
@@ -1467,7 +1539,25 @@
     "plusCode": ""
   },
   {
+    "buildingName": "Twigs at Oxford Dining Hall",
+    "abbrev": "",
+    "lat": 42.27448672,
+    "long": -83.72471425,
+    "address": "623 Oxford Rd, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
     "buildingName": "South Quad",
+    "abbrev": "SQ",
+    "lat": 42.27418293,
+    "long": -83.74133633,
+    "address": "600 E Madison St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "South Quad Dining Hall",
     "abbrev": "SQ",
     "lat": 42.27418293,
     "long": -83.74133633,
