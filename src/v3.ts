@@ -165,6 +165,10 @@ router.get('/getUpdateNotes', (req, res) => {
     res.send({message: "- ·Fixed Northeast Shuttle Icons\n- ·Working bus icons for Northeast Shuttle\n- ·General improvements", version: "7"});
 });
 
+router.get('/getMinSupportedVersion', (req, res) => {
+    res.json({ min_supported_version: "1.0.0" });
+});
+
 router.get('/getBusPredictions/:busId', (req, res) => {
     const busId = req.params.busId;
     const preds = cachedPredsByVid[busId];
