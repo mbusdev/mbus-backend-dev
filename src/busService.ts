@@ -313,19 +313,19 @@ const getAllBusPredictions = async () => {
 
             prds.forEach((prd: Prediction) => {
                 const { vid, stpid } = prd;
-                if (!vid) return;
+                // stpid -> [pred, pred...]
+                if (!cachedPredsByStopId[stpid]) {
+                cachedPredsByStopId[stpid] = [];
+                }
+                cachedPredsByStopId[stpid].push(prd); // store reference
 
+                if (!vid) return;
                 // vid -> [pred, pred...]
                 if (!cachedPredsByVid[vid]) {
                 cachedPredsByVid[vid] = [];
                 }
                 cachedPredsByVid[vid].push(prd);
 
-                // stpid -> [pred, pred...]
-                if (!cachedPredsByStopId[stpid]) {
-                cachedPredsByStopId[stpid] = [];
-                }
-                cachedPredsByStopId[stpid].push(prd); // store reference
             });
         });
 

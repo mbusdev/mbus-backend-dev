@@ -13,6 +13,8 @@ import { earliestArrival, leastChanges, leastWalking } from "./results/filter/Mu
 import * as metadata from "./assets/route-data.json";
 import * as valid_assets from "./assets/valid_assets.json";
 import * as path from "node:path";
+import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
+
 
 import { 
     curBusPositions, 
@@ -276,6 +278,47 @@ router.get('/getFrontendData', (req, res) => {
     }
 });
 
+
+router.get('/nearest-stops', (req, res) => {
+  const { lat, lon, k = '2' } = req.query;
+
+  const originLat = parseFloat(lat as string);
+  const originLon = parseFloat(lon as string);
+  const numStops = parseInt(k as string);
+
+  if (isNaN(originLat) || isNaN(originLon)) {
+    return res.status(400).json({ error: 'Invalid or missing lat/lon' });
+  }
+
+  const heap = new MaxPriorityQueue<{ stpid: string; name: string; lat: number; lon: number; distance: number }>({
+    compare: (a, b) => a.distance - b.distance
+  });
+
+  for (const [stpid, stop] of Object.entries(cachedStopLocations)) {
+    const latDiff = (stop.lat - originLat) * 111320;
+    const lonDiff = (stop.lon - originLon) * 111320 * Math.cos(originLat * Math.PI / 180);
+    const distance = Math.sqrt(latDiff ** 2 + lonDiff ** 2);
+
+    const stopWithDist = {
+      stpid,
+      name: stop.name,
+      lat: stop.lat,
+      lon: stop.lon,
+      distance
+    };
+
+    if (heap.size() < numStops) {
+      heap.enqueue(stopWithDist);
+    } else if (distance < heap.front().distance) {
+      heap.dequeue();
+      heap.enqueue(stopWithDist);
+    }
+  }
+
+  const nearestStops = heap.toArray().sort((a, b) => a.distance - b.distance);
+  res.json({ nearestStops });
+});
+
 router.get('/plan-journey', async (req, res) => {
     try {
         const originStopId = 'VIRTUAL_ORIGIN';
@@ -379,7 +422,7 @@ router.get('/plan-journey', async (req, res) => {
         let directWalkingTimeSeconds = directDistance / WALKING_SPEED_MS;
         
         const directTransferDuration = Math.round(directWalkingTimeSeconds);
-        console.log(`Walking Distance: ${directTransferDuration}`);
+        //console.log(`Walking Distance: ${directTransferDuration}`);
 
         const directTransfer: Transfer = {
             origin: originStopId,
