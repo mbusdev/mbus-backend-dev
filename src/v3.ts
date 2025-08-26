@@ -47,7 +47,7 @@ class BusColorManager {
         { routeId: "BB", color: "#2F773F", image: "bus_BB.png" },
         { routeId: "CN", color: "#643076", image: "bus_CN.png" },
         { routeId: "CS", color: "#3559B8", image: "bus_CS.png" },
-        { routeId: "CSX", color: "#543B17", image: "bus_CSX.png" },
+        { routeId: "CSX", color: "#1C2256", image: "bus_CSX.png" },
         { routeId: "DD", color: "#A9C534", image: "bus_DD.png" },
         { routeId: "MX", color: "#5EC7DE", image: "bus_MX.png" },
         { routeId: "NE", color: "#C55188", image: "bus_NE.png" },
