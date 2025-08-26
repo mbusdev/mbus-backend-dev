@@ -47,7 +47,7 @@ class BusColorManager {
         { routeId: "BB", color: "#2F773F", image: "bus_BB.png" },
         { routeId: "CN", color: "#643076", image: "bus_CN.png" },
         { routeId: "CS", color: "#3559B8", image: "bus_CS.png" },
-        { routeId: "CSX", color: "#F7DEB9", image: "bus_CSX.png" },
+        { routeId: "CSX", color: "#543B17", image: "bus_CSX.png" },
         { routeId: "DD", color: "#A9C534", image: "bus_DD.png" },
         { routeId: "MX", color: "#5EC7DE", image: "bus_MX.png" },
         { routeId: "NE", color: "#C55188", image: "bus_NE.png" },
@@ -55,8 +55,8 @@ class BusColorManager {
         { routeId: "NX", color: "#DA4343", image: "bus_NX.png" },
         { routeId: "OS", color: "#E8A43C", image: "bus_OS.png" },
         { routeId: "NES", color: "#C55188", image: "bus_NES.png" },
-        { routeId: "WS", color: "#2F7765", image: "bus_WS.png" },
-        { routeId: "WX", color: "#3E9E86", image: "bus_WX.png" }
+        { routeId: "WS", color: "#BA5231", image: "bus_WS.png" },
+        { routeId: "WX", color: "#E8663E", image: "bus_WX.png" }
     ];
 
     public getRouteColor(routeId: string): string | null {
