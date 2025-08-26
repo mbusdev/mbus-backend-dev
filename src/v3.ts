@@ -178,7 +178,9 @@ router.get('/getStartupInfo', (req, res) => {
         one_time_message: {
             title: "",
             subtitle: ""
-        }
+        },
+        // updating this will make bus images redownload on frontend
+        bus_image_version: "1",
     });
 });;
 
