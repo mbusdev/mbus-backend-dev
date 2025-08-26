@@ -104,7 +104,7 @@ const rebuildGraph = async () => {
         });
         
         const now = new Date();
-        const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const currentTime = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
         const transfers = cachedGraph?.transfers || {};
         const interchange = cachedGraph?.interchange || {};
