@@ -44,19 +44,19 @@ interface BusRoute {
 
 class BusColorManager {
     private readonly routes: BusRoute[] = [
-        { routeId: "BB", color: "#00AA44", image: "bus_BB.png" },
-        { routeId: "CN", color: "#800080", image: "bus_CN.png" },
-        { routeId: "CS", color: "#0066CC", image: "bus_CS.png" },
-        { routeId: "CSX", color: "#808080", image: "bus_CSX.png" },
-        { routeId: "DD", color: "#006400", image: "bus_DD.png" },
-        { routeId: "MX", color: "#FF6600", image: "bus_MX.png" },
-        { routeId: "NE", color: "#90EE90", image: "bus_NE.png" },
-        { routeId: "NW", color: "#FF0000", image: "bus_NW.png" },
-        { routeId: "NX", color: "#8B4513", image: "bus_NX.png" },
-        { routeId: "OS", color: "#FFFF00", image: "bus_OS.png" },
-        { routeId: "NES", color: "#90EE90", image: "bus_NES.png" },
-        { routeId: "WS", color: "#FF4500", image: "bus_WS.png" },
-        { routeId: "WX", color: "#FF4500", image: "bus_WX.png" }
+        { routeId: "BB", color: "#2F773F", image: "bus_BB.png" },
+        { routeId: "CN", color: "#643076", image: "bus_CN.png" },
+        { routeId: "CS", color: "#3559B8", image: "bus_CS.png" },
+        { routeId: "CSX", color: "#F7DEB9", image: "bus_CSX.png" },
+        { routeId: "DD", color: "#A9C534", image: "bus_DD.png" },
+        { routeId: "MX", color: "#5EC7DE", image: "bus_MX.png" },
+        { routeId: "NE", color: "#C55188", image: "bus_NE.png" },
+        { routeId: "NW", color: "#AE3636", image: "bus_NW.png" },
+        { routeId: "NX", color: "#DA4343", image: "bus_NX.png" },
+        { routeId: "OS", color: "#E8A43C", image: "bus_OS.png" },
+        { routeId: "NES", color: "#C55188", image: "bus_NES.png" },
+        { routeId: "WS", color: "#2F7765", image: "bus_WS.png" },
+        { routeId: "WX", color: "#3E9E86", image: "bus_WX.png" }
     ];
 
     public getRouteColor(routeId: string): string | null {
@@ -133,7 +133,7 @@ router.get('/getVehicleImage/:route', (req, res) => {
 
    const dirname = import.meta.dirname;
    const assetPath = path.join(dirname, 'assets');
-   const imagePath = path.join(assetPath, 'grad-24');
+   const imagePath = path.join(assetPath, 'main2025');
 
     if (!route || !(route in routeImages)) {
         res.sendFile(path.join(assetPath, 'bus_CN.png'));
