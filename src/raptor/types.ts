@@ -61,6 +61,7 @@ export type TripID = string;
  */
 export interface Trip {
   tripId: TripID;
+  vid: string | null,
   stopTimes: StopTime[];
 }
 

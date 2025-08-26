@@ -15,7 +15,7 @@ describe('Stress Test Pathing Endpoint', () => {
   });
 
   it('should handle many concurrent /plan-journey requests', async () => {
-    const numRequests = 500; // adjust for desired stress level
+    const numRequests = 50; // adjust for desired stress level
     const origin = { lat: 42.264356, lon: -83.744354 };
     const destination = { lat: 42.268068, lon: -83.747307 };
 

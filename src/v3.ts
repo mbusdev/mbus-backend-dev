@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { 
     Transfer, 
     StopID, 
+    TimetableLeg
 } from "./raptor/types";
 import { RaptorAlgorithm } from "./raptor/RaptorAlgorithm";
 import { RaptorAlgorithmFactory } from "./raptor/RaptorAlgorithmFactory";
@@ -186,44 +187,128 @@ router.get('/get-startup-messages', (req, res) => {
 });
 
 router.get('/nearest-stops', (req, res) => {
-  const { lat, lon, k = '2' } = req.query;
+  try {
+    const { lat, lon, k = '2' } = req.query;
 
-  const originLat = parseFloat(lat as string);
-  const originLon = parseFloat(lon as string);
-  const numStops = parseInt(k as string);
+    const originLat = parseFloat(lat as string);
+    const originLon = parseFloat(lon as string);
+    const numStops = parseInt(k as string);
 
-  if (isNaN(originLat) || isNaN(originLon)) {
-    return res.status(400).json({ error: 'Invalid or missing lat/lon' });
-  }
-
-  const heap = new MaxPriorityQueue<{ stpid: string; name: string; lat: number; lon: number; distance: number }>({
-    compare: (a, b) => a.distance - b.distance
-  });
-
-  for (const [stpid, stop] of Object.entries(cachedStopLocations)) {
-    const latDiff = (stop.lat - originLat) * 111320;
-    const lonDiff = (stop.lon - originLon) * 111320 * Math.cos(originLat * Math.PI / 180);
-    const distance = Math.sqrt(latDiff ** 2 + lonDiff ** 2);
-
-    const stopWithDist = {
-      stpid,
-      name: stop.name,
-      lat: stop.lat,
-      lon: stop.lon,
-      distance
-    };
-
-    if (heap.size() < numStops) {
-      heap.enqueue(stopWithDist);
-    } else if (distance < heap.front().distance) {
-      heap.dequeue();
-      heap.enqueue(stopWithDist);
+    if (isNaN(originLat) || isNaN(originLon)) {
+      return res.status(400).json({ error: 'Invalid or missing lat/lon' });
     }
+    if (isNaN(numStops) || numStops <= 0) {
+      return res.status(400).json({ error: 'Parameter k must be a positive integer' });
+    }
+
+    const heap = new MaxPriorityQueue<{ stpid: string; name: string; lat: number; lon: number; distance: number }>({
+      compare: (a, b) => a.distance - b.distance
+    });
+
+    for (const [stpid, stop] of Object.entries(cachedStopLocations)) {
+      const latDiff = (stop.lat - originLat) * 111320;
+      const lonDiff = (stop.lon - originLon) * 111320 * Math.cos(originLat * Math.PI / 180);
+      const distance = Math.sqrt(latDiff ** 2 + lonDiff ** 2);
+
+      const stopWithDist = {
+        stpid,
+        name: stop.name,
+        lat: stop.lat,
+        lon: stop.lon,
+        distance
+      };
+
+      if (heap.size() < numStops) {
+        heap.enqueue(stopWithDist);
+      } else if (distance < heap.front().distance) {
+        heap.dequeue();
+        heap.enqueue(stopWithDist);
+      }
+    }
+
+    const nearestStops = heap.toArray().sort((a, b) => a.distance - b.distance);
+    res.json({ nearestStops });
+  } catch (error) {
+    console.error('Error in /nearest-stops:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+function optimizeWalkingFastest(journey: any, cachedGraph: any): any {
+  if (!journey) return journey;
+
+  const optimizedLegs: any[] = [];
+  const WALKING_SPEED_KMH = 4;
+  const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
+
+  function distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const dx = (lat2 - lat1) * 111320;
+    const dy = (lon2 - lon1) * 111320 * Math.cos(lat1 * Math.PI / 180);
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
-  const nearestStops = heap.toArray().sort((a, b) => a.distance - b.distance);
-  res.json({ nearestStops });
-});
+  for (let i = 0; i < journey.legs.length; i++) {
+    const leg = journey.legs[i];
+
+    // Look for a transfer followed by a bus trip
+    if (leg.trip && i > 0 && "duration" in journey.legs[i - 1]) {
+      const transfer = journey.legs[i - 1] as Transfer;
+      const tripLeg = leg as TimetableLeg;
+      const trip = tripLeg.trip;
+
+      const originalBoardStop = tripLeg.stopTimes[0].stop;
+      const boardIdx = trip.stopTimes.findIndex(st => st.stop === originalBoardStop);
+      const walkStartTime = transfer.startTime;
+
+      let bestStop = originalBoardStop;
+      let bestIdx = boardIdx;
+      let bestDistance = Number.MAX_SAFE_INTEGER;
+
+      const originLoc = cachedStopLocations[transfer.origin];
+      if (!originLoc) {
+        optimizedLegs.push(leg);
+        continue;
+      }
+
+      for (let j = boardIdx; j < trip.stopTimes.length; j++) {
+        const candidate = trip.stopTimes[j];
+        const stopLoc = cachedStopLocations[candidate.stop];
+        if (!stopLoc) continue;
+
+        const dist = distanceMeters(originLoc.lat, originLoc.lon, stopLoc.lat, stopLoc.lon);
+        const walkArrival = walkStartTime + dist / WALKING_SPEED_MS;
+        const busArrival = candidate.arrivalTime - (cachedGraph.interchange[candidate.stop] ?? 0);
+
+        if (walkArrival <= busArrival && dist < bestDistance) {
+          bestStop = candidate.stop;
+          bestIdx = j;
+          bestDistance = dist;
+        }
+      }
+
+      if (bestStop !== originalBoardStop) {
+        console.log(`Optimized walking to ${bestStop} instead of ${originalBoardStop}, saving ${Math.round(bestDistance)} meters`);
+        // Update transfer
+        transfer.destination = bestStop;
+        transfer.duration = Math.round(bestDistance / WALKING_SPEED_MS);
+
+        // Trim trip leg to start from bestStop
+        tripLeg.stopTimes = trip.stopTimes.slice(bestIdx);
+
+        // Refresh trip leg duration
+        if (tripLeg.stopTimes.length > 1) {
+          const firstStop = tripLeg.stopTimes[0];
+          const lastStop = tripLeg.stopTimes[tripLeg.stopTimes.length - 1];
+          (tripLeg as any).duration = lastStop.arrivalTime - firstStop.departureTime;
+        }
+      }
+    }
+
+    optimizedLegs.push(leg);
+  }
+
+  return { ...journey, legs: optimizedLegs };
+}
 
 router.get('/plan-journey', async (req, res) => {
     try {
@@ -377,6 +462,8 @@ router.get('/plan-journey', async (req, res) => {
                             const lastStop = leg.stopTimes[leg.stopTimes.length - 1];
                             formattedLeg.duration = lastStop.arrivalTime - firstStop.departureTime;
                             formattedLeg.rt = firstStop.rt;
+                            formattedLeg.vid = leg.vid;
+
                         }
                     } else if (typeof leg.duration === 'number') {
                         // Add duration for transfer legs
@@ -387,7 +474,10 @@ router.get('/plan-journey', async (req, res) => {
             };
         };
 
-        const fastest = journeys.length > 0 ? journeys.reduce((best, j) => earliestArrival(best, j) ? j : best, journeys[0]) : null;
+        let fastest = journeys.length > 0 ? journeys.reduce((best, j) => earliestArrival(best, j) ? j : best, journeys[0]) : null;
+        // if (fastest) {
+        //     fastest = optimizeWalkingFastest(fastest, cachedGraph);
+        // }
         const leastTransfers = journeys.length > 0 ? journeys.reduce((best, j) => leastChanges(best, j) ? j : best, journeys[0]) : null;
         const leastWalk = journeys.length > 0 ? journeys.reduce((best, j) => leastWalking(best, j) ? j : best, journeys[0]) : null;
         const uniqueJourneys = [fastest, leastTransfers, leastWalk]
