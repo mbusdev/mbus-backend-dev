@@ -104,7 +104,7 @@ const rebuildGraph = async () => {
         });
         
         const now = new Date();
-        const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const currentTime = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
         const transfers = cachedGraph?.transfers || {};
         const interchange = cachedGraph?.interchange || {};
@@ -140,14 +140,26 @@ const rebuildGraph = async () => {
         });
 
         const trips: Trip[] = [];
-        const tripPredictions: Record<string, any[]> = {};
-        
+        interface TripPrediction {
+            vid: string;
+            stops: {
+                stpid: string;
+                prdctdn: string;
+                rt: string;
+            }[];
+        }
+
+        const tripPredictions: Record<string, TripPrediction> = {};
+
         predictions.forEach((trip: any) => {
             if (!tripPredictions[trip.tatripid]) {
-                tripPredictions[trip.tatripid] = [];
+                tripPredictions[trip.tatripid] = {
+                    vid: trip.vid,
+                    stops: []
+                };
             }
             trip.stops.forEach((stop: any) => {
-                tripPredictions[trip.tatripid].push({
+                tripPredictions[trip.tatripid].stops.push({
                     stpid: stop.stpid,
                     prdctdn: stop.prdctdn,
                     rt: stop.rt
@@ -157,22 +169,25 @@ const rebuildGraph = async () => {
 
         Object.entries(tripPredictions).forEach(([tripId, preds]) => {
             // Create stop times with prediction times
-            const stopTimes: StopTime[] = preds.map((pred: any) => ({
+            const stopTimes: StopTime[] = preds.stops.map(pred => ({
                 stop: pred.stpid,
                 arrivalTime: currentTime + (parseInt(pred.prdctdn) * 60),
                 departureTime: currentTime + (parseInt(pred.prdctdn) * 60),
                 pickUp: true,
                 dropOff: true,
-                rt : pred.rt
+                rt: pred.rt
             }));
+
             // Sort stop times by their sequence in the route
             const sortedStopTimes = sortStopTimesByRouteSequence(stopTimes);
 
             trips.push({
                 tripId,
+                vid: preds.vid,
                 stopTimes: sortedStopTimes
             });
         });
+
 
         cachedGraph = {
             trips,
@@ -189,6 +204,7 @@ const rebuildGraph = async () => {
         cachedGraph.interchange[destStopId] = 60;
         const virtualOriginTrip = {
             tripId: 'VIRTUAL_ORIGIN_TRIP',
+            vid: null,
             stopTimes: [{
                 stop: originStopId,
                 arrivalTime: 0,
@@ -199,6 +215,7 @@ const rebuildGraph = async () => {
         };
         const virtualDestTrip = {
             tripId: 'VIRTUAL_DESTINATION_TRIP',
+            vid: null,
             stopTimes: [{
                 stop: destStopId,
                 arrivalTime: 0,
