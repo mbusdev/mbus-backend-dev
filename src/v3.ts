@@ -84,9 +84,6 @@ dotenv.config();
 const router = express.Router();
 const routeImages: {[k: string]: string} = metadata.routeImages;
 
-const message = {id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99'}
-
-
 setInterval(updateBusPositions, 7500);
 setInterval(getSelectableRoutes, 60000);
 setInterval(rebuildGraph, 10 * 1000);
@@ -163,13 +160,26 @@ router.get('/getRouteInformation', (req, res) => {
     res.send(infoToSend);
 });
 
-router.get('/getUpdateNotes', (req, res) => {
-    res.send({message: "- ·Fixed Northeast Shuttle Icons\n- ·Working bus icons for Northeast Shuttle\n- ·General improvements", version: "7"});
-});
-
-router.get('/getMinSupportedVersion', (req, res) => {
-    res.json({ min_supported_version: "1.0.0" });
-});
+router.get('/getStartupInfo', (req, res) => {
+    res.json({
+        // updating this will disable older versions of the app
+        min_supported_version: "1.0.0",
+        why_update_message: {
+            title: "New Update Available",
+            subtitle: "Please update to the latest version for the best experience."
+        },
+        // adding data here will show a persistant message on launch 
+        persistant_message: {
+            title: "",
+            subtitle: ""
+        },
+        // adding data here will show a one-time message on launch (not yet implemented)
+        one_time_message: {
+            title: "",
+            subtitle: ""
+        }
+    });
+});;
 
 router.get('/getBusPredictions/:busId', (req, res) => {
     const busId = req.params.busId;
