@@ -100,11 +100,11 @@
   },
   {
     "buildingName": "Bob and Betty Beyster Building",
-    "abbrev": "BBB",
+    "abbrev": "BEYST",
     "lat": 42.29303061,
     "long": -83.7163671,
     "address": "2260 HAYWARD ST Ann Arbor, MI 48109",
-    "altName": "",
+    "altName": "BBB",
     "plusCode": ""
   },
   {
@@ -127,11 +127,11 @@
   },
   {
     "buildingName": "Burton Memorial Tower",
-    "abbrev": "SMTD",
+    "abbrev": "BMT",
     "lat": 42.27539443,
     "long": -83.73833416,
     "address": "881 UNIVERSITY AVE Ann Arbor, MI 48109",
-    "altName": "",
+    "altName": "SMTD",
     "plusCode": ""
   },
   {
@@ -181,11 +181,11 @@
   },
   {
     "buildingName": "Climate and Space Research Building",
-    "abbrev": "SRB",
+    "abbrev": "CSRB",
     "lat": 42.29441507,
     "long": -83.71152662,
     "address": "2455 Hayward St, Ann Arbor, MI 48109",
-    "altName": "",
+    "altName": "SRB",
     "plusCode": ""
   },
   {
@@ -221,7 +221,7 @@
     "lat": 42.27897644,
     "long": -83.73645402,
     "address": "1011 N University Ave, Ann Arbor, MI 48109",
-    "altName": "",
+    "altName": "KELL",
     "plusCode": ""
   },
   {
@@ -230,6 +230,15 @@
     "lat": 42.29120995,
     "long": -83.7157401,
     "address": "2281 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Blanch Anderson Moore Hall",
+    "abbrev": "BAM HALL",
+    "lat": 42.28986546,
+    "long": -83.72082058,
+    "address": "1100 Baits Dr, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
   },
@@ -274,6 +283,24 @@
     "abbrev": "ERB",
     "lat": 42.28963391,
     "long": -83.71488152,
+    "address": "2200 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Engineering Research Building 1",
+    "abbrev": "ERB1",
+    "lat": 42.28949844434501, 
+    "long": -83.71487077969394,
+    "address": "2200 Bonisteel Blvd, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Engineering Research Building 2",
+    "abbrev": "ERB2",
+    "lat": 42.289502726990605, 
+    "long": -83.71533778161479,
     "address": "2200 Bonisteel Blvd, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -406,7 +433,7 @@
   },
   {
     "buildingName": "Jeff T. Blau Hall",
-    "abbrev": "",
+    "abbrev": "BLAU",
     "lat": 42.27331788,
     "long": -83.73606027,
     "address": "700 E University Ave, Ann Arbor, MI 48104",
@@ -460,7 +487,7 @@
   },
   {
     "buildingName": "Medical Science Unit 1",
-    "abbrev": "",
+    "abbrev": "MSC1",
     "lat": 42.28403837,
     "long": -83.73228889,
     "address": "1301 Catherine St, Ann Arbor, MI 48109",
@@ -469,7 +496,7 @@
   },
   {
     "buildingName": "Medical Science Unit 2",
-    "abbrev": "",
+    "abbrev": "MSC2",
     "lat": 42.28403837,
     "long": -83.73228889,
     "address": "1301 Catherine St, Ann Arbor, MI 48109",
@@ -478,7 +505,7 @@
   },
   {
     "buildingName": "Michigan Memorial Phoenix Project",
-    "abbrev": "",
+    "abbrev": "PHOENIXLAB",
     "lat": 42.29103428,
     "long": -83.71461626,
     "address": "2301 Bonisteel Blvd, Ann Arbor, MI 48109",
@@ -622,7 +649,7 @@
   },
   {
     "buildingName": "Vaughan School of Public Health",
-    "abbrev": "",
+    "abbrev": "SPH1",
     "lat": 42.28095601,
     "long": -83.72927006,
     "address": "1415 Washington Heights, Ann Arbor, MI 48109",
@@ -631,7 +658,7 @@
   },
   {
     "buildingName": "Thomas Francis Jr. Building/School of Public Health",
-    "abbrev": "",
+    "abbrev": "SPH2",
     "lat": 42.28038643,
     "long": -83.72994734,
     "address": "1420 Washington Heights, Ann Arbor, MI 48109",
@@ -639,8 +666,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "Rackham School Of Graduate Studies",
-    "abbrev": "",
+    "buildingName": "Horace H. Rackham School Of Graduate Studies",
+    "abbrev": "RACK",
     "lat": 42.28100142,
     "long": -83.73801488,
     "address": "915 E Washington St, Ann Arbor, MI 48109",
@@ -676,7 +703,7 @@
   },
   {
     "buildingName": "School of Kinesiology",
-    "abbrev": "NS",
+    "abbrev": "SKB",
     "lat": 42.27845691,
     "long": -83.73879614,
     "address": "830 N University Ave, Ann Arbor, MI 48109",
@@ -684,7 +711,25 @@
     "plusCode": ""
   },
   {
-    "buildingName": "School of Nursing",
+    "buildingName": "426 North Ingalls Building",
+    "abbrev": "426NI",
+    "lat": 42.28530848,
+    "long": -83.73856743,
+    "address": "426 N Ingalls St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "400 North Ingalls Building",
+    "abbrev": "400",
+    "lat": 42.28398880982256,
+    "long":  -83.73774285549457,
+    "address": "400 N Ingalls St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "",
     "abbrev": "SNB",
     "lat": 42.28530848,
     "long": -83.73856743,
@@ -878,7 +923,7 @@
     "lat": 42.2653046,
     "long": -83.74389312,
     "address": "401 E Stadium Blvd, Ann Arbor, MI 48104",
-    "altName": "",
+    "altName": "CCSB",
     "plusCode": ""
   },
   {
@@ -919,11 +964,11 @@
   },
   {
     "buildingName": "Jeffries Hall",
-    "abbrev": "LSSH",
+    "abbrev": "JEFFRIES",
     "lat": 42.27343202,
     "long": -83.73959058,
     "address": "701 S State St, Ann Arbor, MI 48104",
-    "altName": "",
+    "altName": "LSSH",
     "plusCode": ""
   },
   {
@@ -1161,8 +1206,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "Crisler Arena",
-    "abbrev": "",
+    "buildingName": "Crisler Arena/Center",
+    "abbrev": "CRISLER",
     "lat": 42.26599829,
     "long": -83.74555252,
     "address": "333 E Stadium Blvd, Ann Arbor, MI 48109",
@@ -1432,11 +1477,11 @@
   },
   {
     "buildingName": "Mosher-Jordan Hall",
-    "abbrev": "MOJO",
+    "abbrev": "MOSHER",
     "lat": 42.28046284,
     "long": -83.73135953,
     "address": "200 Observatory St, Ann Arbor, MI 48109",
-    "altName": "",
+    "altName": "MOJO",
     "plusCode": ""
   },
   {
@@ -1630,7 +1675,7 @@
   },
   {
     "buildingName": "Hatcher Graduate Library",
-    "abbrev": "",
+    "abbrev": "GLIBN",
     "lat": 42.27663583,
     "long": -83.73731592,
     "address": "913 S University Ave, Ann Arbor, MI 48109",
@@ -1657,7 +1702,7 @@
   },
   {
     "buildingName": "Law Library",
-    "abbrev": "",
+    "abbrev": "LLIB",
     "lat": 42.27385917,
     "long": -83.73894326,
     "address": "801 Monroe St, Ann Arbor, MI 48109",
@@ -1693,11 +1738,11 @@
   },
   {
     "buildingName": "Taubman Library",
-    "abbrev": "TAUBL",
+    "abbrev": "THSL",
     "lat": 42.28370964,
     "long": -83.73311855,
     "address": "1135 Catherine St, Ann Arbor, MI 48109",
-    "altName": "",
+    "altName": "TAUBL",
     "plusCode": ""
   },
   {
@@ -2035,18 +2080,18 @@
   },
   {
     "buildingName": "Intramural Sports Building",
-    "abbrev": "IMSB",
+    "abbrev": "IM POOL",
     "lat": 42.26957048,
     "long": -83.74191308,
     "address": "606 E Hoover Ave, Ann Arbor, MI 48104",
-    "altName": "",
+    "altName": "IMSB",
     "plusCode": ""
   },
   {
     "buildingName": "Lipsey Student Publications Building",
     "abbrev": "",
-    "lat": 42.27749016,
-    "long": -83.74146811,
+    "lat": 42.277022135586506, 
+    "long": -83.7423110114798,
     "address": "420 Maynard St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -2206,7 +2251,7 @@
   },
   {
     "buildingName": "Trotter Multicultural Center",
-    "abbrev": "",
+    "abbrev": "TMC",
     "lat": 42.27727117,
     "long": -83.74074924,
     "address": "428 S State St, Ann Arbor, MI 48109",
@@ -2219,6 +2264,96 @@
     "lat": 42.29196585,
     "long": -83.71624545,
     "address": "1226 Murfin Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Stamps Auditorium",
+    "abbrev": "STAMPS",
+    "lat": 42.291958252292616,
+    "long": -83.71689787149951,
+    "address": "1226 Murfin Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Weiser Hall",
+    "abbrev": "WEIS",
+    "lat": 42.276723, 
+    "long": -83.735138,
+    "address": "1226 Murfin Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Chemistry Building",
+    "abbrev": "CHEM",
+    "lat": 42.27810669507975, 
+    "long": -83.7370397863615,
+    "address": "930 N University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Lurie Biomedical Engineering Building",
+    "abbrev": "LBME",
+    "lat": 42.28902213692447,  
+    "long": -83.71354176792873,
+    "address": "1101 Beal Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Pharmacy Building (New)",
+    "abbrev": "PHARM",
+    "lat": 42.281606579252674, 
+    "long":  -83.73596382174654,
+    "address": "",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Keene Theatre",
+    "abbrev": "KEENE THTR EQ",
+    "lat": 42.272903630024516, 
+    "long": -83.73525194671612,
+    "address": "701 E University Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "University Towers",
+    "abbrev": "UTOWER",
+    "lat": 42.2752126624446, 
+    "long": -83.73331369286832, 
+    "address": "536 S Forest Ave, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "University of Michigan Museum of Art (Alumni Memorial Hall)",
+    "abbrev": "UMMA",
+    "lat": 42.27539951728464, 
+    "long": -83.74002576940842,
+    "address": "525 S State St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Homer A. Neal Laboratory",
+    "abbrev": "NEAL",
+    "lat": 42.276538910673864,  
+    "long": -83.73681739182904,
+    "address": "450 Church St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Observatory Hall",
+    "abbrev": "OBSRV",
+    "lat": 42.28018350076211, 
+    "long": -83.73062491302349, 
+    "address": "201 Observatory St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
   }
