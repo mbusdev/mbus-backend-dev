@@ -11,7 +11,7 @@
   "author": "Efe Akinci",
   "license": "ISC",
   "dependencies": {
-    "@datastructures-js/priority-queue": "^6.3.3",
+    "@datastructures-js/priority-queue": "^6.3.4",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

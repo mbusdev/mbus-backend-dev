@@ -98,6 +98,8 @@ import * as process from "node:process";
 dotenv.config();
 
 const API_KEY = process.env.MBUS_API_KEY;
+const RIDE_API_KEY = process.env.RIDE_API_KEY;
+
 router.get('/getBusPredictions1/:busId', (req, res) => {
     axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions?requestType=getpredictions&locale=en&vid=${req.params.busId}&top=4&tmres=s&rtpidatafeed=bustime&key=${API_KEY}&format=json&xtime=1626028950462`).then(apiRes => {
         res.send(apiRes.data);

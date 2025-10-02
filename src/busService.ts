@@ -513,6 +513,8 @@ const getBuses = async () => {
     return buses;
 }
 
+
+
 const updateBusPositions = async () => {
     curBusPositions.buses = await getBuses();
 }
