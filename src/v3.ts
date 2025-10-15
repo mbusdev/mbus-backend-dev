@@ -15,6 +15,8 @@ import * as metadata from "./assets/route-data.json";
 import * as valid_assets from "./assets/valid_assets.json";
 import * as path from "node:path";
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
+import { Logger } from "tslog";
+import { appendFileSync } from "fs";
 
 
 import { 
@@ -97,34 +99,56 @@ import * as process from "node:process";
 
 dotenv.config();
 
+// Log Levels: 1 = trace, 2 = debug, 5 = error, 6 = fatal (effectively disables logging, since there are no fatal logs)
+// Use trace locally only and at your peril. Responses can be 0.5 MB!
+const LOGLEVEL = parseInt(process.env.LOG_LEVEL || "6")
+const logger = new Logger({type: "hidden", minLevel: LOGLEVEL});
+logger.attachTransport((logObj) => {
+  appendFileSync("APILogs.txt", JSON.stringify(logObj) + "\n");
+});
+logger.debug("API Logs initialized")
+
 const API_KEY = process.env.MBUS_API_KEY;
 router.get('/getBusPredictions1/:busId', (req, res) => {
     axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions?requestType=getpredictions&locale=en&vid=${req.params.busId}&top=4&tmres=s&rtpidatafeed=bustime&key=${API_KEY}&format=json&xtime=1626028950462`).then(apiRes => {
         res.send(apiRes.data);
+        logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(apiRes.data).length});
+        logger.trace({url: req.url, status: res.statusCode, resBody: apiRes.data});
     }).catch(err => {
         console.log(err);
+        logger.error({method: req.method, url: req.url, error:err});
         res.sendStatus(500);
 
     });
 });
 
 router.get('/getBusPositions', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(curBusPositions).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: curBusPositions});
     res.send(curBusPositions);
 });
 
 router.get('/getVehiclePositions', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(curBusPositions).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: curBusPositions});
     res.send(curBusPositions);
 });
 
 router.get('/getSelectableRoutes', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(curRouteSelections).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: curRouteSelections});
     res.send(curRouteSelections);
 });
 
 router.get('/getAllRoutes', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify({routes: cachedRoutes}).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: {routes: cachedRoutes}});
     res.send({routes: cachedRoutes});
 });
 
 router.get('/getrouteCache', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify({routes: routeTimingCache}).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: {routes: routeTimingCache}});
     res.send({routes: routeTimingCache});
 });
 
@@ -137,14 +161,19 @@ router.get('/getVehicleImage/:route', (req, res) => {
 
     if (!route || !(route in routeImages)) {
         res.sendFile(path.join(assetPath, 'bus_CN.png'));
+        logger.error({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage});
         return res.sendStatus(400);
     }
-
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: String(path.join(imagePath, routeImages[route])).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: String(path.join(imagePath, routeImages[route]))});
     res.sendFile(path.join(imagePath, routeImages[route]));
 });
 
 router.get('/getRouteInfoVersion', (req, res) => {
-    res.send(JSON.stringify({version: metadata.metadata.version}));
+    const resContent = JSON.stringify({version: metadata.metadata.version})
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: resContent.length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: resContent});
+    res.send(resContent);
 });
 
 router.get('/getRouteInformation', (req, res) => {
@@ -158,11 +187,13 @@ router.get('/getRouteInformation', (req, res) => {
             image: route.image
         }))
     }
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(infoToSend).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: infoToSend});
     res.send(infoToSend);
 });
 
 router.get('/getStartupInfo', (req, res) => {
-    res.json({
+    const jsonToSend = {
         // updating this will disable older versions of the app
         min_supported_version: "1.0.0",
         why_update_message: {
@@ -181,7 +212,10 @@ router.get('/getStartupInfo', (req, res) => {
         },
         // updating this will make bus images redownload on frontend
         bus_image_version: "1",
-    });
+    }
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+    res.json(jsonToSend);
 });;
 
 router.get('/getBusPredictions/:busId', (req, res) => {
@@ -189,35 +223,49 @@ router.get('/getBusPredictions/:busId', (req, res) => {
     const preds = cachedPredsByVid[busId];
 
     if (!preds) {
-        return res.json({
+        const jsonToSend = {
             "bustime-response": { "prd": [] }
-        });
+        };
+        logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+        logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+        return res.json(jsonToSend);
     }
-    res.json({
+    const jsonToSend = {
         "bustime-response": { "prd": preds }
-    });
+    };
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+    res.json(jsonToSend);
 });
 
 router.get('/getStopPredictions/:stopId', (req, res) => {
     const stopId = req.params.stopId;
-    const preds = cachedPredsByStopId[stopId];
+    const preds = cachedPredsByVid[stopId];
 
     if (!preds) {
-        return res.json({
+        const jsonToSend = {
             "bustime-response": { "prd": [] }
-        });
+        };
+        logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+        logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+        return res.json(jsonToSend);
     }
-
-    res.json({
+    const jsonToSend = {
         "bustime-response": { "prd": preds }
-    });
+    };
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+    res.json(jsonToSend);
 });
 
 router.get('/getAllPredictions', async (req, res) => {
     try {
         const predictions = await getAllBusPredictions();
+        logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: String(predictions).length});
+        logger.trace({url: req.url, status: res.statusCode, resBody: predictions});
         res.send(predictions);
     } catch (err) {
+        logger.error({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage});
         console.log(err);
         res.sendStatus(500);
     }
@@ -228,27 +276,37 @@ router.get('/getAllStops', (req, res) => {
     stpid,
     ...stopInfo,
   }));
-    res.json(Object.values(stopsList));
+    const objValues = Object.values(stopsList);
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: String(objValues).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: objValues});
+    res.json(objValues);
 });
 
 router.get('/getBuildingLocations', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: String(path.join(import.meta.dirname, 'assets', 'building-data.json')).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: String(path.join(import.meta.dirname, 'assets', 'building-data.json'))});
     res.sendFile(path.join(import.meta.dirname, 'assets', 'building-data.json'));
 });
 
 router.get('/get-startup-messages', (req, res) => {
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: message.length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: message});
     res.send(JSON.stringify(message));
 });
 
 // Simple bus color endpoints
 router.get('/getRouteColors', (req, res) => {
     const routes = busColorManager.getAllRoutes();
-    res.json({
+    const jsonToSend = {
         routes: routes.map(route => ({
             routeId: route.routeId,
             color: route.color,
             image: route.image
         }))
-    });
+    }
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+    res.json(jsonToSend);
 });
 
 router.get('/getRouteColor/:routeId', (req, res) => {
@@ -256,14 +314,17 @@ router.get('/getRouteColor/:routeId', (req, res) => {
     const routeInfo = busColorManager.getRouteInfo(routeId);
     
     if (!routeInfo) {
+        logger.error({method: req.method, url: req.url, status: 404, message: `Route '${routeId}' not found`});
         return res.status(404).json({ error: `Route '${routeId}' not found` });
     }
-    
-    res.json({
+    const jsonToSend = {
         routeId: routeInfo.routeId,
         color: routeInfo.color,
         image: routeInfo.image
-    });
+    };
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+    res.json(jsonToSend);
 });
 
 // Simple endpoint for frontend, gets everything needed for UI
@@ -284,9 +345,11 @@ router.get('/getFrontendData', (req, res) => {
                 lastUpdated: new Date().toISOString()
             }
         };
-        
+        logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(response).length});
+        logger.trace({url: req.url, status: res.statusCode, resBody: response});
         res.json(response);
     } catch (error) {
+        logger.error({method: req.method, url: req.url, status: 500, message: 'Failed to get frontend data'});
         res.status(500).json({ error: 'Failed to get frontend data' });
     }
 });
@@ -301,9 +364,11 @@ router.get('/nearest-stops', (req, res) => {
     const numStops = parseInt(k as string);
 
     if (isNaN(originLat) || isNaN(originLon)) {
+      logger.error({method: req.method, url: req.url, status: 400, message: 'Invalid or missing lat/lon'});
       return res.status(400).json({ error: 'Invalid or missing lat/lon' });
     }
     if (isNaN(numStops) || numStops <= 0) {
+      logger.error({method: req.method, url: req.url, status: 400, message: 'Parameter k must be a positive integer'});
       return res.status(400).json({ error: 'Parameter k must be a positive integer' });
     }
 
@@ -333,9 +398,13 @@ router.get('/nearest-stops', (req, res) => {
     }
 
     const nearestStops = heap.toArray().sort((a, b) => a.distance - b.distance);
+    logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify({ nearestStops }).length});
+    logger.trace({url: req.url, status: res.statusCode, resBody: { nearestStops }});
     res.json({ nearestStops });
   } catch (error) {
     console.error('Error in /nearest-stops:', error);
+    logger.error({method: req.method, url: req.url, status: 500, message: 'Internal Server Error'});
+    logger.error('Error in /nearest-stops: ' + error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -423,6 +492,7 @@ router.get('/plan-journey', async (req, res) => {
 
         const { originLat, originLon, destLat, destLon, walkingPenalty: walkingPenaltyParam } = req.query;
         if (!originLat || !originLon || !destLat || !destLon) {
+            logger.error({method: req.method, url: req.url, status: 400, message: 'Origin and destination coordinates are required'});
             return res.status(400).json({ error: 'Origin and destination coordinates are required' });
         }
 
@@ -432,6 +502,7 @@ router.get('/plan-journey', async (req, res) => {
         if (!cachedGraph || !cachedGraph.trips || cachedGraph.trips.length === 0) {
             await rebuildGraph(); // try to build
             if (!cachedGraph) {
+                logger.error({method: req.method, url: req.url, status: 404, message: 'No routes available at this time'});
                 return res.status(404).json({ error: 'No routes available at this time' });
             }
         }
@@ -589,9 +660,14 @@ router.get('/plan-journey', async (req, res) => {
         const uniqueJourneys = [fastest, leastTransfers, leastWalk]
           .filter((j, i, arr) => j && arr.findIndex(x => x === j) === i)
           .map(formatJourney);
-        res.json({ journeys: uniqueJourneys.slice(0, 3) });
+        const jsonToSend = { journeys: uniqueJourneys.slice(0, 3) }
+        logger.debug({method: req.method, url: req.url, status: res.statusCode, message: res.statusMessage, bodyLength: JSON.stringify(jsonToSend).length});
+        logger.trace({url: req.url, status: res.statusCode, resBody: jsonToSend});
+        res.json(jsonToSend);
     } catch (error) {
         console.error('Error planning journey:', error);
+        logger.error({method: req.method, url: req.url, status: 404, message: 'Failed to plan journey'});
+        logger.error('Error planning journey:' + error);
         res.status(500).json({ error: 'Failed to plan journey' });
     }
 });

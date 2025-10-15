@@ -11,8 +11,20 @@ import {
     TransfersByOrigin, 
     Interchange
 } from "./raptor/types";
+import { Logger } from "tslog";
+import { appendFileSync } from "fs";
+
 
 dotenv.config();
+
+// Log Levels: 1 = trace, 2 = debug, 5 = error, 6 = fatal (effectively disables logging, since there are no fatal logs)
+// Use trace locally only and at your peril. Responses can be 0.5 MB!
+const LOGLEVEL = parseInt(process.env.LOG_LEVEL || "6")
+const logger = new Logger({type: "hidden", minLevel: LOGLEVEL});
+logger.attachTransport((logObj) => {
+  appendFileSync("BusServiceLogs.txt", JSON.stringify(logObj) + "\n");
+});
+logger.debug("API Logs initialized")
 
 const API_KEY = process.env.MBUS_API_KEY;
 if (API_KEY === undefined) {
@@ -228,6 +240,7 @@ const rebuildGraph = async () => {
         cachedGraph.trips.push(virtualDestTrip);
         
     } catch (error) {
+        logger.error('Error rebuilding graph:' + error);
         console.error('Error rebuilding graph:', error);
     }
 };
@@ -468,6 +481,7 @@ const getAllBusPredictions = async () => {
         return formattedPredictions;
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
+        logger.error("Error in getAllBusPredictions:" + message);
         console.error("Error in getAllBusPredictions:", message);
         return [];
     }
@@ -654,6 +668,7 @@ const getSelectableRoutes = () => {
                 const totalTransfers = Object.values(cachedGraph.transfers).reduce((total, transfers) => total + transfers.length, 0);
                 console.log(`Total transfers in cachedGraph: ${totalTransfers}`);
             } catch (error) {
+                logger.error('Error updating transfers:' + error);
                 console.error('Error updating transfers:', error);
             }
         });
