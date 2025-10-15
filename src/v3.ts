@@ -240,7 +240,7 @@ router.get('/getBusPredictions/:busId', (req, res) => {
 
 router.get('/getStopPredictions/:stopId', (req, res) => {
     const stopId = req.params.stopId;
-    const preds = cachedPredsByVid[stopId];
+    const preds = cachedPredsByStopId[stopId];
 
     if (!preds) {
         const jsonToSend = {
