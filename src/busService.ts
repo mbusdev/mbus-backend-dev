@@ -15,8 +15,14 @@ import {
 dotenv.config();
 
 const API_KEY = process.env.MBUS_API_KEY;
+const RIDE_API_KEY = process.env.RIDE_API_KEY;
+
 if (API_KEY === undefined) {
     throw new Error("MBus API key not set.");
+}
+
+if (RIDE_API_KEY === undefined) {
+    throw new Error("TheRide API key not set.");
 }
 
 const curBusPositions: {
@@ -25,11 +31,20 @@ const curBusPositions: {
     "buses": []
 }
 
+const curRidePositions: {
+    buses: any[]
+} = {
+    "buses": []
+}
+
 const cachedRoutes: {[k: string]: any} = {};
+const cachedRideRoutes : {[k: string]: any} = {};
 type Prediction = { vid: string; stpid: string } & Record<string, any>;
 
 let cachedPredsByVid: Record<string, Prediction[]> = {};
 let cachedPredsByStopId: Record<string, Prediction[]> = {};
+let cachedRidePredsByVid: Record<string, Prediction[]> = {};
+let cachedRidePredsByStopId: Record<string, Prediction[]> = {};
 // routeTimingCache: route -> fromStop -> toStop -> latest diff (minutes)
 const routeTimingCache: Record<string, Record<string, Record<string, {diff : number, rtdir : string, rtNext : string}>>> = 
 {
@@ -56,6 +71,7 @@ const routeTimingCache: Record<string, Record<string, Record<string, {diff : num
 const validRoutes = new Set();
 let curRouteSelections = {};
 const routes = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
+const rideRoutes = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "42", "43", "44", "45", "46", "47", "61", "62", "63", "64", "65", "66", "67", "68", "104"];
 let cachedStopLocations: { [stopId: string]: {name : string, lat: number, lon: number } } = {
 
 };
@@ -67,7 +83,7 @@ let cachedGraph: {
     transfers: TransfersByOrigin;
     interchange: Interchange;
 }
-
+    
 let stopIdToName: Record<string, string> = {};
 let tatripidToRt: Record<string, string> = {};
 
@@ -231,6 +247,127 @@ const rebuildGraph = async () => {
         console.error('Error rebuilding graph:', error);
     }
 };
+
+const getAllRidePredictions = async () => {
+    try{
+        // Get all unique stop IDs from cached routes
+        const allStopIds = new Set<string>();
+        Object.values(cachedRideRoutes).forEach((routePatterns: any) => {
+            if (Array.isArray(routePatterns)) {
+                routePatterns.forEach((pattern: any) => {
+                    if (pattern.pt && Array.isArray(pattern.pt)) {
+                        pattern.pt.forEach((point: any) => {
+                            if (point.stpid) {
+                                allStopIds.add(point.stpid);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        const stopIdsArray = Array.from(allStopIds);
+        const chunks = [];
+        
+        for (let i = 0; i < stopIdsArray.length; i += 10) {
+            chunks.push(stopIdsArray.slice(i, i + 10));
+        }
+
+        const predictions = await Promise.all(
+            chunks.map(async (chunk) => {
+                const stopIds = chunk.join(',');
+                const response = await axios.get(`https://rt.theride.org/bustime/api/v3/getpredictions`, {
+                    params: {
+                        requestType: 'getpredictions',
+                        locale: 'en',
+                        stpid: stopIds,
+                        rt: routes.join(','),
+                        tmres: 's',
+                        rtpidatafeed: 'bustime',
+                        key: API_KEY,
+                        format: 'json'
+                    }
+                });
+                return response.data;
+            })
+        );
+
+        const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
+        if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
+            predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
+            const tatripid = prd.tatripid;
+            const stopName = prd.stpnm;
+            const stopId = prd.stpid;
+            const rt = prd.rt;
+            const rtdir = prd.rtdir;
+            const vid = prd.vid;
+            let prdctdn = prd.prdctdn;
+            prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
+
+            let trip = acc.find((t: any) => t.tatripid === tatripid);
+
+            if (!trip) {
+                if (vid) { // if no trip, go by vid
+                trip = acc.find((t: any) => t.vid === vid);
+                }
+            }
+
+            if (!trip) { // if no trip, create one
+                trip = { tatripid, vid, stops: [] };
+                acc.push(trip);
+            } else { // merge with existing trip
+                if (!trip.tatripid) {
+                trip.tatripid = tatripid;
+                }
+                if (!trip.vid && vid) {
+                trip.vid = vid;
+                }
+            }
+
+            let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
+            if (!stop) {
+                stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null, rtdir : null };
+                trip.stops.push(stop);
+            }
+            stop.rtdir = rtdir;
+            stop.rt = rt;
+            stop.prdctdn = prdctdn;
+            });
+        }
+        return acc;
+        }, []);
+
+        // Cache predictions by vid and stopId
+        cachedRidePredsByVid = {};
+        cachedRidePredsByStopId = {};
+        predictions.flat().forEach((predictionChunk) => {
+            const prds = predictionChunk['bustime-response']?.['prd'];
+            if (!prds) return;
+
+            prds.forEach((prd: Prediction) => {
+                const { vid, stpid } = prd;
+                // stpid -> [pred, pred...]
+                if (!cachedRidePredsByStopId[stpid]) {
+                cachedRidePredsByStopId[stpid] = [];
+                }
+                cachedRidePredsByStopId[stpid].push(prd); // store reference
+
+                if (!vid) return;
+                // vid -> [pred, pred...]
+                if (!cachedRidePredsByVid[vid]) {
+                cachedRidePredsByVid[vid] = [];
+                }
+                cachedRidePredsByVid[vid].push(prd);
+
+            });
+        });
+    }
+    catch(err: unknown){
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("Error in getAllRidePredictions:", message);
+        return [];
+    }
+}
 
 const getAllBusPredictions = async () => {
     try {
@@ -481,18 +618,29 @@ const client = axios.create({
     }
 });
 
+const rideClient = axios.create({
+    baseURL: 'https://rt.theride.org/bustime/api/v3/',
+    params: {
+        key: RIDE_API_KEY,
+        format: 'json'
+    }
+});
+
 const getBuses = async () => {
     const getChunk = async (routesChunk: string[]) => {
     try {
         const res = await client.get('/getvehicles', {
-        params: { requestType: 'getvehicles', rt: routesChunk.join(',') },
+        params: { rt: routesChunk.join(',') },
         });
 
         if (
         'bustime-response' in res.data &&
         'vehicle' in res.data['bustime-response']
         ) {
-        return res.data['bustime-response']['vehicle'];
+            return res.data['bustime-response']['vehicle'];
+        }
+        else{
+            console.log('Unexpected API response:', res.data);
         }
 
         return [];
@@ -510,8 +658,48 @@ const getBuses = async () => {
     let buses = await Promise.all(chunks.map(getChunk));
     buses = buses.flat();
 
+    //console.log(`Number of mbus buses locations: ${buses.length}`);
+
     return buses;
 }
+
+
+const getRides = async () => {
+    const getChunk = async (routesChunk: string[]) => {
+    try {
+        const res = await rideClient.get('/getvehicles', {
+        params: { rt: routesChunk.join(',') },
+        });
+
+        if (
+        'bustime-response' in res.data &&
+        'vehicle' in res.data['bustime-response']
+        ) {
+        return res.data['bustime-response']['vehicle'];
+        }
+
+        return [];
+    } catch (error) {
+        console.warn('getChunk failed for routes', routesChunk, error instanceof Error ? error.message : error);
+        return [];
+    }
+    };
+
+    const chunks = []
+    for (let i = 0; i < rideRoutes.length; i += 10) {
+        chunks.push(rideRoutes.slice(i, i + 10));
+    }
+
+    let buses = await Promise.all(chunks.map(getChunk));
+    
+    buses = buses.flat();
+    
+    //console.log(`Number of the ride buses locations: ${buses.length}`);
+
+    return buses;
+}
+
+
 
 
 
@@ -519,6 +707,11 @@ const updateBusPositions = async () => {
     curBusPositions.buses = await getBuses();
 }
 
+const updateRidePositions = async () => {
+    curRidePositions.buses = await getRides();
+}
+
+//Create generic version of this where you input cachedRoutes and client as parameters to avoid code duplication
 const addToCachedRoutes = async (rt: string) => {
     try {
         const res = await client.get('/getpatterns', {
@@ -536,6 +729,42 @@ const addToCachedRoutes = async (rt: string) => {
         console.log(`Error while getting routes: ${e}`);
     }
 }
+
+
+const addToCachedRideRoutes = async (rt: string) => {
+    try {
+        const res = await rideClient.get('/getpatterns', {
+            params: {
+                requestType: 'getpatterns',
+                rtpidatafeed: 'bustime',
+                rt: rt
+            }
+        });
+
+        if (res.data['bustime-response'] && res.data['bustime-response']['ptr']) {
+            cachedRideRoutes[rt] = res.data['bustime-response']['ptr'];
+        }
+    } catch (e) {
+        console.log(`Error while getting routes: ${e}`);
+    }
+}
+
+const getSelectableRideRoutes = () => {
+    axios.get(`https://rt.theride.org/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${API_KEY}&format=json`).then(res => {
+        curRouteSelections = res.data;
+        validRoutes.clear();
+        try {
+            res.data['bustime-response']['routes'].forEach((e: Route) => {
+                validRoutes.add(e['rt']);
+                addToCachedRideRoutes(e['rt']);
+            });
+        } catch (e) {
+
+        }
+    })
+        .catch((err) => console.log(`Error while getting selectable routes: ${err}`));
+}
+
 
 const getSelectableRoutes = () => {
     axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${API_KEY}&format=json`).then(res => {
@@ -661,11 +890,16 @@ const getSelectableRoutes = () => {
         });
 }
 
+
+
 export { 
-    curBusPositions, 
+    curBusPositions,
+    curRidePositions, 
     cachedRoutes, 
     cachedPredsByVid, 
-    cachedPredsByStopId, 
+    cachedPredsByStopId,
+    cachedRidePredsByVid, 
+    cachedRidePredsByStopId, 
     validRoutes, 
     curRouteSelections, 
     routes, 
@@ -676,6 +910,7 @@ export {
     tatripidToRt,
     getAllBusPredictions,
     updateBusPositions,
+    updateRidePositions,
     getSelectableRoutes,
     rebuildGraph
 };

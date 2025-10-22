@@ -18,18 +18,24 @@ import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 
 
 import { 
-    curBusPositions, 
-    cachedPredsByStopId, 
+    curBusPositions,
+    curRidePositions, 
     cachedRoutes, 
     cachedPredsByVid, 
+    cachedPredsByStopId,
+    cachedRidePredsByVid, 
+    cachedRidePredsByStopId, 
+    validRoutes, 
+    curRouteSelections, 
+    routes, 
     cachedStopLocations, 
-    curRouteSelections,
-    stopIdToName,
+    routeTimingCache,
+    cachedGraph, 
+    stopIdToName, 
     tatripidToRt,
     getAllBusPredictions,
-    routeTimingCache,
-    cachedGraph,
     updateBusPositions,
+    updateRidePositions,
     getSelectableRoutes,
     rebuildGraph
 } from './busService';
@@ -86,6 +92,7 @@ const router = express.Router();
 const routeImages: {[k: string]: string} = metadata.routeImages;
 
 setInterval(updateBusPositions, 7500);
+setInterval(updateRidePositions, 7500);
 setInterval(getSelectableRoutes, 60000);
 setInterval(rebuildGraph, 10 * 1000);
 getSelectableRoutes();
@@ -112,6 +119,10 @@ router.get('/getBusPredictions1/:busId', (req, res) => {
 
 router.get('/getBusPositions', (req, res) => {
     res.send(curBusPositions);
+});
+
+router.get('/getRidePositions', (req, res) => {
+    res.send(curRidePositions);
 });
 
 router.get('/getVehiclePositions', (req, res) => {
@@ -200,6 +211,20 @@ router.get('/getBusPredictions/:busId', (req, res) => {
     });
 });
 
+router.get('/getRidePredictions/:busId', (req, res) => {
+    const busId = req.params.busId;
+    const preds = cachedRidePredsByVid[busId];
+
+    if (!preds) {
+        return res.json({
+            "bustime-response": { "prd": [] }
+        });
+    }
+    res.json({
+        "bustime-response": { "prd": preds }
+    });
+});
+
 router.get('/getStopPredictions/:stopId', (req, res) => {
     const stopId = req.params.stopId;
     const preds = cachedPredsByStopId[stopId];
@@ -214,6 +239,23 @@ router.get('/getStopPredictions/:stopId', (req, res) => {
         "bustime-response": { "prd": preds }
     });
 });
+
+router.get('/getRideStopPredictions/:stopId', (req, res) => {
+    const stopId = req.params.stopId;
+    const preds = cachedRidePredsByStopId[stopId];
+
+    if (!preds) {
+        return res.json({
+            "bustime-response": { "prd": [] }
+        });
+    }
+
+    res.json({
+        "bustime-response": { "prd": preds }
+    });
+});
+
+router.get('getRideStopPredictions/:stopId', (req, res) =>)
 
 router.get('/getAllPredictions', async (req, res) => {
     try {
