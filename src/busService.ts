@@ -69,12 +69,13 @@ const routeTimingCache: Record<string, Record<string, Record<string, {diff : num
 };
 
 const validRoutes = new Set();
+const validRideRoutes = new Set();
 let curRouteSelections = {};
+let curRideRouteSelections = {};
 const routes = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
 const rideRoutes = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "42", "43", "44", "45", "46", "47", "61", "62", "63", "64", "65", "66", "67", "68", "104"];
-let cachedStopLocations: { [stopId: string]: {name : string, lat: number, lon: number } } = {
-
-};
+let cachedStopLocations: { [stopId: string]: {name : string, lat: number, lon: number } } = {};
+let cachedRideStopLocations: { [stopId: string]: {name : string, lat: number, lon: number } } = {};
 
 const message = {id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99'}
 
@@ -284,7 +285,7 @@ const getAllRidePredictions = async () => {
                         rt: routes.join(','),
                         tmres: 's',
                         rtpidatafeed: 'bustime',
-                        key: API_KEY,
+                        key: RIDE_API_KEY,
                         format: 'json'
                     }
                 });
@@ -640,7 +641,8 @@ const getBuses = async () => {
             return res.data['bustime-response']['vehicle'];
         }
         else{
-            console.log('Unexpected API response:', res.data);
+            //Logs if a certain route has no active buses
+            //console.log('Unexpected API response:', res.data);
         }
 
         return [];
@@ -750,19 +752,42 @@ const addToCachedRideRoutes = async (rt: string) => {
 }
 
 const getSelectableRideRoutes = () => {
-    axios.get(`https://rt.theride.org/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${API_KEY}&format=json`).then(res => {
-        curRouteSelections = res.data;
-        validRoutes.clear();
+    axios.get(`https://rt.theride.org/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${RIDE_API_KEY}&format=json`).then(res => {
+        curRideRouteSelections = res.data;
+        validRideRoutes.clear();
         try {
             res.data['bustime-response']['routes'].forEach((e: Route) => {
-                validRoutes.add(e['rt']);
+                validRideRoutes.add(e['rt']);
                 addToCachedRideRoutes(e['rt']);
             });
         } catch (e) {
 
         }
     })
-        .catch((err) => console.log(`Error while getting selectable routes: ${err}`));
+        .catch((err) => console.log(`Error while getting selectable routes: ${err}`))
+        .finally(async() => {
+                cachedRideStopLocations = {};
+                console.log("Caching Ride Stops..")
+                Object.values(cachedRideRoutes).forEach((routePatterns: any) => {
+                    if (Array.isArray(routePatterns)) {
+                        routePatterns.forEach((pattern: any) => {
+                            if (pattern.pt && Array.isArray(pattern.pt)) {
+                                pattern.pt.forEach((point: any) => {
+                                    if (point.stpid && point.lat && point.lon) {
+                                        cachedRideStopLocations[point.stpid] = {
+                                            name: point.stpnm,
+                                            lat: parseFloat(point.lat),
+                                            lon: parseFloat(point.lon)
+                                        };
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                console.log(`Number of stop locations: ${Object.keys(cachedRideStopLocations).length}`);
+        })
 }
 
 
@@ -895,15 +920,20 @@ const getSelectableRoutes = () => {
 export { 
     curBusPositions,
     curRidePositions, 
-    cachedRoutes, 
+    cachedRoutes,
+    cachedRideRoutes,
     cachedPredsByVid, 
     cachedPredsByStopId,
     cachedRidePredsByVid, 
     cachedRidePredsByStopId, 
     validRoutes, 
+    validRideRoutes,
     curRouteSelections, 
-    routes, 
+    curRideRouteSelections,
+    routes,
+    rideRoutes, 
     cachedStopLocations, 
+    cachedRideStopLocations,
     routeTimingCache,
     cachedGraph, 
     stopIdToName, 
@@ -912,6 +942,7 @@ export {
     updateBusPositions,
     updateRidePositions,
     getSelectableRoutes,
+    getSelectableRideRoutes,
     rebuildGraph
 };
 

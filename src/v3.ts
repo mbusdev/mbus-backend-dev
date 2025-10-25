@@ -20,15 +20,19 @@ import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 import { 
     curBusPositions,
     curRidePositions, 
-    cachedRoutes, 
+    cachedRoutes,
+    cachedRideRoutes,
     cachedPredsByVid, 
     cachedPredsByStopId,
     cachedRidePredsByVid, 
     cachedRidePredsByStopId, 
     validRoutes, 
     curRouteSelections, 
-    routes, 
+    curRideRouteSelections,
+    routes,
+    rideRoutes, 
     cachedStopLocations, 
+    cachedRideStopLocations,
     routeTimingCache,
     cachedGraph, 
     stopIdToName, 
@@ -37,6 +41,7 @@ import {
     updateBusPositions,
     updateRidePositions,
     getSelectableRoutes,
+    getSelectableRideRoutes,
     rebuildGraph
 } from './busService';
 import axios from "axios";
@@ -94,8 +99,10 @@ const routeImages: {[k: string]: string} = metadata.routeImages;
 setInterval(updateBusPositions, 7500);
 setInterval(updateRidePositions, 7500);
 setInterval(getSelectableRoutes, 60000);
+setInterval(getSelectableRideRoutes, 60000);
 setInterval(rebuildGraph, 10 * 1000);
 getSelectableRoutes();
+getSelectableRideRoutes();
 rebuildGraph(); 
 
 import * as process from "node:process";
@@ -133,8 +140,16 @@ router.get('/getSelectableRoutes', (req, res) => {
     res.send(curRouteSelections);
 });
 
+router.get('/getSelectableRideRoutes', (req, res) => {
+    res.send(curRideRouteSelections);
+});
+
 router.get('/getAllRoutes', (req, res) => {
     res.send({routes: cachedRoutes});
+});
+
+router.get('/getAllRideRoutes', (req, res) => {
+    res.send({rideRoutes: cachedRideRoutes});
 });
 
 router.get('/getrouteCache', (req, res) => {
@@ -255,8 +270,6 @@ router.get('/getRideStopPredictions/:stopId', (req, res) => {
     });
 });
 
-router.get('getRideStopPredictions/:stopId', (req, res) =>)
-
 router.get('/getAllPredictions', async (req, res) => {
     try {
         const predictions = await getAllBusPredictions();
@@ -269,6 +282,14 @@ router.get('/getAllPredictions', async (req, res) => {
 
 router.get('/getAllStops', (req, res) => {
     const stopsList = Object.entries(cachedStopLocations).map(([stpid, stopInfo]) => ({
+    stpid,
+    ...stopInfo,
+  }));
+    res.json(Object.values(stopsList));
+});
+
+router.get('/getAllRideStops', (req, res) => {
+    const stopsList = Object.entries(cachedRideStopLocations).map(([stpid, stopInfo]) => ({
     stpid,
     ...stopInfo,
   }));
