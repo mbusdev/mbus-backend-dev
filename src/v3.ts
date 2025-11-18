@@ -92,12 +92,37 @@ getSelectableRoutes();
 rebuildGraph(); 
 
 import * as process from "node:process";
-
+import { applicationDefault, initializeApp } from "firebase-admin/app";
+import { getMessaging } from "firebase-admin/messaging";
 
 
 dotenv.config();
 
 const API_KEY = process.env.MBUS_API_KEY;
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
+
+const firebaseApp = initializeApp({credential: applicationDefault()});
+
+// testing purposes
+router.post('/notifyMeLater', (req, res) => {
+    console.log("got request");
+    const registrationToken = req.body.token;
+    if (registrationToken === undefined) {
+        console.log("got request with no token");
+        console.log(req.body);
+        res.send("registration token missing");
+        res.status(400);
+        return;
+    }
+    setTimeout(() => {
+      console.log("sending push notification..");
+      getMessaging()
+          .send({notification: {title: "hi", body: "hello world!"}, token: registrationToken})
+          .catch((e) => console.log("Failed to send message: ", e));
+    }, 10000);
+    res.sendStatus(200);
+});
+
 router.get('/getBusPredictions1/:busId', (req, res) => {
     axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions?requestType=getpredictions&locale=en&vid=${req.params.busId}&top=4&tmres=s&rtpidatafeed=bustime&key=${API_KEY}&format=json&xtime=1626028950462`).then(apiRes => {
         res.send(apiRes.data);
