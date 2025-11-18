@@ -95,8 +95,9 @@ export class RaptorAlgorithm {
     return [kConnections, bestArrivals];
   }
 
-  private scanRoutes(results: ScanResults, routeScanner: RouteScanner, markedStops: StopID[]): void {
+  private scanRoutes(results: ScanResults, routeScanner: RouteScanner, markedStops: StopID[], round : number): void {
     const queue = this.queueFactory.getQueue(markedStops);
+    const transferBuffer = round > 0 ? 120 : 0;
 
     if (RaptorAlgorithm.DEBUG) {
       console.log('Scanning routes with queue:', queue);
@@ -134,7 +135,7 @@ export class RaptorAlgorithm {
           }
         }
         else if (previousArrival && (!trip || previousArrival < trip.stopTimes[pi].arrivalTime + i)) {
-          const newTrip = routeScanner.getTrip(routeId, pi, previousArrival);
+          const newTrip = routeScanner.getTrip(routeId, pi, previousArrival + transferBuffer);
 
           if (newTrip) {
             if (RaptorAlgorithm.DEBUG) {
