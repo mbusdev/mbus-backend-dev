@@ -78,6 +78,9 @@ class BusColorManager {
     }
 }
 
+const message = { id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99' }
+
+
 // Initialize bus color manager
 const busColorManager = new BusColorManager();
 
@@ -134,13 +137,16 @@ router.get('/getVehicleImage/:route', (req, res) => {
    const dirname = import.meta.dirname;
    const assetPath = path.join(dirname, 'assets');
    const imagePath = path.join(assetPath, 'main2025');
-
     if (!route || !(route in routeImages)) {
-        res.sendFile(path.join(assetPath, 'bus_CN.png'));
-        return res.sendStatus(400);
+        res.status(400).sendFile(path.join(imagePath, 'bus_CN.png'));
+        return; 
     }
-
-    res.sendFile(path.join(imagePath, routeImages[route]));
+    res.sendFile(path.join(imagePath, routeImages[route]), (err) => {
+        if (err) {
+            console.error(`Error sending requested image for route ${route}: ${err.message}`);
+            if (!res.headersSent) res.status(404).send('Image file not found on server.');
+        }
+    });
 });
 
 router.get('/getRouteInfoVersion', (req, res) => {
