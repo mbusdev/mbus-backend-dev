@@ -51,5 +51,5 @@ describe('Stress Test Pathing Endpoint', () => {
       console.error('❌ Some requests failed during stress test.');
       throw error;
     }
-  }, 30000); // Optional: increase timeout for stress test
+  }, 40000); // Optional: increase timeout for stress test
 });

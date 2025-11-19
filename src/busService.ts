@@ -2,6 +2,7 @@ import * as process from "node:process";
 
 import axios from 'axios';
 import dotenv from "dotenv";
+import path from "path";
 import { Route } from "@/types";
 import { 
     Trip, 
@@ -11,6 +12,12 @@ import {
     TransfersByOrigin, 
     Interchange
 } from "./raptor/types";
+
+import { getWalkingResponse,
+        findNearestNode
+ } from "./walking/a_star";
+import { writeFileSync, readFileSync, existsSync } from "fs";
+
 
 dotenv.config();
 
@@ -52,6 +59,21 @@ const routeTimingCache: Record<string, Record<string, Record<string, {diff : num
         }
     }
 };
+interface CachedWalkingData {
+    duration: number; // in seconds
+    distance: number; // in meters
+    path_coords: { lat: number, lon: number }[]; 
+}
+
+let walkingCache: { [key: string]: CachedWalkingData } = {};
+const walking_path_cache = "src/assets/walkingCache.json";
+if (existsSync(walking_path_cache)) {
+    const file = readFileSync(walking_path_cache, "utf8");
+    Object.assign(walkingCache, JSON.parse(file));
+    console.log("Loaded walkingCache.json");
+} else {
+    console.log("walkingCache.json does not exist — using empty cache");
+}
 
 const validRoutes = new Set();
 let curRouteSelections = {};
@@ -70,6 +92,23 @@ let cachedGraph: {
 
 let stopIdToName: Record<string, string> = {};
 let tatripidToRt: Record<string, string> = {};
+const stopNodeMap: Record<string, { nodeId: string, distToNode: number }> = {};
+
+function buildStopNodeMap() {
+    console.log("Mapping bus stops to street graph...");
+    Object.keys(cachedStopLocations).forEach(stopId => {
+        const loc = cachedStopLocations[stopId];
+        // Find the street node closest to the bus stop
+        const nearest = findNearestNode(loc.lat, loc.lon);
+        if (nearest && nearest.id) {
+            stopNodeMap[stopId] = {
+                nodeId: nearest.id,
+                distToNode: nearest.dist // Distance from stop pole to street node
+            };
+        }
+    });
+    console.log("Bus stop mapping complete.");
+}
 
 const sortStopTimesByRouteSequence = (stopTimes: StopTime[]): StopTime[] => {
     if (stopTimes.length <= 1) return stopTimes;
@@ -581,6 +620,7 @@ const getSelectableRoutes = () => {
                 });
                 
                 console.log(`Number of stop locations: ${Object.keys(cachedStopLocations).length}`);
+                buildStopNodeMap();
 
                 const WALKING_SPEED_KMH = 4;
                 const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600; // Convert to m/s
@@ -611,48 +651,96 @@ const getSelectableRoutes = () => {
                 });
 
                 // Create transfers between all stops
-                routeStops.forEach(stopId => {
-                    routeStops.forEach(otherStopId => {
-                        if (stopId !== otherStopId) {
-                            const stop1 = cachedStopLocations[stopId];
-                            const stop2 = cachedStopLocations[otherStopId];
-                            
-                            let transferDuration: number;
-                            
-                            if (stop1 && stop2) {
-                                // Compute diff with lat and lon
-                                const latDiff = (stop2.lat - stop1.lat) * 111320; 
-                                const lonDiff = (stop2.lon - stop1.lon) * 111320 * Math.cos(stop1.lat * Math.PI / 180);
-                                const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);                                                        
-                                let walkingTimeSeconds = distance / WALKING_SPEED_MS;                                
-                                // if (distance > 1200) {
-                                //     walkingTimeSeconds *= 1.5; // penatly for too big distances
-                                // }
-                                transferDuration = Math.round(walkingTimeSeconds);
-                            } else {
-                                console.log('Invalid stop');
-                                transferDuration = 60000; 
-                            }
-                            const existingTransfer = cachedGraph.transfers[stopId].find(t => t.destination === otherStopId);
-                            
-                            if (existingTransfer) {
-                                existingTransfer.duration = transferDuration;
-                            } else {
-                                const transfer: Transfer = {
-                                    origin: stopId,
-                                    destination: otherStopId,
-                                    duration: transferDuration,
-                                    startTime: 0,
-                                    endTime: Number.MAX_SAFE_INTEGER 
-                                };
-                                cachedGraph.transfers[stopId].push(transfer);
-                            }
+                    routeStops.forEach(stopId => {
+                        cachedGraph.transfers[stopId] = [];
+                        if (!cachedGraph.interchange[stopId]) {
+                            cachedGraph.interchange[stopId] = 60; // 1 minute interchange time
                         }
                     });
-                });
-                
-                const totalTransfers = Object.values(cachedGraph.transfers).reduce((total, transfers) => total + transfers.length, 0);
+
+                    const walkingFetchPromises: Promise<void>[] = [];
+
+                    // First pass: Identify cache misses and schedule fetches
+                    let count = 0;
+                    routeStops.forEach(stopId => {
+                        routeStops.forEach(otherStopId => {
+                            if (stopId !== otherStopId) {
+                                const cacheKey = `${stopId}_TO_${otherStopId}`;
+
+                                if (!walkingCache[cacheKey]) {
+                                    const stop1 = cachedStopLocations[stopId];
+                                    const stop2 = cachedStopLocations[otherStopId];
+                                    if (stop1 && stop2) {
+                                        const promise = (async () => {
+                                            try {
+                                                const walkingData = await getWalkingResponse(
+                                                    stop1.lat, 
+                                                    stop1.lon, 
+                                                    stop2.lat, 
+                                                    stop2.lon
+                                                );
+                                                
+                                                walkingCache[cacheKey] = { 
+                                                    duration: walkingData.duration, 
+                                                    distance: walkingData.distance,
+                                                    path_coords: walkingData.path_coords
+                                                };
+                                            } catch (error) {
+                                                walkingCache[cacheKey] = { duration: 60000, distance: 0, path_coords: [] }; 
+                                            }
+                                        })();
+                                        walkingFetchPromises.push(promise);
+                                        count++;
+                                        if (count % 100 === 0) {
+                                            console.log(`Processed ${count} walking computations…`);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+
+                    // 3. Wait for all new walking responses to be calculated
+                    if (walkingFetchPromises.length > 0) {
+                        console.log(`Waiting for ${walkingFetchPromises.length} new walking responses...`);
+                        await Promise.all(walkingFetchPromises);
+                    }
+
+                    // 4. Second pass: Build the transfers using the now-fully-populated cache
+                    routeStops.forEach(stopId => {
+                        routeStops.forEach(otherStopId => {
+                            if (stopId !== otherStopId) {
+                                const cacheKey = `${stopId}_TO_${otherStopId}`;
+                                const cachedData = walkingCache[cacheKey];
+
+                                if (cachedData) {
+                                    const transfer: Transfer = {
+                                        origin: stopId,
+                                        destination: otherStopId,
+                                        duration: cachedData.duration,
+                                        startTime: 0,
+                                        endTime: Number.MAX_SAFE_INTEGER 
+                                    };
+                                    cachedGraph.transfers[stopId].push(transfer);
+                                } else {
+                                    console.warn(`Cache data missing for expected key: ${cacheKey}`);
+                                }
+                            }
+                        });
+                    });
+                    
+                    const totalTransfers = Object.values(cachedGraph.transfers).reduce((total, transfers) => total + transfers.length, 0);
+                    console.log(`Total transfers in cachedGraph: ${totalTransfers}`);
                 console.log(`Total transfers in cachedGraph: ${totalTransfers}`);
+                const cachePath = path.join("src", "assets", "walkingCache.json");
+                // only write if file does NOT exist
+                if (!existsSync(cachePath)) {
+                    writeFileSync("walkingCache.json", JSON.stringify(walkingCache, null, 2));
+                    console.log("walkingCache.json created.");
+                } else {
+                    console.log("walkingCache.json already exists. Skipping write.");
+                }
+
             } catch (error) {
                 console.error('Error updating transfers:', error);
             }
@@ -669,12 +757,14 @@ export {
     routes, 
     cachedStopLocations, 
     routeTimingCache,
+    walkingCache,
     cachedGraph, 
     stopIdToName, 
     tatripidToRt,
+    stopNodeMap,
     getAllBusPredictions,
     updateBusPositions,
     getSelectableRoutes,
-    rebuildGraph
+    rebuildGraph    
 };
 

@@ -16,3 +16,7 @@ By default, the service runs on port 3000. To define a port for the service to r
 
 ## Tests
 To run tests, run `npm test`.
+
+
+## Contributing
+Before submitting a pull request to main, please make sure you pass all the tests. If you believe some of the tests faulty or no longer needed after your commit, please contact Ryan Lu on Slack.
