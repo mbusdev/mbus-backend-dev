@@ -545,7 +545,10 @@ const getSelectableRoutes = () => {
                 addToCachedRoutes(e['rt']);
             });
         } catch (e) {
-
+            if (res.data['bustime-response'].error !== undefined) {
+                console.log(res.data['bustime-response'].error);
+            }
+            console.log(`Failed to parse valid routes: ${e}`);
         }
     })
         .catch((err) => console.log(`Error while getting selectable routes: ${err}`))
