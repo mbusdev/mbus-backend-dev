@@ -85,9 +85,12 @@ dotenv.config();
 const router = express.Router();
 const routeImages: {[k: string]: string} = metadata.routeImages;
 
-setInterval(updateBusPositions, 7500);
+if (process.env.DEV_UPDATE_BUS_INTERVAL) {
+    console.log(`Using alternate graph and bus position interval: ${process.env.DEV_UPDATE_BUS_INTERVAL}`);
+}
+setInterval(updateBusPositions, parseInt(process.env.DEV_UPDATE_BUS_INTERVAL || "7500"));
 setInterval(getSelectableRoutes, 60000);
-setInterval(rebuildGraph, 10 * 1000);
+setInterval(rebuildGraph, parseInt(process.env.DEV_UPDATE_BUS_INTERVAL || "10000"));
 getSelectableRoutes();
 rebuildGraph(); 
 
@@ -593,6 +596,57 @@ router.get('/plan-journey', async (req, res) => {
     } catch (error) {
         console.error('Error planning journey:', error);
         res.status(500).json({ error: 'Failed to plan journey' });
+    }
+});
+
+interface pathReport {
+    time?: string;
+    src?: string;
+    dst?: string;
+    msg?: string;
+    img?: Base64URLString;
+};
+
+router.get('/reportRoute', async (req, res) => {
+    try {
+        const report: pathReport = req.query;
+        let time: any = new Date(report.time || 0);
+        let ms = Date.now() - time;
+        if (ms > 60 * 60000) { // 60 minutes
+            console.warn("Invalid request recieved (stale)");
+            res.status(400).json('Failed to send report (stale request)');
+            return;
+        }
+
+        console.log(`[report: pathfinding] (${report.src}) to (${report.dst}) at ${time.toISOString()} : ${report.msg || "no msg"}`);
+
+        let valid: Promise<Boolean>;
+        if (report.img) {
+            let img = new Image();
+            img.src = 'data:image/png;base64,' + report.img;
+            valid = new Promise((resolve) => {
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+            });
+
+            if ((await valid).valueOf()) {
+                console.log(`                      image sent: ${img.src}`);
+            } else {
+                console.log(`                      invalid image attached`);
+            }
+        } else {
+            console.log(`                      no image attached`);
+        }
+
+        res.status(200).json('Report sent successfully');
+    } catch (error) {
+        if (error instanceof RangeError) {
+            console.error("Error storing pathfinding bug report: RangeError (possibly malformed time value)");
+            res.status(422).json('Failed to send report (invalid request)');
+        } else {
+            console.error('Error storing pathfinding bug report:', error);
+            res.status(500).json('Failed to send report (server error)');
+        }
     }
 });
 
