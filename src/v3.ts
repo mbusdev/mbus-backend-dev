@@ -88,41 +88,18 @@ const routeImages: {[k: string]: string} = metadata.routeImages;
 setInterval(updateBusPositions, 7500);
 setInterval(getSelectableRoutes, 60000);
 setInterval(rebuildGraph, 10 * 1000);
+setInterval(processReminders, 10 * 1000);
 getSelectableRoutes();
 rebuildGraph(); 
 
 import * as process from "node:process";
-import { applicationDefault, initializeApp } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
+import { encodeStopAndRoute, processReminders, reminderSubscriptions, Event } from "./reminderService";
 
 
 dotenv.config();
 
 const API_KEY = process.env.MBUS_API_KEY;
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
-
-const firebaseApp = initializeApp({credential: applicationDefault()});
-
-// testing purposes
-router.post('/notifyMeLater', (req, res) => {
-    console.log("got request");
-    const registrationToken = req.body.token;
-    if (registrationToken === undefined) {
-        console.log("got request with no token");
-        console.log(req.body);
-        res.send("registration token missing");
-        res.status(400);
-        return;
-    }
-    setTimeout(() => {
-      console.log("sending push notification..");
-      getMessaging()
-          .send({notification: {title: "hi", body: "hello world!"}, token: registrationToken})
-          .catch((e) => console.log("Failed to send message: ", e));
-    }, 10000);
-    res.sendStatus(200);
-});
-
 router.get('/getBusPredictions1/:busId', (req, res) => {
     axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions?requestType=getpredictions&locale=en&vid=${req.params.busId}&top=4&tmres=s&rtpidatafeed=bustime&key=${API_KEY}&format=json&xtime=1626028950462`).then(apiRes => {
         res.send(apiRes.data);
@@ -619,6 +596,84 @@ router.get('/plan-journey', async (req, res) => {
         console.error('Error planning journey:', error);
         res.status(500).json({ error: 'Failed to plan journey' });
     }
+});
+
+// Notifications / Reminders
+
+// Expects {token: string, event: Event} in the body
+router.post('/setReminder', (req, res) => {
+  const token: string = req.body.token;
+  console.log(token);
+  const event: Event = req.body.event;
+  let registeredTokens = reminderSubscriptions.get(encodeStopAndRoute(event.stpid, event.rtid));
+  if (registeredTokens == undefined) {
+    reminderSubscriptions.set(encodeStopAndRoute(event.stpid, event.rtid), new Set([token]));
+  } else {
+    registeredTokens.add(token);
+    console.log("Registered tokens for event " + JSON.stringify(event) + " are " + JSON.stringify(registeredTokens));
+  }
+  res.sendStatus(200);
+});
+
+// Expects {token: string, event: Event} in the body
+router.post('/unsetReminder', (req, res) => {
+  const token: string = req.body.token;
+  const event: Event = req.body.event;
+  const registeredTokens = reminderSubscriptions.get(encodeStopAndRoute(event.stpid, event.rtid));
+  if (registeredTokens != undefined) {
+    registeredTokens.delete(token);
+    console.log("Registered tokens for event " + JSON.stringify(event) + " are " + JSON.stringify(registeredTokens));
+  }
+  res.sendStatus(200);
+});
+
+// Expects {oldTok: string, newTok: string} in the body
+// Upon responding with 200, future calls to /setReminder, /unsetReminder, and /reminders
+// will need the new token
+router.post('/swapToken', (req, res) => {
+  const oldTok: string = req.body.oldTok;
+  const newTok: string = req.body.newTok;
+  const iter = reminderSubscriptions.values();
+  for (let v of iter) {
+    if (v.has(oldTok)) {
+      v.delete(oldTok);
+      v.add(newTok);
+    }
+  }
+  res.sendStatus(200);
+});
+
+// Expects {token: string, reminders: Array<{stpid: string, rtid: string}>}
+// Responds with which reminders should be removed from the client
+router.post('/checkStaleness', (req, res) => {
+  const token: string = req.body.token;
+  const reminders: Array<{stpid: string, rtid: string}> = req.body.reminders;
+  const staleReminders = reminders.filter((v) => {
+    const encoded = encodeStopAndRoute(v.stpid, v.rtid);
+    return !reminderSubscriptions.has(encoded) || !reminderSubscriptions.get(encoded)!.has(token);
+  });
+  res.send({reminders: staleReminders});
+  res.status(200);
+});
+
+// testing purposes
+router.post('/notifyMeLater', (req, res) => {
+    console.log("got request");
+    const registrationToken = req.body.token;
+    if (registrationToken === undefined) {
+        console.log("got request with no token");
+        console.log(req.body);
+        res.send("registration token missing");
+        res.status(400);
+        return;
+    }
+    setTimeout(() => {
+      console.log("sending push notification..");
+      getMessaging()
+          .send({notification: {title: "hi", body: "hello world!"}, token: registrationToken})
+          .catch((e) => console.log("Failed to send message: ", e));
+    }, 10000);
+    res.sendStatus(200);
 });
 
 export default router;
