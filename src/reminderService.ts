@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { cachedPredsByStopId } from "./busService";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
+import * as metadata from "./assets/route-data.json";
 
 dotenv.config()
 
@@ -29,6 +30,8 @@ function decodeStopAndRoute(encoded: string): { stpid: string, rtid: string } {
 }
 
 function processReminders() {
+  // console.log(stopIdToName);
+  // console.log(metadata.routeIdToName);
   const updates: Array<
     { vid: string, pred: number, prevPred: number | undefined, prevTs: Date | undefined, rtid: string, stpid: string }
   > = [];
@@ -52,6 +55,7 @@ function processReminders() {
       const soonestBus = soonestBusByRoute.get(rtid)!;
       if (!prevSoonestBus || prevSoonestBus!.prediction !== soonestBus.prediction
       ) {
+        // the predicted time till arrival has changed
         soonestBusByStopAndRoute.set(stopAndRouteEncoded, soonestBusByRoute.get(rtid)!);
         updates.push({
           rtid: rtid,
@@ -64,6 +68,7 @@ function processReminders() {
       }
     }
   }
+  console.log(`There are ${updates.length} updates`);
 
   // send push notifications / messages as needed based on updates and registrations
   for (const update of updates) {
@@ -77,11 +82,14 @@ function processReminders() {
 
       if (update.pred <= 5 && (update.prevPred == undefined || update.prevPred > 5)) {
         // send five minute warning notification
-        sendToAll({ notification: { title: 'five_minute_warning', body: 'five_minute_warning' } }, subscribedDevices);
+        sendToAll(
+          { notification: { title: 'Five Minute Warning', body: `route is five minutes away from stop` } },
+          subscribedDevices
+        );
       }
       if (update.pred == 0) {
         // send bus is here notification
-        sendToAll({ notification: { title: 'bus_is_here', body: 'bus_is_here' } }, subscribedDevices);
+        sendToAll({ notification: { title: 'Bus Arriving', body: 'route is almost at stop' } }, subscribedDevices);
       }
       // send message with updated info
       sendToAll({ data: { stpid: update.stpid, rtid: update.rtid } }, subscribedDevices);
