@@ -31,7 +31,9 @@ import {
     cachedGraph,
     updateBusPositions,
     getSelectableRoutes,
-    rebuildGraph
+    rebuildGraph,
+    pastCaches,
+    pastCacheMs,
 } from './busService';
 import axios from "axios";
 
@@ -88,9 +90,13 @@ const routeImages: {[k: string]: string} = metadata.routeImages;
 if (process.env.DEV_UPDATE_BUS_INTERVAL) {
     console.log(`Using alternate graph and bus position interval: ${process.env.DEV_UPDATE_BUS_INTERVAL}`);
 }
-setInterval(updateBusPositions, parseInt(process.env.DEV_UPDATE_BUS_INTERVAL || "7500"));
+
+const updateBusPositionsMs = parseInt(process.env.DEV_UPDATE_BUS_INTERVAL || "7500");
+const rebuildGraphMs = parseInt(process.env.DEV_UPDATE_BUS_INTERVAL || "10000");
+
+setInterval(updateBusPositions, updateBusPositionsMs);
 setInterval(getSelectableRoutes, 60000);
-setInterval(rebuildGraph, parseInt(process.env.DEV_UPDATE_BUS_INTERVAL || "10000"));
+setInterval(rebuildGraph, rebuildGraphMs);
 getSelectableRoutes();
 rebuildGraph(); 
 
@@ -604,47 +610,60 @@ interface pathReport {
     src?: string;
     dst?: string;
     msg?: string;
-    img?: Base64URLString;
+    route?: string;
 };
+
+var compiledGraphs: Set<Date> = new Set<Date>();
 
 router.get('/reportRoute', async (req, res) => {
     try {
         const report: pathReport = req.query;
-        let time: any = new Date(report.time || 0);
-        let ms = Date.now() - time;
-        if (ms > 60 * 60000) { // 60 minutes
-            console.warn("Invalid request recieved (stale)");
+        let reportTime: any = new Date(report.time || 0);
+        let ms = Date.now() - reportTime;
+        if (ms > pastCacheMs) {
+            console.warn("[warn] invalid request recieved (stale)");
             res.status(400).json('Failed to send report (stale request)');
             return;
         }
 
-        console.log(`[report: pathfinding] (${report.src}) to (${report.dst}) at ${time.toISOString()} : ${report.msg || "no msg"}`);
-
-        let valid: Promise<Boolean>;
-        if (report.img) {
-            let img = new Image();
-            img.src = 'data:image/png;base64,' + report.img;
-            valid = new Promise((resolve) => {
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-            });
-
-            if ((await valid).valueOf()) {
-                console.log(`                      image sent: ${img.src}`);
+        // binary search pastCaches
+        var lo = 0, hi = pastCaches.length, mid = 0;
+        while (lo < hi) {
+            mid = Math.floor((lo + hi) / 2);
+            var deltaTime = reportTime - (pastCaches[mid].time as any);
+            if (deltaTime < 0) { // in the future
+                hi = mid - 1;
+            } else if (deltaTime > rebuildGraphMs) { // too far in the past
+                lo = mid + 1;
             } else {
-                console.log(`                      invalid image attached`);
+                break;
             }
-        } else {
-            console.log(`                      no image attached`);
+        }
+        const graphTimeString = pastCaches.length > 0 ? pastCaches[mid].time : "none";
+
+        console.log(`[report: pathfinding] (${report.src}) to (${report.dst}) at ${reportTime.toISOString()}: ${report.msg || "no msg"}`);
+        console.log(`                      graph timestamp : ${graphTimeString}`);
+        console.log(`                      attached journey: ${report.route}`);
+
+        if (pastCaches.length == 0) {
+            console.error("                [err] storing pathfinding bug report: pastCaches is empty");
+            res.status(500).json('Failed to send report (server error)');
+            return;
+        }
+        
+        if (!compiledGraphs.has(pastCaches[mid].time)) {
+            // TODO! log to a file
+            console.debug(pastCaches[mid].time, JSON.stringify(pastCaches[mid]));
+            compiledGraphs.add(pastCaches[mid].time);
         }
 
         res.status(200).json('Report sent successfully');
     } catch (error) {
         if (error instanceof RangeError) {
-            console.error("Error storing pathfinding bug report: RangeError (possibly malformed time value)");
+            console.error("[err] storing pathfinding bug report: RangeError (possibly malformed time value)");
             res.status(422).json('Failed to send report (invalid request)');
         } else {
-            console.error('Error storing pathfinding bug report:', error);
+            console.error('[err] storing pathfinding bug report:', error);
             res.status(500).json('Failed to send report (server error)');
         }
     }

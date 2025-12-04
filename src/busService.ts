@@ -68,6 +68,12 @@ let cachedGraph: {
     interchange: Interchange;
 }
 
+const pastCacheMs = 60 * 60 * 1000;
+let pastCaches: Array<{
+    time: Date;
+    graph: typeof cachedGraph
+}> = [];
+
 let stopIdToName: Record<string, string> = {};
 let tatripidToRt: Record<string, string> = {};
 
@@ -226,7 +232,13 @@ const rebuildGraph = async () => {
         };
         cachedGraph.trips.push(virtualOriginTrip);
         cachedGraph.trips.push(virtualDestTrip);
-        
+
+        // Log graph data
+        while (pastCaches.length > 0 && (now as any) - (pastCaches[0].time as any) > pastCacheMs) {
+            pastCaches.shift();
+        }
+        pastCaches.push({time: now, graph: cachedGraph});
+
     } catch (error) {
         console.error('Error rebuilding graph:', error);
     }
@@ -675,6 +687,8 @@ export {
     getAllBusPredictions,
     updateBusPositions,
     getSelectableRoutes,
-    rebuildGraph
+    rebuildGraph,
+    pastCaches,
+    pastCacheMs,
 };
 
