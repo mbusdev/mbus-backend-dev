@@ -2,17 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import {
 	Transfer,
-	StopID,
-	TimetableLeg
+	StopID
 } from "./raptor/types";
-import { RaptorAlgorithm } from "./raptor/RaptorAlgorithm";
-import { RaptorAlgorithmFactory } from "./raptor/RaptorAlgorithmFactory";
-import { DepartAfterQuery } from "./query/DepartAfterQuery";
-import { JourneyFactory } from "./results/JourneyFactory";
-import { earliestArrival, leastChanges, leastWalking } from "./results/filter/MultipleCriteriaFilter";
+import { McRaptorAlgorithm, Journey, JourneyLeg } from "./raptor/McRaptorAlgorithm";
+
 
 import * as metadata from "./assets/route-data.json";
-import * as valid_assets from "./assets/valid_assets.json";
+
 import * as path from "node:path";
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 
@@ -350,84 +346,9 @@ router.get('/nearest-stops', (req, res) => {
 	}
 });
 
-function optimizeWalkingFastest(journey: any, cachedGraph: any): any {
-	if (!journey) return journey;
-
-	const optimizedLegs: any[] = [];
-	const WALKING_SPEED_KMH = 4;
-	const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
-
-	function distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
-		const dx = (lat2 - lat1) * 111320;
-		const dy = (lon2 - lon1) * 111320 * Math.cos(lat1 * Math.PI / 180);
-		return Math.sqrt(dx * dx + dy * dy);
-	}
-
-	for (let i = 0; i < journey.legs.length; i++) {
-		const leg = journey.legs[i];
-
-		// Look for a transfer followed by a bus trip
-		if (leg.trip && i > 0 && "duration" in journey.legs[i - 1]) {
-			const transfer = journey.legs[i - 1] as Transfer;
-			const tripLeg = leg as TimetableLeg;
-			const trip = tripLeg.trip;
-
-			const originalBoardStop = tripLeg.stopTimes[0].stop;
-			const boardIdx = trip.stopTimes.findIndex(st => st.stop === originalBoardStop);
-			const walkStartTime = transfer.startTime;
-
-			let bestStop = originalBoardStop;
-			let bestIdx = boardIdx;
-			let bestDistance = Number.MAX_SAFE_INTEGER;
-
-			const originLoc = cachedStopLocations[transfer.origin];
-			if (!originLoc) {
-				optimizedLegs.push(leg);
-				continue;
-			}
-
-			for (let j = boardIdx; j < trip.stopTimes.length; j++) {
-				const candidate = trip.stopTimes[j];
-				const stopLoc = cachedStopLocations[candidate.stop];
-				if (!stopLoc) continue;
-
-				const dist = distanceMeters(originLoc.lat, originLoc.lon, stopLoc.lat, stopLoc.lon);
-				const walkArrival = walkStartTime + dist / WALKING_SPEED_MS;
-				const busArrival = candidate.arrivalTime - (cachedGraph.interchange[candidate.stop] ?? 0);
-
-				if (walkArrival <= busArrival && dist < bestDistance) {
-					bestStop = candidate.stop;
-					bestIdx = j;
-					bestDistance = dist;
-				}
-			}
-
-			if (bestStop !== originalBoardStop) {
-				console.log(`Optimized walking to ${bestStop} instead of ${originalBoardStop}, saving ${Math.round(bestDistance)} meters`);
-				// Update transfer
-				transfer.destination = bestStop;
-				transfer.duration = Math.round(bestDistance / WALKING_SPEED_MS);
-
-				// Trim trip leg to start from bestStop
-				tripLeg.stopTimes = trip.stopTimes.slice(bestIdx);
-
-				// Refresh trip leg duration
-				if (tripLeg.stopTimes.length > 1) {
-					const firstStop = tripLeg.stopTimes[0];
-					const lastStop = tripLeg.stopTimes[tripLeg.stopTimes.length - 1];
-					(tripLeg as any).duration = lastStop.arrivalTime - firstStop.departureTime;
-				}
-			}
-		}
-
-		optimizedLegs.push(leg);
-	}
-
-	return { ...journey, legs: optimizedLegs };
-}
-
 router.get('/plan-journey', async (req, res) => {
 	try {
+
 		const originStopId = 'VIRTUAL_ORIGIN';
 		const destStopId = 'VIRTUAL_DESTINATION';
 
@@ -473,6 +394,8 @@ router.get('/plan-journey', async (req, res) => {
 		const originLonNum = parseFloat(originLon as string);
 		const destLatNum = parseFloat(destLat as string);
 		const destLonNum = parseFloat(destLon as string);
+
+
 
 		const WALKING_SPEED_KMH = 4;
 		const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
@@ -529,7 +452,6 @@ router.get('/plan-journey', async (req, res) => {
 		let directWalkingTimeSeconds = directDistance / WALKING_SPEED_MS;
 
 		const directTransferDuration = Math.round(directWalkingTimeSeconds);
-		//console.log(`Walking Distance: ${directTransferDuration}`);
 
 		const directTransfer: Transfer = {
 			origin: originStopId,
@@ -540,65 +462,89 @@ router.get('/plan-journey', async (req, res) => {
 		};
 		cachedGraph.transfers[originStopId].push(directTransfer);
 
-		RaptorAlgorithm.setDebug(false);
-		const raptor = RaptorAlgorithmFactory.create(cachedGraph.trips, cachedGraph.transfers, cachedGraph.interchange);
-		let walkingPenalty = 1; // default no penalty
+		const mcRaptor = new McRaptorAlgorithm(cachedGraph.trips, cachedGraph.transfers, cachedGraph.interchange);
+
+		let walkingPenalty = 1;
 		if (walkingPenaltyParam !== undefined) {
 			const parsed = parseFloat(walkingPenaltyParam as string);
 			if (!isNaN(parsed) && parsed > 0) {
 				walkingPenalty = parsed;
 			}
 		}
-		raptor.setWalkingPenalty(walkingPenalty);
+		mcRaptor.setWalkingPenalty(walkingPenalty);
 
-		const resultsFactory = new JourneyFactory();
-		const journeyPlanner = new DepartAfterQuery(raptor, resultsFactory);
-		const journeys = journeyPlanner.plan(
-			originStopId as StopID,
-			destStopId as StopID,
-			currentTime
-		);
+		const journeys = mcRaptor.getOptimizedJourneys(originStopId, destStopId, currentTime);
 
-		const formatJourney = (journey: any) => {
+
+
+		const formatJourney = (journey: Journey) => {
 			if (!journey) return null;
 			return {
-				...journey,
-				legs: journey.legs.map((leg: any) => {
+				legs: journey.legs.map((leg: JourneyLeg) => {
 					const formattedLeg: any = {
-						...leg,
 						origin_id: leg.origin,
 						origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.origin] || leg.origin)),
 						destination_id: leg.destination,
-						destination: leg.destination === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination))
+						destination: leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination),
+						destinationName: leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination),
+						startTime: leg.startTime,
+						endTime: leg.endTime,
+						duration: leg.duration,
+						mode: leg.type === 'Trip' ? 'bus' : 'walk',
+						originID: leg.originID,
+						destinationID: leg.destinationID,
+						stopTimes: leg.stopTimes,
+						trip: leg.trip,
+						rt: leg.rt
 					};
-					if (leg.trip && leg.trip.tripId) {
-						// Add duration for bus legs
-						if (leg.stopTimes && leg.stopTimes.length > 0) {
-							const firstStop = leg.stopTimes[0];
-							const lastStop = leg.stopTimes[leg.stopTimes.length - 1];
-							formattedLeg.duration = lastStop.arrivalTime - firstStop.departureTime;
-							formattedLeg.rt = firstStop.rt;
-							formattedLeg.vid = leg.vid;
 
+					if (leg.trip) {
+						formattedLeg.tripId = leg.trip.tripId;
+						formattedLeg.vid = leg.trip.vid;
+						if (!formattedLeg.rt) {
+							const firstStop = leg.trip.stopTimes[0];
+							formattedLeg.rt = firstStop.rt || tatripidToRt[leg.trip.tripId] || 'UNKNOWN';
 						}
-					} else if (typeof leg.duration === 'number') {
-						// Add duration for transfer legs
-						formattedLeg.duration = leg.duration;
 					}
+
 					return formattedLeg;
-				})
+				}),
+				departureTime: journey.criteria.arrivalTime - (journey.legs.reduce((acc, leg) => acc + leg.duration, 0)),
+				arrivalTime: journey.criteria.arrivalTime,
+				criteria: journey.criteria
 			};
 		};
 
-		let fastest = journeys.length > 0 ? journeys.reduce((best, j) => earliestArrival(best, j) ? j : best, journeys[0]) : null;
-		// if (fastest) {
-		//     fastest = optimizeWalkingFastest(fastest, cachedGraph);
-		// }
-		const leastTransfers = journeys.length > 0 ? journeys.reduce((best, j) => leastChanges(best, j) ? j : best, journeys[0]) : null;
-		const leastWalk = journeys.length > 0 ? journeys.reduce((best, j) => leastWalking(best, j) ? j : best, journeys[0]) : null;
-		const uniqueJourneys = [fastest, leastTransfers, leastWalk]
-			.filter((j, i, arr) => j && arr.findIndex(x => x === j) === i)
-			.map(formatJourney);
+		const formattedJourneys = journeys.map(formatJourney).filter((j): j is NonNullable<typeof j> => j !== null);
+
+		// Strategy 1: Earliest Arrival
+		const earliest = [...formattedJourneys].sort((a, b) => a.arrivalTime - b.arrivalTime)[0];
+
+		// Strategy 2: Least Walking
+		const leastWalk = [...formattedJourneys].sort((a, b) => a.criteria.walkingDistance - b.criteria.walkingDistance)[0];
+
+		// Strategy 3: Least Transfers
+		const leastXfer = [...formattedJourneys].sort((a, b) => a.criteria.transferCount - b.criteria.transferCount)[0];
+
+		const uniqueJourneys = [earliest, leastWalk, leastXfer]
+			.filter((j, i, arr) => j && arr.findIndex(x => x === j) === i);
+
+		// If unique length < 3
+		if (uniqueJourneys.length < 3) {
+			const others = formattedJourneys.filter(j => !uniqueJourneys.includes(j))
+				.sort((a, b) => a.arrivalTime - b.arrivalTime);
+			for (const o of others) {
+				if (uniqueJourneys.length >= 3) break;
+				uniqueJourneys.push(o);
+			}
+		}
+
+		uniqueJourneys.sort((a, b) => {
+			const durationA = a.arrivalTime - a.departureTime;
+			const durationB = b.arrivalTime - b.departureTime;
+			return durationA - durationB;
+		});
+
 		res.json({ journeys: uniqueJourneys.slice(0, 3) });
 	} catch (error) {
 		console.error('Error planning journey:', error);
