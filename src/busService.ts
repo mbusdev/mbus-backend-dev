@@ -81,6 +81,24 @@ const sortStopTimesByRouteSequence = (stopTimes: StopTime[]): StopTime[] => {
 };
 
 const rebuildGraph = async () => {
+    if (process.env.DEV_CACHE === 'true') {
+        if (cachedGraph && cachedGraph.trips && cachedGraph.trips.length > 0) return;
+        try {
+            const filePath = path.resolve(process.cwd(), 'saved_graph.json');
+            if (fs.existsSync(filePath)) {
+                const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                cachedGraph = data.graph;
+                cachedStopLocations = data.stopLocations;
+                stopIdToName = data.stopNames;
+                console.log('Loaded graph and state from saved_graph.json');
+            } else {
+                console.warn('DEV_CACHE set but saved_graph.json not found');
+            }
+        } catch (err) {
+            console.error('Error loading cached graph:', err);
+        }
+        return;
+    }
     try {
         const predictions = await getAllBusPredictions();
         if (!predictions || predictions.length === 0) {
@@ -592,6 +610,8 @@ const addToCachedRoutes = async (rt: string) => {
 }
 
 const getSelectableRoutes = () => {
+    if (process.env.DEV_CACHE === 'true') return;
+
     axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${API_KEY}&format=json`).then(async res => {
         curRouteSelections = res.data;
         validRoutes.clear();

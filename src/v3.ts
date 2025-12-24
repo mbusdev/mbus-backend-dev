@@ -10,6 +10,7 @@ import { McRaptorAlgorithm, Journey, JourneyLeg } from "./raptor/McRaptorAlgorit
 import * as metadata from "./assets/route-data.json";
 
 import * as path from "node:path";
+import * as fs from 'fs';
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 
 
@@ -549,6 +550,28 @@ router.get('/plan-journey', async (req, res) => {
 	} catch (error) {
 		console.error('Error planning journey:', error);
 		res.status(500).json({ error: 'Failed to plan journey' });
+	}
+});
+
+
+router.get('/save-graph', async (req, res) => {
+	if (process.env.DEV_SAVE !== 'true') {
+		return res.status(403).json({ error: 'Endpoint only available in DEV mode' });
+	}
+
+	try {
+		const filePath = path.resolve(process.cwd(), 'saved_graph.json');
+		const fullState = {
+			graph: cachedGraph,
+			stopLocations: cachedStopLocations,
+			stopNames: stopIdToName
+		};
+		const data = JSON.stringify(fullState, null, 2);
+		fs.writeFileSync(filePath, data);
+		res.json({ message: `Graph and state saved to ${filePath}` });
+	} catch (error) {
+		console.error('Error saving graph:', error);
+		res.status(500).json({ error: 'Failed to save graph' });
 	}
 });
 

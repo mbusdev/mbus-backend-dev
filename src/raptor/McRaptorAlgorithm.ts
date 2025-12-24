@@ -293,8 +293,6 @@ export class McRaptorAlgorithm {
                 const trip = current.trip;
                 const boardStop = parent.stop!;
                 const alightStop = current.stop!;
-
-
                 const boardTime = trip.stopTimes.find(st => st.stop === boardStop)?.departureTime || 0;
                 const alightTime = trip.stopTimes.find(st => st.stop === alightStop)?.arrivalTime || 0;
 
