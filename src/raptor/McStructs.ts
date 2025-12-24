@@ -15,7 +15,8 @@ export class Label {
         public trip: Trip | null = null,
         public transfer: Transfer | null = null,
         public stop: StopID | null = null,
-        public enterTime: number = 0
+        public enterTime: number = 0,
+        public stopIndex: number = -1
     ) { }
 
     dominates(other: Label): boolean {
@@ -39,7 +40,8 @@ export class Label {
             this.trip,
             this.transfer,
             this.stop,
-            this.enterTime
+            this.enterTime,
+            this.stopIndex
         );
     }
 }
@@ -49,7 +51,9 @@ export class Bag {
 
     add(newLabel: Label): boolean {
         for (const label of this.labels) {
-            if (label.dominates(newLabel)) {
+            if (label.dominates(newLabel) || (label.arrivalTime === newLabel.arrivalTime
+                && label.walkingDistance === newLabel.walkingDistance
+                && label.transferCount === newLabel.transferCount)) {
                 return false;
             }
         }

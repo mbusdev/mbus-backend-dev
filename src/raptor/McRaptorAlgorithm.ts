@@ -76,7 +76,7 @@ export class McRaptorAlgorithm {
 
         if (!bags[0][origin]) bags[0][origin] = new Bag();
 
-        const startLabel = new Label(departureTime, 0, 0, null, null, null, origin, departureTime);
+        const startLabel = new Label(departureTime, 0, 0, null, null, null, origin, departureTime, -1);
         bags[0][origin].add(startLabel);
 
 
@@ -108,7 +108,8 @@ export class McRaptorAlgorithm {
                             null,
                             transfer,
                             dest,
-                            arrTime
+                            arrTime,
+                            -1
                         );
 
                         if (bags[0][dest].add(newLabel)) {
@@ -160,7 +161,8 @@ export class McRaptorAlgorithm {
                             label.trip,
                             null,
                             stop,
-                            arrivalTime
+                            arrivalTime,
+                            i
                         );
 
                         if (bags[k][stop].add(newLabel)) {
@@ -186,7 +188,8 @@ export class McRaptorAlgorithm {
                                     catchTrip,
                                     null,
                                     stop,
-                                    departureTime
+                                    departureTime,
+                                    i
                                 );
                                 routeBag.add(onBoardLabel);
                             }
@@ -222,7 +225,8 @@ export class McRaptorAlgorithm {
                             null,
                             transfer,
                             dest,
-                            arrTime
+                            arrTime,
+                            -1
                         );
 
                         if (bags[k][dest].add(newLabel)) {
@@ -364,8 +368,12 @@ export class McRaptorAlgorithm {
                 const trip = current.trip;
                 const boardStop = parent.stop!;
                 const alightStop = current.stop!;
-                const boardTime = trip.stopTimes.find(st => st.stop === boardStop)?.departureTime || 0;
-                const alightTime = trip.stopTimes.find(st => st.stop === alightStop)?.arrivalTime || 0;
+
+                const boardIndex = parent.stopIndex;
+                const alightIndex = current.stopIndex;
+
+                const boardTime = trip.stopTimes[boardIndex]?.departureTime || 0;
+                const alightTime = trip.stopTimes[alightIndex]?.arrivalTime || 0;
 
                 leg = {
                     type: 'Trip',
@@ -377,7 +385,7 @@ export class McRaptorAlgorithm {
                     duration: alightTime - boardTime,
                     originID: boardStop,
                     destinationID: alightStop,
-                    rt: trip.stopTimes.find(st => st.stop === boardStop)?.rt,
+                    rt: trip.stopTimes[boardIndex]?.rt,
                     stopTimes: trip.stopTimes
                 };
             } else if (current.transfer) {

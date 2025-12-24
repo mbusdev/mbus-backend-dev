@@ -485,8 +485,6 @@ router.get('/plan-journey', async (req, res) => {
 
 		const journeys = mcRaptor.getOptimizedJourneysInRange(originStopId, destStopId, currentTime, rangeInSeconds);
 
-
-
 		const formatJourney = (journey: Journey) => {
 			if (!journey) return null;
 			return {
