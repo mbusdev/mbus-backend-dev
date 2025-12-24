@@ -90,6 +90,8 @@ const rebuildGraph = async () => {
                 cachedGraph = data.graph;
                 cachedStopLocations = data.stopLocations;
                 stopIdToName = data.stopNames;
+                cachedPredsByVid = data.predsByVid || {};
+                cachedPredsByStopId = data.predsByStopId || {};
                 console.log('Loaded graph and state from saved_graph.json');
             } else {
                 console.warn('DEV_CACHE set but saved_graph.json not found');
@@ -272,6 +274,10 @@ const getAllBusPredictions = async () => {
 
         const stopIdsArray = Array.from(allStopIds);
         const chunks = [];
+
+        if (process.env.DEV_CACHE === 'true') {
+            return [];
+        }
 
         for (let i = 0; i < stopIdsArray.length; i += 10) {
             chunks.push(stopIdsArray.slice(i, i + 10));

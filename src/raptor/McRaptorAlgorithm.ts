@@ -60,7 +60,6 @@ export class McRaptorAlgorithm {
         for (const routeId in this.routes) {
             this.routes[routeId].sort((a, b) => a.stopTimes[0].departureTime - b.stopTimes[0].departureTime);
         }
-
     }
 
     public setWalkingPenalty(penalty: number) {
@@ -121,7 +120,6 @@ export class McRaptorAlgorithm {
         }
 
         for (const s of initialFootPathMarked) markedStops.add(s);
-
 
         for (let k = 1; k <= rounds; k++) {
             bags[k] = {};
@@ -234,7 +232,6 @@ export class McRaptorAlgorithm {
                 }
             }
 
-
             for (const s of footPathMarked) newMarkedStops.add(s);
             markedStops = newMarkedStops;
             if (markedStops.size === 0) break;
@@ -249,7 +246,6 @@ export class McRaptorAlgorithm {
 
         return resultBag;
     }
-
 
     private findEarliestTrip(trips: Trip[], stopIndex: number, minTime: number): Trip | null {
         for (const trip of trips) {
@@ -276,8 +272,83 @@ export class McRaptorAlgorithm {
                 }
             });
         }
-
         return journeys;
+    }
+
+    public getOptimizedJourneysInRange(origin: StopID, destination: StopID, startTime: Time, range: number): Journey[] {
+        const allJourneys: Journey[] = [];
+        const endTime = startTime + range;
+
+        const significantTimes = new Set<number>();
+        significantTimes.add(startTime);
+
+        const startStops = [origin, ...(this.transfers[origin] || []).map(t => t.destination)];
+
+        for (const stop of startStops) {
+            for (const routeId in this.routeStops) {
+                if (this.routeStops[routeId].includes(stop)) {
+                    const params = this.routes[routeId];
+                    for (const trip of params) {
+                        const stopTime = trip.stopTimes.find(st => st.stop === stop);
+                        if (stopTime && stopTime.departureTime >= startTime && stopTime.departureTime <= endTime) {
+                            significantTimes.add(stopTime.departureTime);
+                        }
+                    }
+                }
+            }
+        }
+
+        const sortedTimes = Array.from(significantTimes).sort((a, b) => b - a);
+
+        for (const depTime of sortedTimes) {
+            const journeys = this.getOptimizedJourneys(origin, destination, depTime);
+            for (const j of journeys) {
+                if (j.legs.length === 0) continue;
+                allJourneys.push(j);
+            }
+        }
+        const bestJourneysBySignature = new Map<string, Journey>();
+        const walkingJourneys: Journey[] = [];
+
+        for (const j of allJourneys) {
+            const tripsSignature = j.legs
+                .filter(l => l.type === 'Trip' && l.trip)
+                .map(l => l.trip!.tripId)
+                .join('|');
+
+            if (!tripsSignature) {
+                walkingJourneys.push(j);
+                continue;
+            }
+
+            if (!bestJourneysBySignature.has(tripsSignature)) {
+                bestJourneysBySignature.set(tripsSignature, j);
+            } else {
+                const existing = bestJourneysBySignature.get(tripsSignature)!;
+
+                let better = false;
+                if (j.criteria.arrivalTime < existing.criteria.arrivalTime) better = true;
+                else if (j.criteria.arrivalTime === existing.criteria.arrivalTime) {
+                    if (j.criteria.walkingDistance < existing.criteria.walkingDistance) better = true;
+                    else if (j.criteria.walkingDistance === existing.criteria.walkingDistance) {
+                        if (j.criteria.transferCount < existing.criteria.transferCount) better = true;
+                    }
+                }
+
+                if (better) {
+                    bestJourneysBySignature.set(tripsSignature, j);
+                }
+            }
+        }
+
+        const uniqueJourneys: Journey[] = Array.from(bestJourneysBySignature.values());
+
+        if (walkingJourneys.length > 0) {
+            walkingJourneys.sort((a, b) => a.criteria.arrivalTime - b.criteria.arrivalTime);
+            uniqueJourneys.push(walkingJourneys[0]);
+        }
+
+        return uniqueJourneys;
     }
 
     private traceBack(finalLabel: Label): JourneyLeg[] {

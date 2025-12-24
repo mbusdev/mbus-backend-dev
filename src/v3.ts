@@ -474,7 +474,16 @@ router.get('/plan-journey', async (req, res) => {
 		}
 		mcRaptor.setWalkingPenalty(walkingPenalty);
 
-		const journeys = mcRaptor.getOptimizedJourneys(originStopId, destStopId, currentTime);
+		let rangeInSeconds = 45 * 60;
+		const { range } = req.query;
+		if (range !== undefined) {
+			const parsedRange = parseInt(range as string);
+			if (!isNaN(parsedRange) && parsedRange > 0) {
+				rangeInSeconds = parsedRange * 60;
+			}
+		}
+
+		const journeys = mcRaptor.getOptimizedJourneysInRange(originStopId, destStopId, currentTime, rangeInSeconds);
 
 
 
@@ -518,35 +527,17 @@ router.get('/plan-journey', async (req, res) => {
 
 		const formattedJourneys = journeys.map(formatJourney).filter((j): j is NonNullable<typeof j> => j !== null);
 
-		// Strategy 1: Earliest Arrival
-		const earliest = [...formattedJourneys].sort((a, b) => a.arrivalTime - b.arrivalTime)[0];
-
-		// Strategy 2: Least Walking
-		const leastWalk = [...formattedJourneys].sort((a, b) => a.criteria.walkingDistance - b.criteria.walkingDistance)[0];
-
-		// Strategy 3: Least Transfers
-		const leastXfer = [...formattedJourneys].sort((a, b) => a.criteria.transferCount - b.criteria.transferCount)[0];
-
-		const uniqueJourneys = [earliest, leastWalk, leastXfer]
-			.filter((j, i, arr) => j && arr.findIndex(x => x === j) === i);
-
-		// If unique length < 3
-		if (uniqueJourneys.length < 3) {
-			const others = formattedJourneys.filter(j => !uniqueJourneys.includes(j))
-				.sort((a, b) => a.arrivalTime - b.arrivalTime);
-			for (const o of others) {
-				if (uniqueJourneys.length >= 3) break;
-				uniqueJourneys.push(o);
+		const uniqueJourneys = formattedJourneys.sort((a, b) => {
+			if (a.arrivalTime !== b.arrivalTime) {
+				return a.arrivalTime - b.arrivalTime;
 			}
-		}
-
-		uniqueJourneys.sort((a, b) => {
-			const durationA = a.arrivalTime - a.departureTime;
-			const durationB = b.arrivalTime - b.departureTime;
-			return durationA - durationB;
+			if (a.criteria.walkingDistance !== b.criteria.walkingDistance) {
+				return a.criteria.walkingDistance - b.criteria.walkingDistance;
+			}
+			return a.criteria.transferCount - b.criteria.transferCount;
 		});
 
-		res.json({ journeys: uniqueJourneys.slice(0, 3) });
+		res.json({ journeys: uniqueJourneys });
 	} catch (error) {
 		console.error('Error planning journey:', error);
 		res.status(500).json({ error: 'Failed to plan journey' });
@@ -564,7 +555,9 @@ router.get('/save-graph', async (req, res) => {
 		const fullState = {
 			graph: cachedGraph,
 			stopLocations: cachedStopLocations,
-			stopNames: stopIdToName
+			stopNames: stopIdToName,
+			predsByVid: cachedPredsByVid,
+			predsByStopId: cachedPredsByStopId
 		};
 		const data = JSON.stringify(fullState, null, 2);
 		fs.writeFileSync(filePath, data);
