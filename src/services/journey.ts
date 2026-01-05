@@ -62,8 +62,15 @@ export async function planJourney(
     const mcRaptor = new McRaptorAlgorithm(requestTrips, transferData, state.cachedGraph.interchange);
     mcRaptor.setWalkingPenalty(options.walkingPenalty || 1);
 
-    const range = options.range || 45 * 60;
-    const journeys = mcRaptor.getOptimizedJourneysInRange(V_ORIGIN, V_DEST, time, range);
+    const range = options.range;
+    const journeys = range === undefined
+        ? mcRaptor.getOptimizedJourneys(V_ORIGIN, V_DEST, time)
+        : mcRaptor.getOptimizedJourneysInRange(
+            V_ORIGIN,
+            V_DEST,
+            time,
+            range ?? 45 * 60
+        );
 
     return processJourneys(journeys, oLat, oLon, dLat, dLon);
 }

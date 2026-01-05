@@ -1,7 +1,20 @@
-# Maizebus Backend
-<img src="static/logo.png" width="75" alt="Maisebus Logo">
+<div align="center">
+  <img src="static/logo.png" width="150" alt="Maizebus Logo">
+  <h1>Maizebus Backend</h1>
 
-Backend service for the Magic Bus application. Handles real-time bus tracking, route management, and multi-modal journey planning (bus + walking) using the McRaptor algorithm.
+  <p>
+    <a href="https://mbusdev.github.io/mbus-backend-dev/">
+      <img src="https://img.shields.io/badge/Documentation-Available-blue?style=for-the-badge&logo=typescript" alt="Documentation" />
+    </a>
+    <a href="package.json">
+      <img src="https://img.shields.io/badge/License-ISC-green?style=for-the-badge" alt="License" />
+    </a>
+  </p>
+
+  <p>
+    Backend service for the Magic Bus application. Handles real-time bus tracking, route management, and multi-modal journey planning (bus + walking) using the McRaptor algorithm.
+  </p>
+</div>
 
 ## Setup
 
