@@ -1,6 +1,6 @@
 
-import * as walking from './walking/walkingMap';
-import * as metadata from "./assets/route-data.json";
+import * as walking from '../walking/walkingMap';
+import * as metadata from "../assets/route-data.json";
 import * as path from "node:path";
 import * as fs from 'fs';
 
@@ -8,7 +8,7 @@ import express from "express";
 import dotenv from "dotenv";
 import axios from "axios";
 
-import { McRaptorAlgorithm, Journey, JourneyLeg } from "./raptor/McRaptorAlgorithm";
+import { McRaptorAlgorithm, Journey, JourneyLeg } from "../raptor/McRaptorAlgorithm";
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 
 import { 
@@ -26,7 +26,7 @@ import {
     updateBusPositions,
     getSelectableRoutes,
     rebuildGraph,
-} from './legacy/busService';
+} from './busService';
 
 // Simple Bus Color System
 interface BusRoute {
