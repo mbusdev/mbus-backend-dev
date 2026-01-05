@@ -26,7 +26,7 @@ import {
     updateBusPositions,
     getSelectableRoutes,
     rebuildGraph,
-} from './busService';
+} from './legacy/busService';
 
 // Simple Bus Color System
 interface BusRoute {

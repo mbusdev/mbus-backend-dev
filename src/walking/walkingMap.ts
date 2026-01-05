@@ -89,8 +89,8 @@ class MinHeap {
     push(item: { id: string; f: number }) { this.arr.push(item); this._siftUp(); }
     pop() { if (this.arr.length === 0) return null; const top = this.arr[0]; const last = this.arr.pop()!; if (this.arr.length) { this.arr[0] = last; this._siftDown(); } return top; }
     size() { return this.arr.length; }
-    private _siftUp() { let i = this.arr.length - 1; while (i > 0) { const p = Math.floor((i - 1) / 2); if (this.arr[i].f >= this.arr[p].f) break; [this.arr[i], this.arr[p]] = [this.arr[p], this.arr[i]]; i = p; } }
-    private _siftDown() { let i = 0; const n = this.arr.length; while (true) { const l = 2 * i + 1; const r = 2 * i + 2; let smallest = i; if (l < n && this.arr[l].f < this.arr[smallest].f) smallest = l; if (r < n && this.arr[r].f < this.arr[smallest].f) smallest = r; if (smallest === i) break; [this.arr[i], this.arr[smallest]] = [this.arr[smallest], this.arr[i]]; i = smallest; } }
+    private _siftUp() { let i = this.arr.length - 1; while (i > 0) { const p = Math.floor((i - 1) / 2); if (this.arr[i].f >= this.arr[p].f) break;[this.arr[i], this.arr[p]] = [this.arr[p], this.arr[i]]; i = p; } }
+    private _siftDown() { let i = 0; const n = this.arr.length; while (true) { const l = 2 * i + 1; const r = 2 * i + 2; let smallest = i; if (l < n && this.arr[l].f < this.arr[smallest].f) smallest = l; if (r < n && this.arr[r].f < this.arr[smallest].f) smallest = r; if (smallest === i) break;[this.arr[i], this.arr[smallest]] = [this.arr[smallest], this.arr[i]]; i = smallest; } }
 }
 
 /**
@@ -283,7 +283,6 @@ function initializeGraph() {
 export function buildStopNodeMap(locations: Record<string, { lat: number, lon: number }>) {
     if (graphNodes.size === 0) initializeGraph();
 
-    console.log("Mapping bus stops to street graph...");
     stopNodeMap = {};
     relevantStopNodes.clear();
     let mappedCount = 0;
@@ -298,7 +297,6 @@ export function buildStopNodeMap(locations: Record<string, { lat: number, lon: n
             mappedCount++;
         }
     });
-    console.log(`Mapped ${mappedCount} stops to ${relevantStopNodes.size} unique street nodes.`);
 }
 
 /**
@@ -420,7 +418,7 @@ export function getWalkingDistancesFrom(
         relevantStopNodes.delete(destNodeId);
     }
     const results: { stopId: string, duration: number }[] = [];
-    // Map Bus Stops
+
     for (const [stopId, mapData] of Object.entries(stopNodeMap)) {
         const distOnStreet = nodeDistances.get(mapData.nodeId);
         if (distOnStreet !== undefined) {
@@ -432,7 +430,7 @@ export function getWalkingDistancesFrom(
         }
     }
 
-    // Map Destination
+    // map destination
     if (destNodeId) {
         const distOnStreet = nodeDistances.get(destNodeId);
         if (distOnStreet !== undefined) {

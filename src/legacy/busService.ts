@@ -1,7 +1,7 @@
 import * as process from "node:process";
 import * as fs from 'fs';
 import * as path from 'path';
-import * as walking from './walking/walkingMap';
+import * as walking from '../walking/walkingMap';
 
 import axios from 'axios';
 import dotenv from "dotenv";
@@ -13,7 +13,7 @@ import {
     StopID,
     TransfersByOrigin,
     Interchange
-} from "./raptor/types";
+} from "../raptor/types";
 
 import { writeFileSync, readFileSync, existsSync } from "fs";
 
