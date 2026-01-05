@@ -146,7 +146,7 @@ async function buildWalkingTransfers() {
 
 /**
  * Processes raw prediction chunks into a structured format.
- * Handles flattening, sorting, and extrapolating missing stops.
+ * Handles flattening, sorting, and extrapolating predictions.
  * @param rawChunks Raw API response chunks
  */
 function processPredictions(rawChunks: any[]) {
@@ -154,16 +154,17 @@ function processPredictions(rawChunks: any[]) {
         if (chunk['bustime-response']?.['prd']) {
             chunk['bustime-response']['prd'].forEach((prd: any) => {
                 let trip = acc.find((t: any) => t.tatripid === prd.tatripid);
+                // If no tatripid, try to match by vid (mbus API specifics)
                 if (!trip && prd.vid) trip = acc.find((t: any) => t.vid === prd.vid);
-
+                // If no match, create new trip
                 if (!trip) {
-                    trip = { tatripid: prd.tatripid, vid: prd.vid, stops: [] };
+                    trip = { tatripid: prd.tatripid, vid: prd.vid, des: prd.des, stops: [] };
                     acc.push(trip);
                 } else {
                     if (!trip.tatripid) trip.tatripid = prd.tatripid;
                     if (!trip.vid && prd.vid) trip.vid = prd.vid;
                 }
-
+                // If no stop, create new stop
                 let stop = trip.stops.find((s: any) => s.stpid === prd.stpid);
                 if (!stop) {
                     stop = { stpnm: prd.stpnm, stpid: prd.stpid, prdctdn: null, rt: null, rtdir: null };
@@ -292,7 +293,7 @@ function updatePredictionLookups(preds: any[]) {
 
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
-            const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid };
+            const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid, des: trip.des };
 
             if (!state.cachedPredsByStopId[stop.stpid]) state.cachedPredsByStopId[stop.stpid] = [];
             state.cachedPredsByStopId[stop.stpid].push(predObj);

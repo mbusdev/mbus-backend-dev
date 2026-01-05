@@ -12,7 +12,6 @@ export const cachedPredsByVid: Record<string, Prediction[]> = {};
 /** Predictions indexed by stop ID. */
 export const cachedPredsByStopId: Record<string, Prediction[]> = {};
 
-// Added these two maps required by your journey formatter
 /** Map of stop IDs to their human-readable names. */
 export const stopIdToName: Record<string, string> = {};
 /** Map of trip IDs to route names. */
