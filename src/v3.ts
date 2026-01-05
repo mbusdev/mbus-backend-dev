@@ -1,24 +1,16 @@
-import express from "express";
-import dotenv from "dotenv";
-import {
-	Transfer,
-	StopID
-} from "./raptor/types";
-import { McRaptorAlgorithm, Journey, JourneyLeg } from "./raptor/McRaptorAlgorithm";
 
-
+import * as walking from './walking/walkingMap';
 import * as metadata from "./assets/route-data.json";
-
 import * as path from "node:path";
 import * as fs from 'fs';
-import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
-import { 
-    getWalkingDistancesFrom, 
-    getWalkingResponse, 
-    WALKING_SPEED,
-} from './walking/a_star'; // Adjust path as needed
 
-<<<<<<< HEAD
+import express from "express";
+import dotenv from "dotenv";
+import axios from "axios";
+
+import { McRaptorAlgorithm, Journey, JourneyLeg } from "./raptor/McRaptorAlgorithm";
+import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
+
 import { 
     curBusPositions, 
     cachedPredsByStopId, 
@@ -34,27 +26,7 @@ import {
     updateBusPositions,
     getSelectableRoutes,
     rebuildGraph,
-    stopNodeMap,
-    walkingCache
-=======
-import {
-	curBusPositions,
-	cachedPredsByStopId,
-	cachedRoutes,
-	cachedPredsByVid,
-	cachedStopLocations,
-	curRouteSelections,
-	stopIdToName,
-	tatripidToRt,
-	getAllBusPredictions,
-	routeTimingCache,
-	cachedGraph,
-	updateBusPositions,
-	getSelectableRoutes,
-	rebuildGraph
->>>>>>> origin/least-walking
 } from './busService';
-import axios from "axios";
 
 // Simple Bus Color System
 interface BusRoute {
@@ -99,7 +71,6 @@ class BusColorManager {
 	}
 }
 
-const message = { id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99' }
 
 // Initialize bus color manager
 const busColorManager = new BusColorManager();
@@ -378,7 +349,7 @@ router.get('/plan-journey', async (req, res) => {
         const originStopId = 'VIRTUAL_ORIGIN';
         const destStopId = 'VIRTUAL_DESTINATION';
 
-        const { originLat, originLon, destLat, destLon, walkingPenalty: walkingPenaltyParam } = req.query;
+        const { originLat, originLon, destLat, destLon, walkingPenalty: walkingPenaltyParam} = req.query;
         if (!originLat || !originLon || !destLat || !destLon) {
             return res.status(400).json({ error: 'Origin and destination coordinates are required' });
         }
@@ -407,7 +378,6 @@ router.get('/plan-journey', async (req, res) => {
             );
         });
 
-        // Update the times for the virtual trips (McRaptor Requirement)
         const vOriginTrip = cachedGraph.trips.find(t => t.tripId === 'VIRTUAL_ORIGIN_TRIP');
         if (vOriginTrip) {
             vOriginTrip.stopTimes[0].arrivalTime = currentTime;
@@ -419,72 +389,40 @@ router.get('/plan-journey', async (req, res) => {
             vDestTrip.stopTimes[0].departureTime = currentTime;
         }
 
-        // --- MERGED: A* Walking Implementation ---
-        
-        // 1. Calculate walking distances from Origin and Destination using A*
-        const dijkstraFromOrigin = getWalkingDistancesFrom(oLat, oLon);
-        const dijkstraFromDest = getWalkingDistancesFrom(dLat, dLon);
+        // Get walking times from origin to all stops
+        // Get walking times from all stops to dest
+        const walksFromOrigin = walking.getWalkingDistancesFrom(oLat, oLon, dLat, dLon);
+        const walksToDest = walking.getWalkingDistancesFrom(dLat, dLon);
 
-        // 2. Create Transfers: Origin -> Stops
-        Object.keys(cachedStopLocations).forEach(stopId => {
-            const mapData = stopNodeMap[stopId];
-            if (!mapData) return;
-
-            const distOnGraph = dijkstraFromOrigin.nodeDistances.get(mapData.nodeId);
-            
-            if (distOnGraph !== undefined) {
-                const totalDist = dijkstraFromOrigin.distanceToNode + distOnGraph + mapData.distToNode;
-                const duration = Math.ceil(totalDist / WALKING_SPEED); // Uses WALKING_SPEED from A* context
-
+        walksFromOrigin.forEach(walk => {
+            if (walk.stopId === "DIRECT_WALK") {
                 cachedGraph.transfers[originStopId].push({
                     origin: originStopId,
-                    destination: stopId,
-                    duration: duration,
-                    startTime: currentTime,
-                    endTime: Number.MAX_SAFE_INTEGER
-                });
-            }
-        });
-
-        // 3. Create Transfers: Stops -> Destination
-        Object.keys(cachedStopLocations).forEach(stopId => {
-            const mapData = stopNodeMap[stopId];
-            if (!mapData) return;
-
-            const distOnGraph = dijkstraFromDest.nodeDistances.get(mapData.nodeId);
-            
-            if (distOnGraph !== undefined) {
-                const totalDist = mapData.distToNode + distOnGraph + dijkstraFromDest.distanceToNode;
-                const duration = Math.ceil(totalDist / WALKING_SPEED);
-
-                cachedGraph.transfers[stopId].push({
-                    origin: stopId,
                     destination: destStopId,
-                    duration: duration,
+                    duration: walk.duration,
+                    startTime: currentTime,
+                    endTime: Number.MAX_SAFE_INTEGER
+                });
+            } else {
+                cachedGraph.transfers[originStopId].push({
+                    origin: originStopId,
+                    destination: walk.stopId,
+                    duration: walk.duration, 
                     startTime: currentTime,
                     endTime: Number.MAX_SAFE_INTEGER
                 });
             }
         });
 
-        // 4. Direct Walking Path: Origin -> Destination
-        const startNodeDist = dijkstraFromOrigin.distanceToNode;
-        const endNodeId = dijkstraFromDest.nearestNodeId;
-        const endNodeDist = dijkstraFromDest.distanceToNode;
-        const graphDistance = dijkstraFromOrigin.nodeDistances.get(endNodeId);
-        
-        if (graphDistance !== undefined) {
-            const totalDirectDist = startNodeDist + graphDistance + endNodeDist;
-            cachedGraph.transfers[originStopId].push({
-                origin: originStopId,
+        walksToDest.forEach(walk => {
+            cachedGraph.transfers[walk.stopId].push({
+                origin: walk.stopId,
                 destination: destStopId,
-                duration: Math.ceil(totalDirectDist / WALKING_SPEED),
+                duration: walk.duration,
                 startTime: currentTime,
                 endTime: Number.MAX_SAFE_INTEGER
             });
-        }
-
-        // --- END A* Implementation ---
+        });
 
         const mcRaptor = new McRaptorAlgorithm(cachedGraph.trips, cachedGraph.transfers, cachedGraph.interchange);
 
@@ -497,7 +435,7 @@ router.get('/plan-journey', async (req, res) => {
         }
         mcRaptor.setWalkingPenalty(walkingPenalty);
 
-        let rangeInSeconds = 45 * 60;
+        let rangeInSeconds = 60*45;
         const { range } = req.query;
         if (range !== undefined) {
             const parsedRange = parseInt(range as string);
@@ -506,59 +444,58 @@ router.get('/plan-journey', async (req, res) => {
             }
         }
 
-        const journeys = mcRaptor.getOptimizedJourneysInRange(originStopId, destStopId, currentTime, rangeInSeconds);
+        let journeys: Journey[];
+        if(range !== undefined) {
+            journeys = mcRaptor.getOptimizedJourneysInRange(originStopId, destStopId, currentTime, rangeInSeconds);
+        } else {
+            journeys = mcRaptor.getOptimizedJourneys(originStopId, destStopId, currentTime);
+        }
+        
+        const processJourneys = await Promise.all(journeys.map(async (journey: Journey) => {
+            const legs = await Promise.all(journey.legs.map(async (leg: JourneyLeg) => {
+                const isWalk = !leg.trip;
+                const originName = leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.origin] || leg.origin));
+                const destName = leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination);
 
-        const formatJourney = (journey: Journey) => {
-            if (!journey) return null;
-            return {
-                legs: journey.legs.map((leg: JourneyLeg) => {
-                    const formattedLeg: any = {
-                        origin_id: leg.origin,
-                        origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.origin] || leg.origin)),
-                        destination_id: leg.destination,
-                        destination: leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination),
-                        destinationName: leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination),
-                        startTime: leg.startTime,
-                        endTime: leg.endTime,
-                        duration: leg.duration,
-                        mode: leg.type === 'Trip' ? 'bus' : 'walk',
-                        originID: leg.originID,
-                        destinationID: leg.destinationID,
-                        stopTimes: leg.stopTimes,
-                        trip: leg.trip,
-                        rt: leg.rt
-                    };
+                const formattedLeg: any = {
+                    origin_id: leg.origin, destination_id: leg.destination,
+                    origin: originName, destination: destName, destinationName: destName,
+                    startTime: leg.startTime, endTime: leg.endTime, duration: leg.duration,
+                    mode: isWalk ? 'walk' : 'bus',
+                    tripId: leg.trip?.tripId, vid: leg.trip?.vid,
+                    rt: leg.trip ? (leg.trip.stopTimes[0].rt || tatripidToRt[leg.trip.tripId] || 'UNKNOWN') : undefined
+                };
 
-                    if (leg.trip) {
-                        formattedLeg.tripId = leg.trip.tripId;
-                        formattedLeg.vid = leg.trip.vid;
-                        if (!formattedLeg.rt) {
-                            const firstStop = leg.trip.stopTimes[0];
-                            formattedLeg.rt = firstStop.rt || tatripidToRt[leg.trip.tripId] || 'UNKNOWN';
+                if (isWalk) {
+                    if (walking.getCachedWalk(leg.origin, leg.destination)) {
+                        Object.assign(formattedLeg, walking.getCachedWalk(leg.origin, leg.destination)); // Hits cache
+                    } else {
+                        // Not in cache, fetch coords
+                        const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? {lat: oLat, lon: oLon} : cachedStopLocations[leg.origin];
+                        const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? {lat: dLat, lon: dLon} : cachedStopLocations[leg.destination];
+                        
+                        if (l1 && l2) {
+                            try {
+                                const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
+                                Object.assign(formattedLeg, data);
+                            } catch (e) { formattedLeg.path_coords = []; }
                         }
                     }
+                }
+                return formattedLeg;
+            }));
 
-                    return formattedLeg;
-                }),
-                departureTime: journey.criteria.arrivalTime - (journey.legs.reduce((acc, leg) => acc + leg.duration, 0)),
+            return {
+                legs,
+                departureTime: journey.criteria.arrivalTime - legs.reduce((a, b) => a + b.duration, 0),
                 arrivalTime: journey.criteria.arrivalTime,
                 criteria: journey.criteria
             };
-        };
+        }));
 
-        const formattedJourneys = journeys.map(formatJourney).filter((j): j is NonNullable<typeof j> => j !== null);
-
-        const uniqueJourneys = formattedJourneys.sort((a, b) => {
-            if (a.arrivalTime !== b.arrivalTime) {
-                return a.arrivalTime - b.arrivalTime;
-            }
-            if (a.criteria.walkingDistance !== b.criteria.walkingDistance) {
-                return a.criteria.walkingDistance - b.criteria.walkingDistance;
-            }
-            return a.criteria.transferCount - b.criteria.transferCount;
+        res.json({ 
+            journeys: processJourneys.sort((a, b) => a.arrivalTime - b.arrivalTime || a.criteria.walkingDistance - b.criteria.walkingDistance) 
         });
-
-        res.json({ journeys: uniqueJourneys });
 
     } catch (error) {
         console.error('Error planning journey:', error);

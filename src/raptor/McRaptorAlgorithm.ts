@@ -1,8 +1,13 @@
 import { Trip, Transfer, StopID, Time, Interchange, StopTime } from "./types";
 import { Bag, Label } from "./McStructs";
 
+/**
+ * Represents a complete transit journey consisting of multiple legs.
+ */
 export interface Journey {
+    /** The sequence of legs (trips or walking transfers) in the journey. */
     legs: JourneyLeg[];
+    /** The performance metrics for this journey. */
     criteria: {
         arrivalTime: number;
         walkingDistance: number;
@@ -10,6 +15,9 @@ export interface Journey {
     }
 }
 
+/**
+ * Represents a single segment of a journey, either a transit trip or a walking transfer.
+ */
 export interface JourneyLeg {
     type: 'Trip' | 'Transfer';
     origin: StopID;
@@ -25,6 +33,10 @@ export interface JourneyLeg {
     stopTimes?: StopTime[];
 }
 
+/**
+ * Implementation of the McRAPTOR (Multi-Criteria Round-Based Public Transit Routing) algorithm.
+ * Optimizes for arrival time, walking distance, and number of transfers.
+ */
 export class McRaptorAlgorithm {
     private trips: Trip[];
     private transfers: Record<StopID, Transfer[]>;
@@ -35,6 +47,12 @@ export class McRaptorAlgorithm {
 
     private walkingPenalty: number = 1;
 
+    /**
+     * Initializes the routing engine with transit data.
+     * @param trips - List of all transit trips.
+     * @param transfers - Graph of walking connections between stops.
+     * @param interchange - Minimum transfer times for each stop.
+     */
     constructor(
         trips: Trip[],
         transfers: Record<StopID, Transfer[]>,
@@ -62,10 +80,21 @@ export class McRaptorAlgorithm {
         }
     }
 
+    /**
+     * Sets the penalty multiplier for walking (default is 1).
+     * @param penalty - The multiplier for walking duration cost.
+     */
     public setWalkingPenalty(penalty: number) {
         this.walkingPenalty = penalty;
     }
 
+    /**
+     * Executes the McRAPTOR algorithm to find all non-dominated paths to the destination.
+     * @param origin - The starting Stop ID.
+     * @param destination - The destination Stop ID.
+     * @param departureTime - The time of departure.
+     * @returns A Bag containing Pareto-optimal labels for the destination.
+     */
     public run(origin: StopID, destination: StopID, departureTime: Time): Bag {
         const rounds = 8;
         const bags: Record<StopID, Bag>[] = [];
@@ -157,7 +186,7 @@ export class McRaptorAlgorithm {
                             arrivalTime,
                             label.walkingDistance,
                             label.transferCount,
-                            label.parent,
+                            label,
                             label.trip,
                             null,
                             stop,
@@ -260,6 +289,13 @@ export class McRaptorAlgorithm {
         return null;
     }
 
+    /**
+     * Calculates optimal journeys for a specific departure time.
+     * @param origin - The starting Stop ID.
+     * @param destination - The destination Stop ID.
+     * @param departureTime - The exact departure time.
+     * @returns A list of optimal Journey objects.
+     */
     public getOptimizedJourneys(origin: StopID, destination: StopID, departureTime: Time): Journey[] {
         const resultBag = this.run(origin, destination, departureTime);
 
@@ -279,6 +315,14 @@ export class McRaptorAlgorithm {
         return journeys;
     }
 
+    /**
+     * Finds the best journeys within a time window, filtering for Pareto optimality across all departures.
+     * @param origin - The starting Stop ID.
+     * @param destination - The destination Stop ID.
+     * @param startTime - The start of the departure window.
+     * @param range - The duration of the window to search (e.g. 3600s).
+     * @returns A deduplicated list of the best journeys found in the time range.
+     */
     public getOptimizedJourneysInRange(origin: StopID, destination: StopID, startTime: Time, range: number): Journey[] {
         const allJourneys: Journey[] = [];
         const endTime = startTime + range;
@@ -368,7 +412,10 @@ export class McRaptorAlgorithm {
                 const trip = current.trip;
                 const boardStop = parent.stop!;
                 const alightStop = current.stop!;
-
+                if (!parent.trip) {
+                    current = parent;
+                    continue;
+                }
                 const boardIndex = parent.stopIndex;
                 const alightIndex = current.stopIndex;
 
