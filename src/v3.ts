@@ -450,51 +450,82 @@ router.get('/plan-journey', async (req, res) => {
         } else {
             journeys = mcRaptor.getOptimizedJourneys(originStopId, destStopId, currentTime);
         }
-        
-        const processJourneys = await Promise.all(journeys.map(async (journey: Journey) => {
-            const legs = await Promise.all(journey.legs.map(async (leg: JourneyLeg) => {
-                const isWalk = !leg.trip;
-                const originName = leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.origin] || leg.origin));
-                const destName = leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination);
+        const processLeg = async (leg: JourneyLeg) => {
+            const isWalk = !leg.trip;
+            
+            const formattedLeg: any = {
+                origin_id: leg.origin,
+                origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.origin] || leg.origin)),
+                destination_id: leg.destination,
+                destination: leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination),
+                destinationName: leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination),
+                startTime: Math.round(leg.startTime),
+                endTime: Math.round(leg.endTime),
+                duration: Math.round(leg.duration),
+                mode: isWalk ? 'walk' : 'bus',
+                originID: leg.originID,
+                destinationID: leg.destinationID,
+                stopTimes: leg.stopTimes,
+                trip: leg.trip,
+                rt: leg.rt
+            };
 
-                const formattedLeg: any = {
-                    origin_id: leg.origin, destination_id: leg.destination,
-                    origin: originName, destination: destName, destinationName: destName,
-                    startTime: leg.startTime, endTime: leg.endTime, duration: leg.duration,
-                    mode: isWalk ? 'walk' : 'bus',
-                    tripId: leg.trip?.tripId, vid: leg.trip?.vid,
-                    rt: leg.trip ? (leg.trip.stopTimes[0].rt || tatripidToRt[leg.trip.tripId] || 'UNKNOWN') : undefined
-                };
+            if (leg.trip) {
+                formattedLeg.tripId = leg.trip.tripId;
+                formattedLeg.vid = leg.trip.vid;
+                if (!formattedLeg.rt) {
+                    const firstStop = leg.trip.stopTimes[0];
+                    formattedLeg.rt = firstStop.rt || tatripidToRt[leg.trip.tripId] || 'UNKNOWN';
+                }
+            }
 
-                if (isWalk) {
-                    if (walking.getCachedWalk(leg.origin, leg.destination)) {
-                        Object.assign(formattedLeg, walking.getCachedWalk(leg.origin, leg.destination)); // Hits cache
-                    } else {
-                        // Not in cache, fetch coords
-                        const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? {lat: oLat, lon: oLon} : cachedStopLocations[leg.origin];
-                        const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? {lat: dLat, lon: dLon} : cachedStopLocations[leg.destination];
-                        
-                        if (l1 && l2) {
-                            try {
-                                const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
-                                Object.assign(formattedLeg, data);
-                            } catch (e) { formattedLeg.path_coords = []; }
+            if (isWalk) {
+                const cached = walking.getCachedWalk(leg.origin, leg.destination);
+                
+                if (cached) {
+                    Object.assign(formattedLeg, cached);
+                } else {
+                    const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? { lat: oLat, lon: oLon } : cachedStopLocations[leg.origin];
+                    const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? { lat: dLat, lon: dLon } : cachedStopLocations[leg.destination];
+
+                    if (l1 && l2) {
+                        try {
+                            const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
+                            data.duration = Math.round(data.duration);
+                            Object.assign(formattedLeg, data);
+                        } catch (e) {
+                            formattedLeg.path_coords = [];
                         }
                     }
                 }
-                return formattedLeg;
+            }
+
+            return formattedLeg;
+        };
+
+        const processJourneys = async (journeys: Journey[]) => {
+            return Promise.all(journeys.map(async (journey: Journey) => {
+                if (!journey) return null;
+
+                const legs = await Promise.all(journey.legs.map(processLeg));
+
+                return {
+                    legs,
+                    departureTime: journey.criteria.arrivalTime - (legs.reduce((acc, leg) => acc + leg.duration, 0)),
+                    arrivalTime: journey.criteria.arrivalTime,
+                    criteria: journey.criteria
+                };
             }));
-
-            return {
-                legs,
-                departureTime: journey.criteria.arrivalTime - legs.reduce((a, b) => a + b.duration, 0),
-                arrivalTime: journey.criteria.arrivalTime,
-                criteria: journey.criteria
-            };
-        }));
-
+        };
+        const processedList = await processJourneys(journeys);
+        const sortedJourneys = processedList
+            .filter((j: any) => j !== null) 
+            .sort((a: any, b: any) => 
+                a.arrivalTime - b.arrivalTime || 
+                a.criteria.walkingDistance - b.criteria.walkingDistance
+            );
         res.json({ 
-            journeys: processJourneys.sort((a, b) => a.arrivalTime - b.arrivalTime || a.criteria.walkingDistance - b.criteria.walkingDistance) 
+                journeys: sortedJourneys 
         });
 
     } catch (error) {
