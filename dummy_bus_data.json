@@ -1,0 +1,1257 @@
+[
+  {
+    "tatripid": "999005",
+    "vid": "4005",
+    "stops": [
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "1",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "2",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "2",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "3",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "5",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "6",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "6",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "7",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "8",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "9",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "11",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "11",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "12",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "13",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "15",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "15",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "17",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "17",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "18",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "19",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "21",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "21",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "22",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "23",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "24",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "25",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "27",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "28",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "28",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "29",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "31",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "32",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "32",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "33",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "35",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      }
+    ]
+  },
+  {
+    "tatripid": "999001",
+    "vid": "4001",
+    "stops": [
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "1",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "1",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "3",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "3",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "5",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "5",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "7",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "8",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "9",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "9",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "11",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "11",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "13",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "13",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "14",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "15",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "16",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "18",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "19",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "20",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "21",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "22",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "22",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "24",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "24",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "25",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "27",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "28",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "28",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "29",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "31",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "32",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "33",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "33",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "34",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      }
+    ]
+  },
+  {
+    "tatripid": "999002",
+    "vid": "4002",
+    "stops": [
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "3",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "3",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "4",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "6",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "6",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "8",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "9",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "9",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "11",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "11",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "12",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "14",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "14",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "16",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "16",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "18",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "19",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "20",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "20",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "21",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "22",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "23",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "25",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "26",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "27",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "28",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "28",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "30",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "30",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "32",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "33",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Baits II Outbound",
+        "stpid": "N410",
+        "prdctdn": "34",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Bursley Hall Outbound",
+        "stpid": "N408",
+        "prdctdn": "35",
+        "rt": "BB",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Murfin/Northwood III",
+        "stpid": "N412",
+        "prdctdn": "35",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "37",
+        "rt": "BB",
+        "rtdir": "SOUTH"
+      }
+    ]
+  },
+  {
+    "tatripid": "999003",
+    "vid": "4003",
+    "stops": [
+      {
+        "stpnm": "Stockwell Hall Outbound",
+        "stpid": "M301",
+        "prdctdn": "2",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Lloyd/Observatory",
+        "stpid": "M304",
+        "prdctdn": "3",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "3",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "5",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "6",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Cram Circle Inbound",
+        "stpid": "N417",
+        "prdctdn": "7",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fire Station Inbound",
+        "stpid": "N421",
+        "prdctdn": "7",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Northwood V (3)",
+        "stpid": "N437",
+        "prdctdn": "9",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Hayward/Hubbard Hayward Outbound",
+        "stpid": "N432",
+        "prdctdn": "10",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "FXB Inbound",
+        "stpid": "N405",
+        "prdctdn": "10",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Cooley Lab Inbound",
+        "stpid": "N403",
+        "prdctdn": "11",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "12",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "13",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "14",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "15",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "16",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Stockwell Hall Outbound",
+        "stpid": "M301",
+        "prdctdn": "17",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Lloyd/Observatory",
+        "stpid": "M304",
+        "prdctdn": "19",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "20",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "21",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "21",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Cram Circle Inbound",
+        "stpid": "N417",
+        "prdctdn": "23",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fire Station Inbound",
+        "stpid": "N421",
+        "prdctdn": "23",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Northwood V (3)",
+        "stpid": "N437",
+        "prdctdn": "24",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Hayward/Hubbard Hayward Outbound",
+        "stpid": "N432",
+        "prdctdn": "26",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "FXB Inbound",
+        "stpid": "N405",
+        "prdctdn": "26",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Cooley Lab Inbound",
+        "stpid": "N403",
+        "prdctdn": "27",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "28",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "29",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "31",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "31",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "32",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Stockwell Hall Outbound",
+        "stpid": "M301",
+        "prdctdn": "33",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Lloyd/Observatory",
+        "stpid": "M304",
+        "prdctdn": "34",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "35",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      }
+    ]
+  },
+  {
+    "tatripid": "999004",
+    "vid": "4004",
+    "stops": [
+      {
+        "stpnm": "FXB Inbound",
+        "stpid": "N405",
+        "prdctdn": "3",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Cooley Lab Inbound",
+        "stpid": "N403",
+        "prdctdn": "4",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "6",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "6",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "8",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "8",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "10",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Stockwell Hall Outbound",
+        "stpid": "M301",
+        "prdctdn": "11",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Lloyd/Observatory",
+        "stpid": "M304",
+        "prdctdn": "12",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "12",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "13",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "14",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Cram Circle Inbound",
+        "stpid": "N417",
+        "prdctdn": "15",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fire Station Inbound",
+        "stpid": "N421",
+        "prdctdn": "16",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Northwood V (3)",
+        "stpid": "N437",
+        "prdctdn": "18",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Hayward/Hubbard Hayward Outbound",
+        "stpid": "N432",
+        "prdctdn": "19",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "FXB Inbound",
+        "stpid": "N405",
+        "prdctdn": "20",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Cooley Lab Inbound",
+        "stpid": "N403",
+        "prdctdn": "21",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "22",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Lot NC-78 Mitchell Field (1)",
+        "stpid": "N450",
+        "prdctdn": "22",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Glen/Catherine Inbound",
+        "stpid": "M310",
+        "prdctdn": "23",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Rackham Bldg",
+        "stpid": "C211",
+        "prdctdn": "25",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Central Campus Transit Center: Chemistry",
+        "stpid": "C250",
+        "prdctdn": "25",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Stockwell Hall Outbound",
+        "stpid": "M301",
+        "prdctdn": "26",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Lloyd/Observatory",
+        "stpid": "M304",
+        "prdctdn": "27",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Couzens Hall",
+        "stpid": "M305",
+        "prdctdn": "29",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fuller Rd at Mitchell Field Lot M-75",
+        "stpid": "M350",
+        "prdctdn": "29",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Murfin Outbound",
+        "stpid": "N550",
+        "prdctdn": "30",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Cram Circle Inbound",
+        "stpid": "N417",
+        "prdctdn": "32",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Fire Station Inbound",
+        "stpid": "N421",
+        "prdctdn": "33",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Northwood V (3)",
+        "stpid": "N437",
+        "prdctdn": "33",
+        "rt": "NW",
+        "rtdir": "NORTH"
+      },
+      {
+        "stpnm": "Hayward/Hubbard Hayward Outbound",
+        "stpid": "N432",
+        "prdctdn": "34",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "FXB Inbound",
+        "stpid": "N405",
+        "prdctdn": "36",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Cooley Lab Inbound",
+        "stpid": "N403",
+        "prdctdn": "37",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      },
+      {
+        "stpnm": "Pierpont Commons Bonisteel Inbound",
+        "stpid": "N553",
+        "prdctdn": "38",
+        "rt": "NW",
+        "rtdir": "SOUTH"
+      }
+    ]
+  }
+]

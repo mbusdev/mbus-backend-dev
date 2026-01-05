@@ -6,7 +6,8 @@
   "main": "src/app.ts",
   "scripts": {
     "start": "tsx src/app.ts",
-    "test": "vitest"
+    "test": "vitest run test",
+    "stress-test": "vitest run test/search-stress.test.ts"
   },
   "author": "Efe Akinci",
   "license": "ISC",

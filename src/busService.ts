@@ -1,15 +1,17 @@
 import * as process from "node:process";
+import * as fs from 'fs';
+import * as path from 'path';
 
 import axios from 'axios';
 import dotenv from "dotenv";
 import path from "path";
 import { Route } from "@/types";
-import { 
-    Trip, 
-    StopTime, 
-    Transfer, 
-    StopID, 
-    TransfersByOrigin, 
+import {
+    Trip,
+    StopTime,
+    Transfer,
+    StopID,
+    TransfersByOrigin,
     Interchange
 } from "./raptor/types";
 
@@ -32,29 +34,29 @@ const curBusPositions: {
     "buses": []
 }
 
-const cachedRoutes: {[k: string]: any} = {};
+const cachedRoutes: { [k: string]: any } = {};
 type Prediction = { vid: string; stpid: string } & Record<string, any>;
 
 let cachedPredsByVid: Record<string, Prediction[]> = {};
 let cachedPredsByStopId: Record<string, Prediction[]> = {};
 // routeTimingCache: route -> fromStop -> toStop -> latest diff (minutes)
-const routeTimingCache: Record<string, Record<string, Record<string, {diff : number, rtdir : string, rtNext : string}>>> = 
+const routeTimingCache: Record<string, Record<string, Record<string, { diff: number, rtdir: string, rtNext: string }>>> =
 {
     "CN": {
         "N434NORTHBOUND": {
-        "N500": {
-          "diff": 5,
-          "rtdir": "SOUTHBOUND",
-          "rtNext": "CS"
-        }
-      },
+            "N500": {
+                "diff": 5,
+                "rtdir": "SOUTHBOUND",
+                "rtNext": "CS"
+            }
+        },
     },
-    "CS":{
+    "CS": {
         "S002SOUTHBOUND": {
             "S001": {
-            "diff": 5,
-            "rtdir": "NORTHBOUND",
-            "rtNext": "CN"
+                "diff": 5,
+                "rtdir": "NORTHBOUND",
+                "rtNext": "CN"
             }
         }
     }
@@ -78,11 +80,11 @@ if (existsSync(walking_path_cache)) {
 const validRoutes = new Set();
 let curRouteSelections = {};
 const routes = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
-let cachedStopLocations: { [stopId: string]: {name : string, lat: number, lon: number } } = {
+let cachedStopLocations: { [stopId: string]: { name: string, lat: number, lon: number } } = {
 
 };
 
-const message = {id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99'}
+const message = { id: "gradamatation", title: "Congrats Grads 🥳", message: "Congrats to everyone who is gradamatating! Enjoy some grad hats on the buses, and don't forget to celebrate!", buildVersion: '99' }
 
 let cachedGraph: {
     trips: Trip[];
@@ -112,12 +114,32 @@ function buildStopNodeMap() {
 
 const sortStopTimesByRouteSequence = (stopTimes: StopTime[]): StopTime[] => {
     if (stopTimes.length <= 1) return stopTimes;
-    
+
     // Sort by arrival time
     return stopTimes.sort((a, b) => a.arrivalTime - b.arrivalTime);
 };
 
 const rebuildGraph = async () => {
+    if (process.env.DEV_CACHE === 'true') {
+        if (cachedGraph && cachedGraph.trips && cachedGraph.trips.length > 0) return;
+        try {
+            const filePath = path.resolve(process.cwd(), 'saved_graph.json');
+            if (fs.existsSync(filePath)) {
+                const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                cachedGraph = data.graph;
+                cachedStopLocations = data.stopLocations;
+                stopIdToName = data.stopNames;
+                cachedPredsByVid = data.predsByVid || {};
+                cachedPredsByStopId = data.predsByStopId || {};
+                console.log('Loaded graph and state from saved_graph.json');
+            } else {
+                console.warn('DEV_CACHE set but saved_graph.json not found');
+            }
+        } catch (err) {
+            console.error('Error loading cached graph:', err);
+        }
+        return;
+    }
     try {
         const predictions = await getAllBusPredictions();
         if (!predictions || predictions.length === 0) {
@@ -141,29 +163,29 @@ const rebuildGraph = async () => {
                 }
             });
         });
-        
+
         const now = new Date();
         const currentTime = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
         const transfers = cachedGraph?.transfers || {};
         const interchange = cachedGraph?.interchange || {};
-        
+
         const allStops = new Set<StopID>();
         predictions.forEach((trip: any) => {
             trip.stops.forEach((stop: any) => {
                 allStops.add(stop.stpid);
             });
         });
-        
+
         allStops.forEach(stopId => {
             if (!transfers[stopId]) {
                 transfers[stopId] = [];
             }
             if (!interchange[stopId]) {
-                interchange[stopId] = 60; // 1 minute interchange time
+                interchange[stopId] = 30; // 30 seconds interchange time
             }
         });
-        
+
         const stopPredictions: Record<string, any[]> = {};
         predictions.forEach((trip: any) => {
             trip.stops.forEach((stop: any) => {
@@ -239,8 +261,8 @@ const rebuildGraph = async () => {
         const destStopId = 'VIRTUAL_DESTINATION';
         cachedGraph.transfers[originStopId] = [];
         cachedGraph.transfers[destStopId] = [];
-        cachedGraph.interchange[originStopId] = 60;
-        cachedGraph.interchange[destStopId] = 60;
+        cachedGraph.interchange[originStopId] = 30;
+        cachedGraph.interchange[destStopId] = 30;
         const virtualOriginTrip = {
             tripId: 'VIRTUAL_ORIGIN_TRIP',
             vid: null,
@@ -265,7 +287,7 @@ const rebuildGraph = async () => {
         };
         cachedGraph.trips.push(virtualOriginTrip);
         cachedGraph.trips.push(virtualDestTrip);
-        
+
     } catch (error) {
         console.error('Error rebuilding graph:', error);
     }
@@ -291,99 +313,156 @@ const getAllBusPredictions = async () => {
 
         const stopIdsArray = Array.from(allStopIds);
         const chunks = [];
-        
+
+        if (process.env.DEV_CACHE === 'true') {
+            return [];
+        }
+
         for (let i = 0; i < stopIdsArray.length; i += 10) {
             chunks.push(stopIdsArray.slice(i, i + 10));
         }
 
-        const predictions = await Promise.all(
-            chunks.map(async (chunk) => {
-                const stopIds = chunk.join(',');
-                const response = await axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions`, {
-                    params: {
-                        requestType: 'getpredictions',
-                        locale: 'en',
-                        stpid: stopIds,
-                        rt: routes.join(','),
-                        tmres: 's',
-                        rtpidatafeed: 'bustime',
-                        key: API_KEY,
-                        format: 'json'
-                    }
-                });
-                return response.data;
-            })
-        );
+        let formattedPredictions = [];
 
-        const formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
-        if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
-            predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
-            const tatripid = prd.tatripid;
-            const stopName = prd.stpnm;
-            const stopId = prd.stpid;
-            const rt = prd.rt;
-            const rtdir = prd.rtdir;
-            const vid = prd.vid;
-            let prdctdn = prd.prdctdn;
-            prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
 
-            let trip = acc.find((t: any) => t.tatripid === tatripid);
-
-            if (!trip) {
-                if (vid) { // if no trip, go by vid
-                trip = acc.find((t: any) => t.vid === vid);
-                }
-            }
-
-            if (!trip) { // if no trip, create one
-                trip = { tatripid, vid, stops: [] };
-                acc.push(trip);
-            } else { // merge with existing trip
-                if (!trip.tatripid) {
-                trip.tatripid = tatripid;
-                }
-                if (!trip.vid && vid) {
-                trip.vid = vid;
-                }
-            }
-
-            let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
-            if (!stop) {
-                stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null, rtdir : null };
-                trip.stops.push(stop);
-            }
-            stop.rtdir = rtdir;
-            stop.rt = rt;
-            stop.prdctdn = prdctdn;
-            });
-        }
-        return acc;
-        }, []);
-
-        // Cache predictions by vid and stopId
         cachedPredsByVid = {};
         cachedPredsByStopId = {};
-        predictions.flat().forEach((predictionChunk) => {
-            const prds = predictionChunk['bustime-response']?.['prd'];
-            if (!prds) return;
 
-            prds.forEach((prd: Prediction) => {
-                const { vid, stpid } = prd;
-                // stpid -> [pred, pred...]
-                if (!cachedPredsByStopId[stpid]) {
-                cachedPredsByStopId[stpid] = [];
+        if (process.env.DEV === 'true') {
+            // In DEV mode, load static dummy data instead of fetching from the live API
+            try {
+                const dummyDataPath = path.resolve(process.cwd(), 'dummy_bus_data.json');
+                const dummyData = fs.readFileSync(dummyDataPath, 'utf8');
+                formattedPredictions = JSON.parse(dummyData);
+
+                // Populate internal caches from the loaded dummy data
+                formattedPredictions.forEach((trip: any) => {
+                    const vid = trip.vid;
+                    trip.stops.forEach((stop: any) => {
+                        const stpid = stop.stpid;
+                        const prd: Prediction = {
+                            tmstmp: new Date().toISOString(),
+                            typ: "A",
+                            stpnm: stop.stpnm,
+                            stpid: stop.stpid,
+                            vid: vid,
+                            dstp: 0,
+                            rt: stop.rt,
+                            rtdd: stop.rt,
+                            rtdir: stop.rtdir,
+                            des: "",
+                            prdctdn: stop.prdctdn,
+                            tablockid: "",
+                            tatripid: trip.tatripid,
+                            dly: false,
+                            prdctm: "",
+                            zone: ""
+                        };
+
+                        if (!cachedPredsByStopId[stpid]) {
+                            cachedPredsByStopId[stpid] = [];
+                        }
+                        cachedPredsByStopId[stpid].push(prd);
+
+                        if (vid) {
+                            if (!cachedPredsByVid[vid]) {
+                                cachedPredsByVid[vid] = [];
+                            }
+                            cachedPredsByVid[vid].push(prd);
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error('Error loading dummy bus data:', err);
+                formattedPredictions = [];
+            }
+        } else {
+            const predictions = await Promise.all(
+                chunks.map(async (chunk) => {
+                    const stopIds = chunk.join(',');
+                    const response = await axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions`, {
+                        params: {
+                            requestType: 'getpredictions',
+                            locale: 'en',
+                            stpid: stopIds,
+                            rt: routes.join(','),
+                            tmres: 's',
+                            rtpidatafeed: 'bustime',
+                            key: API_KEY,
+                            format: 'json'
+                        }
+                    });
+                    return response.data;
+                })
+            );
+
+            formattedPredictions = predictions.flat().reduce((acc, predictionChunk) => {
+                if (predictionChunk['bustime-response'] && predictionChunk['bustime-response']['prd']) {
+                    predictionChunk['bustime-response']['prd'].forEach((prd: any) => {
+                        const tatripid = prd.tatripid;
+                        const stopName = prd.stpnm;
+                        const stopId = prd.stpid;
+                        const rt = prd.rt;
+                        const rtdir = prd.rtdir;
+                        const vid = prd.vid;
+                        let prdctdn = prd.prdctdn;
+                        prdctdn = prdctdn === "DUE" ? "1" : prdctdn;
+
+                        let trip = acc.find((t: any) => t.tatripid === tatripid);
+
+                        if (!trip) {
+                            if (vid) {
+                                trip = acc.find((t: any) => t.vid === vid);
+                            }
+                        }
+
+                        if (!trip) {
+                            trip = { tatripid, vid, stops: [] };
+                            acc.push(trip);
+                        } else {
+                            if (!trip.tatripid) {
+                                trip.tatripid = tatripid;
+                            }
+                            if (!trip.vid && vid) {
+                                trip.vid = vid;
+                            }
+                        }
+
+                        let stop = trip.stops.find((s: any) => s.stpnm === stopName && s.stpid === stopId);
+                        if (!stop) {
+                            stop = { stpnm: stopName, stpid: stopId, prdctdn: null, rt: null, rtdir: null };
+                            trip.stops.push(stop);
+                        }
+                        stop.rtdir = rtdir;
+                        stop.rt = rt;
+                        stop.prdctdn = prdctdn;
+                    });
                 }
-                cachedPredsByStopId[stpid].push(prd); // store reference
+                return acc;
+            }, []);
 
-                if (!vid) return;
-                // vid -> [pred, pred...]
-                if (!cachedPredsByVid[vid]) {
-                cachedPredsByVid[vid] = [];
-                }
-                cachedPredsByVid[vid].push(prd);
+            predictions.flat().forEach((predictionChunk) => {
+                const prds = predictionChunk['bustime-response']?.['prd'];
+                if (!prds) return;
 
+                prds.forEach((prd: Prediction) => {
+                    const { vid, stpid } = prd;
+                    if (!cachedPredsByStopId[stpid]) {
+                        cachedPredsByStopId[stpid] = [];
+                    }
+                    cachedPredsByStopId[stpid].push(prd);
+
+                    if (!vid) return;
+                    if (!cachedPredsByVid[vid]) {
+                        cachedPredsByVid[vid] = [];
+                    }
+                    cachedPredsByVid[vid].push(prd);
+
+                });
             });
-        });
+        }
+
 
         // Cache predictions per route in routeTimingCache for extrapolation
 
@@ -397,9 +476,9 @@ const getAllBusPredictions = async () => {
                     routeInfoFilter[routeKey] = [];
                 }
                 for (const point of route.pt) {
-                if (point.typ !== "W" && point.stpid) {
-                    routeInfoFilter[routeKey].push({ stpid: point.stpid, rtdir });
-                }
+                    if (point.typ !== "W" && point.stpid) {
+                        routeInfoFilter[routeKey].push({ stpid: point.stpid, rtdir });
+                    }
                 }
             }
         }
@@ -419,8 +498,8 @@ const getAllBusPredictions = async () => {
         }
 
         formattedPredictions.forEach((trip: any) => {
-            if(trip.stops.length == 0) return;   
-            const minPrdctdn = Math.min(...trip.stops.map((s : any) => parseInt(s.prdctdn, 10)));
+            if (trip.stops.length == 0) return;
+            const minPrdctdn = Math.min(...trip.stops.map((s: any) => parseInt(s.prdctdn, 10)));
             const firstRoute = trip.stops.find((s: any) => parseInt(s.prdctdn, 10) === minPrdctdn)?.rt;
 
             if (!firstRoute) return;
@@ -435,11 +514,11 @@ const getAllBusPredictions = async () => {
                     if (b.rt === firstRoute) return 1;
 
                     return a.rt.localeCompare(b.rt);
-                }        
+                }
                 // If same route, sort by stop order 
                 const aMap = routeStopIndexMaps.get(a.rt + a.rtdir);
                 const bMap = routeStopIndexMaps.get(b.rt + b.rtdir);
-        
+
                 const aIdx = aMap?.get(a.stpid) ?? Number.MAX_SAFE_INTEGER;
                 const bIdx = bMap?.get(b.stpid) ?? Number.MAX_SAFE_INTEGER;
                 return aIdx - bIdx;
@@ -455,11 +534,11 @@ const getAllBusPredictions = async () => {
                 if (!stopIndexMap) continue;
 
                 const fromIdx = stopIndexMap.get(from.stpid);
-                const toIdx   = stopIndexMap.get(to.stpid);
+                const toIdx = stopIndexMap.get(to.stpid);
                 // Ensure valid follow up stop by idx or end of idx
                 const isValidFollowUp = (
                     fromIdx !== undefined &&
-                    toIdx   !== undefined &&
+                    toIdx !== undefined &&
                     (toIdx === fromIdx + 1 || fromIdx === stopIndexMap.size - 1)
                 );
                 if (!isValidFollowUp) continue;
@@ -468,13 +547,13 @@ const getAllBusPredictions = async () => {
                 const fromKey = from.stpid + (from.rtdir || "");
                 if (!routeTimingCache[rt][fromKey]) routeTimingCache[rt][fromKey] = {};
                 routeTimingCache[rt][fromKey][to.stpid] = {
-                    diff : diff,
+                    diff: diff,
                     rtdir: to.rtdir,
                     rtNext: to.rt
                 };
             }
         });
-        
+
         // Extrapolate future stops based on routeTimingCache
         formattedPredictions.forEach((trip: any) => {
             let stopsAdded = 0;
@@ -490,15 +569,15 @@ const getAllBusPredictions = async () => {
                 const nextEntries = Object.entries(nextStops);
                 if (nextEntries.length === 0) break;
 
-                const [nextStopId, { diff, rtdir, rtNext}] = nextEntries[0];
+                const [nextStopId, { diff, rtdir, rtNext }] = nextEntries[0];
                 const nextPrdctdn = (parseInt(lastStop.prdctdn, 10) + diff).toString();
 
                 trip.stops.push({
                     stpnm: stopIdToName[nextStopId] || nextStopId,
                     stpid: nextStopId,
                     prdctdn: nextPrdctdn,
-                    rt : rtNext,
-                    rtdir : rtdir
+                    rt: rtNext,
+                    rtdir: rtdir
                 });
                 stopsAdded++;
             }
@@ -522,23 +601,23 @@ const client = axios.create({
 
 const getBuses = async () => {
     const getChunk = async (routesChunk: string[]) => {
-    try {
-        const res = await client.get('/getvehicles', {
-        params: { requestType: 'getvehicles', rt: routesChunk.join(',') },
-        });
+        try {
+            const res = await client.get('/getvehicles', {
+                params: { requestType: 'getvehicles', rt: routesChunk.join(',') },
+            });
 
-        if (
-        'bustime-response' in res.data &&
-        'vehicle' in res.data['bustime-response']
-        ) {
-        return res.data['bustime-response']['vehicle'];
+            if (
+                'bustime-response' in res.data &&
+                'vehicle' in res.data['bustime-response']
+            ) {
+                return res.data['bustime-response']['vehicle'];
+            }
+
+            return [];
+        } catch (error) {
+            console.warn('getChunk failed for routes', routesChunk, error instanceof Error ? error.message : error);
+            return [];
         }
-
-        return [];
-    } catch (error) {
-        console.warn('getChunk failed for routes', routesChunk, error instanceof Error ? error.message : error);
-        return [];
-    }
     };
 
     const chunks = []
@@ -566,6 +645,7 @@ const addToCachedRoutes = async (rt: string) => {
             }
         });
 
+
         if (res.data['bustime-response'] && res.data['bustime-response']['ptr']) {
             cachedRoutes[rt] = res.data['bustime-response']['ptr'];
         }
@@ -575,14 +655,18 @@ const addToCachedRoutes = async (rt: string) => {
 }
 
 const getSelectableRoutes = () => {
-    axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${API_KEY}&format=json`).then(res => {
+    if (process.env.DEV_CACHE === 'true') return;
+
+    axios.get(`https://mbus.ltp.umich.edu/bustime/api/v3/getroutes?requestType=getroutes&locale=en&key=${API_KEY}&format=json`).then(async res => {
         curRouteSelections = res.data;
         validRoutes.clear();
         try {
+            const promises: Promise<void>[] = [];
             res.data['bustime-response']['routes'].forEach((e: Route) => {
                 validRoutes.add(e['rt']);
-                addToCachedRoutes(e['rt']);
+                promises.push(addToCachedRoutes(e['rt']));
             });
+            await Promise.all(promises);
         } catch (e) {
 
         }
@@ -618,7 +702,7 @@ const getSelectableRoutes = () => {
                         });
                     }
                 });
-                
+
                 console.log(`Number of stop locations: ${Object.keys(cachedStopLocations).length}`);
                 buildStopNodeMap();
 
@@ -646,7 +730,7 @@ const getSelectableRoutes = () => {
 
                 routeStops.forEach(stopId => {
                     if (!cachedGraph.interchange[stopId]) {
-                        cachedGraph.interchange[stopId] = 60; // 1 minute interchange time
+                        cachedGraph.interchange[stopId] = 30; // 30 seconds interchange time
                     }
                 });
 
@@ -747,15 +831,15 @@ const getSelectableRoutes = () => {
         });
 }
 
-export { 
-    curBusPositions, 
-    cachedRoutes, 
-    cachedPredsByVid, 
-    cachedPredsByStopId, 
-    validRoutes, 
-    curRouteSelections, 
-    routes, 
-    cachedStopLocations, 
+export {
+    curBusPositions,
+    cachedRoutes,
+    cachedPredsByVid,
+    cachedPredsByStopId,
+    validRoutes,
+    curRouteSelections,
+    routes,
+    cachedStopLocations,
     routeTimingCache,
     walkingCache,
     cachedGraph, 
@@ -767,4 +851,3 @@ export {
     getSelectableRoutes,
     rebuildGraph    
 };
-
