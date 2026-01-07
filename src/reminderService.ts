@@ -87,7 +87,7 @@ class ReminderSubscriptions {
         }
         var events = [...this.inner.keys()];
         events.sort((a, b) => {
-            return numRegistrationsFor(b) - numRegistrationsFor(a); 
+            return numRegistrationsFor(b) - numRegistrationsFor(a);
         });
         for (const event of events) {
             const registrations = numRegistrationsFor(event);
@@ -118,9 +118,10 @@ function processReminders() {
     const updates: Array<
         {
             vid: string,
+            prevVid: string | null,
             pred: number,
-            prevPred: number | undefined,
-            prevTs: Date | undefined,
+            prevPred: number | null,
+            prevTs: Date | null,
             rtid: string,
             stpid: string
         }
@@ -153,8 +154,9 @@ function processReminders() {
                     stpid: stpid,
                     vid: soonestBus.vid,
                     pred: soonestBus.prediction,
-                    prevPred: prevSoonestBus?.prediction,
-                    prevTs: prevSoonestBus?.ts
+                    prevPred: prevSoonestBus?.prediction ?? null,
+                    prevTs: prevSoonestBus?.ts ?? null,
+                    prevVid: prevSoonestBus?.vid ?? null,
                 });
             }
         }
@@ -163,18 +165,44 @@ function processReminders() {
 
     // send push notifications / messages as needed based on updates and registrations
     for (const update of updates) {
-        if (update.prevPred !== undefined && update.pred > update.prevPred && update.prevPred === 0) {
-            // the bus went past the stop, remove reminder registrations
+        const predIncreased = update.prevPred !== null && update.pred > update.prevPred;
+        const vidChanged = update.prevVid !== null && update.prevVid !== update.vid;
+
+        const NOT_CLOSE = 5; // when should the bus be interpreted as disappearing vs going past the stop
+        const busWentPastTheStop = false
+            || (predIncreased && update.prevPred === 0 && update.pred >= NOT_CLOSE)
+            || (vidChanged && (update.prevPred ?? NOT_CLOSE) < NOT_CLOSE);
+        const busDisappeared = vidChanged && (update.prevPred ?? 0) >= NOT_CLOSE;
+        const busDelayed = predIncreased && !busWentPastTheStop && !busDisappeared;
+
+        const subscribedDevices = reminderSubscriptions.get(update.stpid, update.rtid);
+        if (subscribedDevices == undefined || subscribedDevices.size === 0)
+            continue;
+        const allDeviceIds = new Set<string>();
+        for (const deviceIds of subscribedDevices.values()) {
+            for (const deviceId of deviceIds) {
+                allDeviceIds.add(deviceId);
+            }
+        }
+
+        const stopName = stopIdToName[update.stpid] ?? update.stpid;
+        if (busWentPastTheStop) {
+            // remove reminder registrations
+            reminderSubscriptions.removeAllFor(update.stpid, update.rtid);
+        } else if (busDisappeared) {
+            sendToAll(
+                {
+                    title: `Bus Disappeared`,
+                    body: `The ${update.rtid} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
+                },
+                allDeviceIds
+            );
+            // remove reminder registrations
             reminderSubscriptions.removeAllFor(update.stpid, update.rtid);
         } else {
-            const subscribedDevices = reminderSubscriptions.get(update.stpid, update.rtid);
-            if (subscribedDevices == undefined || subscribedDevices.size === 0)
-                continue;
-            const stopName = stopIdToName[update.stpid] ?? update.stpid;
-
             // send ahead of time reminder notifications
             for (const [threshold, deviceIds] of subscribedDevices) {
-                if (update.pred <= threshold && (update.prevPred === undefined || update.prevPred > threshold)) {
+                if (update.pred <= threshold && (update.prevPred === null || update.prevPred > threshold)) {
                     sendToAll(
                         {
                             notification: {
@@ -186,12 +214,15 @@ function processReminders() {
                     );
                 }
             }
-
-            const allDeviceIds = new Set<string>();
-            for (const deviceIds of subscribedDevices.values()) {
-                for (const deviceId of deviceIds) {
-                    allDeviceIds.add(deviceId);
-                }
+            if (busDelayed) {
+                const delay = update.pred - (update.prevPred ?? update.pred);
+                sendToAll(
+                    {
+                        title: `Bus Delayed`,
+                        body: `The ${update.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s).`
+                    },
+                    allDeviceIds,
+                );
             }
             // send bus is here notification
             if (update.pred == 0) {
