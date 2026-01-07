@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { cachedPredsByStopId } from "./busService";
+import { cachedPredsByStopId, stopIdToName } from "./busService";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 import * as metadata from "./assets/route-data.json";
@@ -75,6 +75,31 @@ class ReminderSubscriptions {
         }
         return false;
     }
+
+    describe() {
+        console.log("Description for ReminderSubscriptions");
+        const numRegistrationsFor = (x: string) => {
+            let registrations = 0;
+            for (const tokens of this.inner.get(x)!.values()) {
+                registrations += tokens.size;
+            }
+            return registrations;
+        }
+        var events = [...this.inner.keys()];
+        events.sort((a, b) => {
+            return numRegistrationsFor(b) - numRegistrationsFor(a); 
+        });
+        for (const event of events) {
+            const registrations = numRegistrationsFor(event);
+            if (registrations === 0) {
+                continue;
+            }
+            console.log(`${event}: ${registrations} registration(s)`);
+            for (const [thresh, tokens] of this.inner.get(event)!) {
+                console.log(`    ${thresh}: ${tokens.size} token(s)`);
+            }
+        }
+    }
 }
 
 const reminderSubscriptions = new ReminderSubscriptions();
@@ -145,6 +170,7 @@ function processReminders() {
             const subscribedDevices = reminderSubscriptions.get(update.stpid, update.rtid);
             if (subscribedDevices == undefined || subscribedDevices.size === 0)
                 continue;
+            const stopName = stopIdToName[update.stpid] ?? update.stpid;
 
             // send ahead of time reminder notifications
             for (const [threshold, deviceIds] of subscribedDevices) {
@@ -153,7 +179,7 @@ function processReminders() {
                         {
                             notification: {
                                 title: 'Bus Arrival Reminder',
-                                body: `${update.rtid} is ${update.pred} minutes away from ${update.stpid}`
+                                body: `${update.rtid} is ${update.pred} minute(s) away from ${stopName}`
                             }
                         },
                         deviceIds
@@ -170,7 +196,7 @@ function processReminders() {
             // send bus is here notification
             if (update.pred == 0) {
                 sendToAll(
-                    { notification: { title: 'Bus Arriving', body: `${update.rtid} is almost at ${update.stpid}` } },
+                    { notification: { title: 'Bus Arriving', body: `${update.rtid} is almost at ${stopName}` } },
                     allDeviceIds
                 );
             }
@@ -181,11 +207,9 @@ function processReminders() {
 }
 
 function sendToAll(msg: any, tokens: Set<string>) {
-    console.log(`sending ${msg}`);
+    console.log(`sending a message to ${tokens.size} devices`);
     if (tokens.size <= 500) {
         const payload = { tokens: Array.from(tokens), ...msg };
-        console.log(payload);
-        console.log(JSON.stringify(payload));
         getMessaging().sendEachForMulticast(payload)
             .then((res) => {
                 if (res.failureCount > 0) {

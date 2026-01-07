@@ -89,6 +89,7 @@ setInterval(updateBusPositions, 7500);
 setInterval(getSelectableRoutes, 60000);
 setInterval(rebuildGraph, 10 * 1000);
 setInterval(processReminders, 10 * 1000);
+setInterval(() => reminderSubscriptions.describe(), 60000);
 getSelectableRoutes();
 rebuildGraph(); 
 
