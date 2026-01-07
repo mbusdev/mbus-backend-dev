@@ -600,60 +600,51 @@ router.get('/plan-journey', async (req, res) => {
 
 // Notifications / Reminders
 
-// Expects {token: string, event: Event} in the body
+// Expects {token: string, stpid: string, rtid: string, thresh: number} in the body
 router.post('/setReminder', (req, res) => {
-  const token: string = req.body.token;
-  console.log(token);
-  const event: Event = req.body.event;
-  let registeredTokens = reminderSubscriptions.get(encodeStopAndRoute(event.stpid, event.rtid));
-  if (registeredTokens == undefined) {
-    reminderSubscriptions.set(encodeStopAndRoute(event.stpid, event.rtid), new Set([token]));
-  } else {
-    registeredTokens.add(token);
-    console.log("Registered tokens for event " + JSON.stringify(event) + " are " + JSON.stringify(registeredTokens));
-  }
-  res.sendStatus(200);
+    const token: string = req.body.token;
+    const stpid: string = req.body.stpid;
+    const rtid: string = req.body.rtid;
+    const thresh: number = req.body.thresh;
+    reminderSubscriptions.add(stpid, rtid, thresh, token);
+    res.sendStatus(200);
 });
 
-// Expects {token: string, event: Event} in the body
+// Expects {token: string, stpid: string, rtid: string} in the body
 router.post('/unsetReminder', (req, res) => {
-  const token: string = req.body.token;
-  const event: Event = req.body.event;
-  const registeredTokens = reminderSubscriptions.get(encodeStopAndRoute(event.stpid, event.rtid));
-  if (registeredTokens != undefined) {
-    registeredTokens.delete(token);
-    console.log("Registered tokens for event " + JSON.stringify(event) + " are " + JSON.stringify(registeredTokens));
-  }
-  res.sendStatus(200);
+    const token: string = req.body.token;
+    const stpid: string = req.body.stpid;
+    const rtid: string = req.body.rtid;
+    reminderSubscriptions.remove(stpid, rtid, token);
+    res.sendStatus(200);
 });
 
 // Expects {oldTok: string, newTok: string} in the body
 // Upon responding with 200, future calls to /setReminder, /unsetReminder, and /reminders
 // will need the new token
 router.post('/swapToken', (req, res) => {
-  const oldTok: string = req.body.oldTok;
-  const newTok: string = req.body.newTok;
-  const iter = reminderSubscriptions.values();
-  for (let v of iter) {
-    if (v.has(oldTok)) {
-      v.delete(oldTok);
-      v.add(newTok);
+    const oldTok: string = req.body.oldTok;
+    const newTok: string = req.body.newTok;
+    const iter = reminderSubscriptions.inner.values();
+    for (const withStopAndRoute of iter) {
+        for (const tokens of withStopAndRoute.values()) {
+            if (tokens.has(oldTok)) {
+                tokens.delete(oldTok);
+                tokens.add(newTok);
+            }
+        }
     }
-  }
-  res.sendStatus(200);
+    res.sendStatus(200);
 });
 
 // Expects {token: string, reminders: Array<{stpid: string, rtid: string}>}
 // Responds with which reminders should be removed from the client
 router.post('/checkStaleness', (req, res) => {
-  const token: string = req.body.token;
-  const reminders: Array<{stpid: string, rtid: string}> = req.body.reminders;
-  const staleReminders = reminders.filter((v) => {
-    const encoded = encodeStopAndRoute(v.stpid, v.rtid);
-    return !reminderSubscriptions.has(encoded) || !reminderSubscriptions.get(encoded)!.has(token);
-  });
-  res.send({reminders: staleReminders});
-  res.status(200);
+    const token: string = req.body.token;
+    const reminders: Array<{stpid: string, rtid: string}> = req.body.reminders;
+    const staleReminders = reminders.filter((v) => !reminderSubscriptions.has(v.stpid, v.rtid, token));
+    res.send({reminders: staleReminders});
+    res.status(200);
 });
 
 // testing purposes

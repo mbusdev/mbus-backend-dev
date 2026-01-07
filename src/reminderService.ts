@@ -16,8 +16,68 @@ type Event = {
     rtid: string,
 }
 
-// the keys are the stop id and route id encoded
-const reminderSubscriptions: Map<string, Set<string>> = new Map();
+class ReminderSubscriptions {
+    // key = the stop id and route id encoded
+    // value = map from minutes in advance to sets of subscription tokens
+    inner: Map<string, Map<number, Set<string>>>
+
+    constructor() {
+        this.inner = new Map();
+    }
+
+    add(stpid: string, rtid: string, thresh: number, token: string) {
+        var withStopAndRoute = this.inner.get(encodeStopAndRoute(stpid, rtid));
+        if (withStopAndRoute == undefined) {
+            this.inner.set(encodeStopAndRoute(stpid, rtid), new Map());
+            withStopAndRoute = this.inner.get(encodeStopAndRoute(stpid, rtid))!;
+        }
+        var withThresh = withStopAndRoute.get(thresh);
+        if (withThresh == undefined) {
+            withStopAndRoute.set(thresh, new Set());
+            withThresh = withStopAndRoute.get(thresh)!;
+        }
+        withThresh.add(token);
+    }
+
+    remove(stpid: string, rtid: string, token: string) {
+        const withStopAndRoute = this.inner.get(encodeStopAndRoute(stpid, rtid));
+        if (withStopAndRoute) {
+            const toDelete = [];
+            for (const [thresh, deviceTokens] of withStopAndRoute) {
+                deviceTokens.delete(token);
+                if (deviceTokens.size === 0) {
+                    toDelete.push(thresh);
+                }
+            }
+            for (const thresh of toDelete) {
+                withStopAndRoute.delete(thresh);
+            }
+        }
+    }
+
+    removeAllFor(stpid: string, rtid: string) {
+        this.inner.delete(encodeStopAndRoute(stpid, rtid));
+    }
+
+    get(stpid: string, rtid: string): Map<number, Set<string>> {
+        return this.inner.get(encodeStopAndRoute(stpid, rtid)) ?? new Map();
+    }
+
+    has(stpid: string, rtid: string, token: string): boolean {
+        const withStopAndRoute = this.inner.get(encodeStopAndRoute(stpid, rtid));
+        if (withStopAndRoute === undefined) {
+            return false;
+        }
+        for (const tokens of withStopAndRoute.values()) {
+            if (tokens.has(token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+const reminderSubscriptions = new ReminderSubscriptions();
 let soonestBusByStopAndRoute: Map<string, { vid: string, prediction: number, ts: Date }> = new Map();
 
 function encodeStopAndRoute(stpid: string, rtid: string): string {
@@ -30,8 +90,6 @@ function decodeStopAndRoute(encoded: string): { stpid: string, rtid: string } {
 }
 
 function processReminders() {
-    // console.log(stopIdToName);
-    // console.log(metadata.routeIdToName);
     const updates: Array<
         {
             vid: string,
@@ -43,6 +101,7 @@ function processReminders() {
         }
     > = [];
     const stpids = Object.keys(cachedPredsByStopId);
+    // determine arrival time updates for each stop
     for (const stpid of stpids) {
         const soonestBusByRoute: Map<string, { vid: string, prediction: number, ts: Date }> = new Map();
         for (const vehicle of cachedPredsByStopId[stpid]) {
@@ -81,28 +140,42 @@ function processReminders() {
     for (const update of updates) {
         if (update.prevPred !== undefined && update.pred > update.prevPred && update.prevPred === 0) {
             // the bus went past the stop, remove reminder registrations
-            reminderSubscriptions.get(encodeStopAndRoute(update.stpid, update.rtid))?.clear();
+            reminderSubscriptions.removeAllFor(update.stpid, update.rtid);
         } else {
-            const subscribedDevices = reminderSubscriptions.get(encodeStopAndRoute(update.stpid, update.rtid))
-                ?? new Set();
-            if (subscribedDevices.size === 0)
+            const subscribedDevices = reminderSubscriptions.get(update.stpid, update.rtid);
+            if (subscribedDevices == undefined || subscribedDevices.size === 0)
                 continue;
 
-            if (update.pred <= 5 && (update.prevPred == undefined || update.prevPred > 5)) {
-                // send five minute warning notification
-                sendToAll(
-                    { notification: { title: 'Five Minute Warning', body: `route is five minutes away from stop` } },
-                    subscribedDevices
-                );
+            // send ahead of time reminder notifications
+            for (const [threshold, deviceIds] of subscribedDevices) {
+                if (update.pred <= threshold && (update.prevPred === undefined || update.prevPred > threshold)) {
+                    sendToAll(
+                        {
+                            notification: {
+                                title: 'Bus Arrival Reminder',
+                                body: `${update.rtid} is ${update.pred} minutes away from ${update.stpid}`
+                            }
+                        },
+                        deviceIds
+                    );
+                }
             }
+
+            const allDeviceIds = new Set<string>();
+            for (const deviceIds of subscribedDevices.values()) {
+                for (const deviceId of deviceIds) {
+                    allDeviceIds.add(deviceId);
+                }
+            }
+            // send bus is here notification
             if (update.pred == 0) {
-                // send bus is here notification
                 sendToAll(
-                    { notification: { title: 'Bus Arriving', body: 'route is almost at stop' } }, subscribedDevices
+                    { notification: { title: 'Bus Arriving', body: `${update.rtid} is almost at ${update.stpid}` } },
+                    allDeviceIds
                 );
             }
             // send message with updated info
-            sendToAll({ data: { stpid: update.stpid, rtid: update.rtid } }, subscribedDevices);
+            sendToAll({ data: { stpid: update.stpid, rtid: update.rtid } }, allDeviceIds);
         }
     }
 }
