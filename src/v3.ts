@@ -245,6 +245,28 @@ router.get('/get-startup-messages', (req, res) => {
     res.send(JSON.stringify(message));
 });
 
+router.get('/get-key-stops', (req, res) => {
+    const KEY_STOPS = {
+      // Key stops are shown larger in the list of upcoming stops for each bus.
+      "C250": "Central Campus Transit Center", // South side CCTC
+      "C251": "Central Campus Transit Center", // North side CCTC
+      "N551": "Pierpont Commons", // Murfin Inbound, to Central Campus
+      "N553": "Pierpont Commons", // Bonisteel Inbound, to central campus
+      "N552": "Pierpont Commons", // Art & Architecture: Eastbound to FXB
+      "N550": "Pierpont Commons", // Murfin Outbound, to Bursley
+      "N407": "Bursley Hall", // Bursley Hall Inbound (Westbound)
+      "N408": "Bursley Hall", // Bursley Hall Outbound (Eastbound)
+      "N406": "FXB Building", // FXB Outbound (Northbound)
+      "N405": "FXB Building", // FXB Inbound (Southbound)
+      "S003": "Crisler Center/Michigan Stadium", // Transportation Gate (Northbound)
+      "S002": "Crisler Center/Michigan Stadium", // Crisler Center Lot SC-5 (Southbound)
+      "C206": "Oxford Housing", // Self-explanatory
+      "M323": "Wall Street Parking Structure",
+      "N422": "Northwood Fire Station", // "Top" of Northwood route
+      "N437": "Northwood V",
+    };
+    res.send(KEY_STOPS);
+});
 // Simple bus color endpoints
 router.get('/getRouteColors', (req, res) => {
     const routes = busColorManager.getAllRoutes();
