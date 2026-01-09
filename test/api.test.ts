@@ -7,7 +7,7 @@ const BASE_URL = `http://localhost:${SERVER_PORT}/mbus/api/v3`;
 describe('API Endpoints', () => {
     beforeAll(async () => {
         try {
-            const response = await axios.get(`${BASE_URL}/getBusPositions`); 
+            const response = await axios.get(`${BASE_URL}/getBusPositions`);
             console.log(`Server responded to /getBusPositions with status: ${response.status}`);
         } catch (error) {
             console.error('Server is not running! Please start the server with: `npm start` (or your equivalent command).');
@@ -54,7 +54,7 @@ describe('API Endpoints', () => {
             const response = await axios.get(`${BASE_URL}/getAllPredictions`);
             expect(response.status).toBe(200);
             expect(Array.isArray(response.data)).toBe(true);
-            
+
             // Extract and log unique stop IDs for potential use in other tests
             const stopIds = new Set<string>();
             response.data.forEach((bus: any) => {
@@ -66,12 +66,12 @@ describe('API Endpoints', () => {
                     });
                 }
             });
-            
+
             const stopIdsArray = Array.from(stopIds);
             console.log('Available stop IDs (from getAllPredictions):', stopIdsArray.slice(0, 5), '...'); // Log first 5
             expect(stopIdsArray.length).toBeGreaterThan(0);
 
-            
+
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error('Error fetching all predictions:', error.message);
@@ -85,7 +85,7 @@ describe('API Endpoints', () => {
     });
 
     it('should get predictions for a specific stop ID (if available)', async () => {
-        const testStopId = 'M313'; 
+        const testStopId = 'M313';
         const response = await axios.get(`${BASE_URL}/getStopPredictions/${testStopId}`);
         expect(response.status).toBe(200);
         expect(response.data).toHaveProperty('bustime-response');
@@ -95,7 +95,7 @@ describe('API Endpoints', () => {
     });
 
     it('should get predictions for a specific bus ID (if available)', async () => {
-        const testBusId = '341'; 
+        const testBusId = '341';
         const response = await axios.get(`${BASE_URL}/getBusPredictions/${testBusId}`);
         expect(response.status).toBe(200);
         expect(response.data).toHaveProperty('bustime-response');
@@ -114,7 +114,6 @@ describe('API Endpoints', () => {
         console.log(`GET /getRouteInformation: Contains ${Object.keys(response.data.routeIdToName).length} routes.`);
     });
 
-
     it('should get all stops', async () => {
         const response = await axios.get(`${BASE_URL}/getAllStops`);
         expect(response.status).toBe(200);
@@ -127,7 +126,7 @@ describe('API Endpoints', () => {
         const response = await axios.get(`${BASE_URL}/getBuildingLocations`);
         expect(response.status).toBe(200);
         // Expect a JSON response or file content based on your server's sending
-        expect(typeof response.data).toBe('object'); 
+        expect(typeof response.data).toBe('object');
         console.log('GET /getBuildingLocations: Data received (check your console for content).');
     });
 
@@ -142,7 +141,7 @@ describe('API Endpoints', () => {
 
     // --- Image Endpoint ---
     it('should get a vehicle image for a valid route', async () => {
-        const testRoute = 'CN'; 
+        const testRoute = 'CN';
         const response = await axios.get(`${BASE_URL}/getVehicleImage/${testRoute}`, { responseType: 'arraybuffer' }); // Expect binary data
         expect(response.status).toBe(200);
         expect(response.headers['content-type']).toMatch(/image\/(png|jpeg)/); // Adjust based on actual image type
@@ -173,7 +172,7 @@ describe('API Endpoints', () => {
             expect(response.data).toHaveProperty('journeys');
             expect(Array.isArray(response.data.journeys)).toBe(true);
             console.log('GET /plan-journey (test 1):', JSON.stringify(response.data.journeys, null, 2));
-            
+
             const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671`);
             expect(response2.status).toBe(200);
             expect(response2.data).toHaveProperty('journeys');
