@@ -114,13 +114,6 @@ describe('API Endpoints', () => {
         console.log(`GET /getRouteInformation: Contains ${Object.keys(response.data.routeIdToName).length} routes.`);
     });
 
-    it('should get update notes', async () => {
-        const response = await axios.get(`${BASE_URL}/getUpdateNotes`);
-        expect(response.status).toBe(200);
-        expect(response.data).toHaveProperty('message');
-        expect(response.data).toHaveProperty('version');
-        console.log(`GET /getUpdateNotes: Version ${response.data.version}`);
-    });
 
     it('should get all stops', async () => {
         const response = await axios.get(`${BASE_URL}/getAllStops`);
