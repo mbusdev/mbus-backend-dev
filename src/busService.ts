@@ -102,6 +102,9 @@ const rebuildGraph = async () => {
             return;
         }
 
+        // not used in graph but we should refresh this too
+        await getAllRidePredictions();
+
         // Build stopIdToName and tatripidToRt maps
         stopIdToName = {};
         tatripidToRt = {};
@@ -282,7 +285,7 @@ const getAllRidePredictions = async () => {
                         requestType: 'getpredictions',
                         locale: 'en',
                         stpid: stopIds,
-                        rt: routes.join(','),
+                        rt: rideRoutes.join(','),
                         tmres: 's',
                         rtpidatafeed: 'bustime',
                         key: RIDE_API_KEY,

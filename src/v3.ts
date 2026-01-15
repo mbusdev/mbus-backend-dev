@@ -196,7 +196,7 @@ router.get('/getVehicleImage/:route', (req, res) => {
    const imagePath = path.join(assetPath, 'main2025');
 
     if (!route || !(route in routeImages)) {
-        res.sendFile(path.join(assetPath, 'bus_CN.png'));
+        res.sendFile(path.join(imagePath, 'unknownbus.png'));
         return res.sendStatus(400);
     }
 
