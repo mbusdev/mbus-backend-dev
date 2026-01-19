@@ -624,18 +624,9 @@ router.post('/unsetReminder', (req, res) => {
 // Upon responding with 200, future calls to /setReminder, /unsetReminder, and /reminders
 // will need the new token
 router.post('/swapToken', (req, res) => {
-    // TODO: update for new approach
-    const oldTok: string = req.body.oldTok;
-    const newTok: string = req.body.newTok;
-    const iter = reminderSubscriptions.inner.values();
-    for (const withStopAndRoute of iter) {
-        for (const tokens of withStopAndRoute.values()) {
-            if (tokens.has(oldTok)) {
-                tokens.delete(oldTok);
-                tokens.add(newTok);
-            }
-        }
-    }
+    const oldTok = req.body.oldTok as RegistrationToken;
+    const newTok = req.body.newTok as RegistrationToken;
+    reminderSubscriptions.swapToken(oldTok, newTok);
     res.sendStatus(200);
 });
 

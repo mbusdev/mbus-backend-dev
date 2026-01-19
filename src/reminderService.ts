@@ -101,6 +101,16 @@ class ReminderSubscriptions {
             .filter((s) => s.event.rtid !== event.rtid || s.event.stpid !== event.stpid);
     }
 
+    swapToken(from: RegistrationToken, to: RegistrationToken) {
+        this.subscriptions = this.subscriptions.map((s) => {
+            if (s.token === from) {
+                return { ...s, token: to };
+            } else {
+                return s;
+            }
+        });
+    }
+
     activeRemindersFor(id: RegistrationToken) {
         // TODO
     }
