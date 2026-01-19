@@ -95,7 +95,7 @@ rebuildGraph();
 
 import * as process from "node:process";
 import { getMessaging } from "firebase-admin/messaging";
-import { encodeStopAndRoute, processReminders, reminderSubscriptions, Event } from "./reminderService";
+import { processReminders, reminderSubscriptions, Event, RegistrationToken } from "./reminderService";
 
 
 dotenv.config();
@@ -603,20 +603,20 @@ router.get('/plan-journey', async (req, res) => {
 
 // Expects {token: string, stpid: string, rtid: string, thresh: number} in the body
 router.post('/setReminder', (req, res) => {
-    const token: string = req.body.token;
+    const token = req.body.token as RegistrationToken;
     const stpid: string = req.body.stpid;
     const rtid: string = req.body.rtid;
     const thresh: number = req.body.thresh;
-    reminderSubscriptions.add(stpid, rtid, thresh, token);
+    reminderSubscriptions.add({ stpid, rtid } as Event, thresh, token);
     res.sendStatus(200);
 });
 
 // Expects {token: string, stpid: string, rtid: string} in the body
 router.post('/unsetReminder', (req, res) => {
-    const token: string = req.body.token;
+    const token = req.body.token as RegistrationToken;
     const stpid: string = req.body.stpid;
     const rtid: string = req.body.rtid;
-    reminderSubscriptions.remove(stpid, rtid, token);
+    reminderSubscriptions.remove({ stpid, rtid } as Event, token);
     res.sendStatus(200);
 });
 
@@ -624,6 +624,7 @@ router.post('/unsetReminder', (req, res) => {
 // Upon responding with 200, future calls to /setReminder, /unsetReminder, and /reminders
 // will need the new token
 router.post('/swapToken', (req, res) => {
+    // TODO: update for new approach
     const oldTok: string = req.body.oldTok;
     const newTok: string = req.body.newTok;
     const iter = reminderSubscriptions.inner.values();
@@ -641,10 +642,14 @@ router.post('/swapToken', (req, res) => {
 // Expects {token: string, reminders: Array<{stpid: string, rtid: string}>}
 // Responds with which reminders should be removed from the client
 router.post('/checkStaleness', (req, res) => {
+    // TODO: replace with endpoint for getting reminder registrations
     const token: string = req.body.token;
     const reminders: Array<{stpid: string, rtid: string}> = req.body.reminders;
-    const staleReminders = reminders.filter((v) => !reminderSubscriptions.has(v.stpid, v.rtid, token));
-    res.send({reminders: staleReminders});
+    // const staleReminders = reminders.filter((v) => !reminderSubscriptions.has(v.stpid, v.rtid, token));
+    // res.send({reminders: staleReminders});
+    // res.status(200);
+
+    res.send({reminders: []});
     res.status(200);
 });
 
