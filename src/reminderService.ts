@@ -111,8 +111,12 @@ class ReminderSubscriptions {
         });
     }
 
-    activeRemindersFor(id: RegistrationToken) {
-        // TODO
+    activeRemindersFor(id: RegistrationToken): Array<{ stpid: string, rtid: string, thresh: number | null }> {
+        return this.subscriptions
+            .filter((s) => s.token === id)
+            .map((s) => {
+                return {stpid: s.event.stpid, rtid: s.event.rtid, thresh: s.thresh };
+            });
     }
 
     describe() {

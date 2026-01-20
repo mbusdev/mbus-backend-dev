@@ -621,7 +621,7 @@ router.post('/unsetReminder', (req, res) => {
 });
 
 // Expects {oldTok: string, newTok: string} in the body
-// Upon responding with 200, future calls to /setReminder, /unsetReminder, and /reminders
+// Upon responding with 200, future calls to /setReminder, /unsetReminder, and /activeReminders
 // will need the new token
 router.post('/swapToken', (req, res) => {
     const oldTok = req.body.oldTok as RegistrationToken;
@@ -630,17 +630,10 @@ router.post('/swapToken', (req, res) => {
     res.sendStatus(200);
 });
 
-// Expects {token: string, reminders: Array<{stpid: string, rtid: string}>}
-// Responds with which reminders should be removed from the client
-router.post('/checkStaleness', (req, res) => {
-    // TODO: replace with endpoint for getting reminder registrations
-    const token: string = req.body.token;
-    const reminders: Array<{stpid: string, rtid: string}> = req.body.reminders;
-    // const staleReminders = reminders.filter((v) => !reminderSubscriptions.has(v.stpid, v.rtid, token));
-    // res.send({reminders: staleReminders});
-    // res.status(200);
-
-    res.send({reminders: []});
+// Responds with { reminders: Array<{ stpid: string, rtid: string, thresh: number | null }> }
+router.get('/activeReminders/:registrationToken', (req, res) => {
+    const token = req.params.registrationToken as RegistrationToken;
+    res.send({ reminders: reminderSubscriptions.activeRemindersFor(token) });    
     res.status(200);
 });
 
