@@ -6,9 +6,7 @@
     <a href="https://mbusdev.github.io/mbus-backend-dev/">
       <img src="https://img.shields.io/badge/Documentation-Available-blue?style=for-the-badge&logo=typescript" alt="Documentation" />
     </a>
-    <a href="package.json">
-      <img src="https://img.shields.io/badge/License-ISC-green?style=for-the-badge" alt="License" />
-    </a>
+    <img src="https://img.shields.io/badge/License-ISC-green?style=for-the-badge" alt="License" />
   </p>
 
   <p>

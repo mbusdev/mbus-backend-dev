@@ -409,9 +409,16 @@ export class McRaptorAlgorithm {
             let leg: JourneyLeg;
 
             if (current.trip) {
+                if (current.transferCount > parent.transferCount) {
+                    current = parent;
+                    continue;
+                }
+
                 const trip = current.trip;
                 const boardStop = parent.stop!;
                 const alightStop = current.stop!;
+                
+
                 if (!parent.trip) {
                     current = parent;
                     continue;
