@@ -442,7 +442,7 @@ export function getStartupMessages(req: express.Request, res: express.Response) 
 router.get('/get-startup-messages', getStartupMessages);
 
 /**
- * Returns special startup messages (e.g., holiday greetings).
+ * Returns key stops.
  * @param req - Express request
  * @param res - Express response
  * @returns JSON object with message details.
