@@ -152,7 +152,7 @@ export function getBuildingLocations(req: express.Request, res: express.Response
 router.get('/getBuildingLocations', getBuildingLocations);
 
 /**
- * Returns current positions of all buses.
+ * Returns current positions of all michgan buses.
  * @param req - Express request
  * @param res - Express response
  * @returns JSON object with `buses` array.
@@ -173,6 +173,18 @@ export function getVehiclePositions(req: express.Request, res: express.Response)
 }
 router.get('/getVehiclePositions', getVehiclePositions);
 
+
+/**
+ * returns positions of all ride busses
+ * @param req - Express request
+ * @param res - Express response
+ * @returns JSON object with `buses` array.
+ */
+export function getRidePositions(req: express.Request, res: express.Response) {
+    res.json(state.curRidePositions);
+}
+router.get('/getRidePositions', getRidePositions);
+
 /**
  * Returns all cached route patterns.
  * @param req - Express request
@@ -183,6 +195,17 @@ export function getAllRoutes(req: express.Request, res: express.Response) {
     res.json({ routes: state.cachedRoutes });
 }
 router.get('/getAllRoutes', getAllRoutes);
+
+/**
+ * Returns all cached ride route patterns.
+ * @param req - Express request
+ * @param res - Express response
+ * @returns JSON object with `routes` mapping route IDs to patterns.
+ */
+export function getAllRideRoutes(req: express.Request, res: express.Response) {
+    res.json({ routes: state.cachedRideRoutes });
+}
+router.get('/getAllRideRoutes', getAllRideRoutes);
 
 /**
  * Returns the route timing cache used for extrapolation.
@@ -206,6 +229,19 @@ export function getBusPredictions(req: express.Request, res: express.Response) {
     res.json({ "bustime-response": { "prd": preds } });
 }
 router.get('/getBusPredictions/:busId', getBusPredictions);
+
+
+/**
+ * Returns predictions for a specific ride bus ID.
+ * @param req - Express request
+ * @param res - Express response
+ * @returns JSON object with `bustime-response` containing `prd` (predictions).
+ */
+export function getRidePredictions(req: express.Request, res: express.Response) {
+    const preds = state.cachedRidePredsByVid[req.params.busId] || [];
+    res.json({ "bustime-response": { "prd": preds } });
+}
+router.get('/getRidePredictions/:busId', getRidePredictions);
 
 /**
  * Legacy/test endpoint for bus predictions.
@@ -236,6 +272,18 @@ export function getStopPredictions(req: express.Request, res: express.Response) 
 router.get('/getStopPredictions/:stopId', getStopPredictions);
 
 /**
+ * Returns predictions for a specific ride stop ID.
+ * @param req - Express request
+ * @param res - Express response
+ * @returns JSON object with `bustime-response` containing `prd` (predictions).
+ */
+export function getRideStopPredictions(req: express.Request, res: express.Response) {
+    const preds = state.cachedRidePredsByStopId[req.params.stopId] || [];
+    res.json({ "bustime-response": { "prd": preds } });
+}
+router.get('/getRideStopPredictions/:stopId', getRideStopPredictions);
+
+/**
  * Returns all active bus predictions grouped by vehicle ID.
  * @param req - Express request
  * @param res - Express response
@@ -264,6 +312,22 @@ export function getAllStops(req: express.Request, res: express.Response) {
     res.json(Object.values(stopsList));
 }
 router.get('/getAllStops', getAllStops);
+
+
+/**
+ * Returns a list of all known stops with their locations.
+ * @param req - Express request
+ * @param res - Express response
+ * @returns JSON array of stop objects.
+ */
+export function getAllRideStops(req: express.Request, res: express.Response) {
+    const stopsList = Object.entries(state.cachedRideStopLocations).map(([stpid, stopInfo]) => ({
+        stpid,
+        ...stopInfo,
+    }));
+    res.json(Object.values(stopsList));
+}
+router.get('/getAllRideStops', getAllRideStops);
 
 /**
  * Returns the nearest k stops to a given latitude and longitude.
