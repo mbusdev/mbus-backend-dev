@@ -8,6 +8,7 @@ import * as journeyService from '../services/journey';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
 
+
 /**
  * Express router for the MBus API v3.
  * Handles routes for static data, state debugging, journey planning, and startup info.
@@ -141,14 +142,23 @@ export function getVehicleImage(req: express.Request, res: express.Response) {
 router.get('/getVehicleImage/:route', getVehicleImage);
 
 /**
- * Serves the building locations JSON file.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON file containing building data.
+ * Serves the building locations JSON file with HTTP caching enabled.
  */
-export function getBuildingLocations(req: express.Request, res: express.Response) {
-    res.sendFile(path.resolve(process.cwd(), 'src/assets/building-data.json'));
+export function getBuildingLocations(
+  req: express.Request,
+  res: express.Response
+) {
+  res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
+
+  res.sendFile(
+    path.resolve(process.cwd(), 'src/assets/building-data.json'),
+    {
+      etag: true,
+      lastModified: true,
+    }
+  );
 }
+
 router.get('/getBuildingLocations', getBuildingLocations);
 
 /**

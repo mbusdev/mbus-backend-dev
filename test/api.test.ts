@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { describe, it, expect, beforeAll } from 'vitest';
+import { performance } from 'perf_hooks'; 
 
 const SERVER_PORT = 3000;
 const BASE_URL = `http://localhost:${SERVER_PORT}/mbus/api/v3`;
@@ -122,13 +123,47 @@ describe('API Endpoints', () => {
         console.log(`GET /getAllStops: ${Object.keys(response.data).length} stops found.`);
     });
 
-    it('should get building locations (assuming it serves a JSON file)', async () => {
-        const response = await axios.get(`${BASE_URL}/getBuildingLocations`);
-        expect(response.status).toBe(200);
-        // Expect a JSON response or file content based on your server's sending
-        expect(typeof response.data).toBe('object');
-        console.log('GET /getBuildingLocations: Data received (check your console for content).');
-    });
+    it('should get building locations as JSON', async () => {
+        const response = await axios.get(
+            `${BASE_URL}/getBuildingLocations`,
+            {
+                responseType: 'json',
+                validateStatus: () => true,
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity 
+            }
+        );
+
+    expect(response.status).toBe(200);
+    expect(response.data).toBeDefined();
+    expect(typeof response.data).toBe('object');
+    expect(Array.isArray(response.data) || typeof response.data === 'object').toBe(true);
+    }, 30000);
+
+    it('should measure latency of building locations (Cold vs Warm)', async () => {
+        const url = `${BASE_URL}/getBuildingLocations`;
+
+        // --- Request 1: The "Cold" Request ---
+        const start1 = performance.now();
+        await axios.get(url, { 
+            maxBodyLength: Infinity, maxContentLength: Infinity 
+        });
+        const end1 = performance.now();
+        const duration1 = end1 - start1;
+
+        console.log(`Cold Request Time: ${duration1.toFixed(2)}ms`);
+
+        // If your server supports caching (like ETag or Cache-Control), this should be faster.
+        const start2 = performance.now();
+        await axios.get(url, { 
+            maxBodyLength: Infinity, maxContentLength: Infinity 
+        });
+        const end2 = performance.now();
+        const duration2 = end2 - start2;
+
+        console.log(`Warm Request Time: ${duration2.toFixed(2)}ms`);
+        console.log(`Speed Improvement: ${(duration1 - duration2).toFixed(2)}ms`);
+    }, 35000);
 
     it('should get startup messages', async () => {
         const response = await axios.get(`${BASE_URL}/get-startup-messages`);
@@ -171,13 +206,13 @@ describe('API Endpoints', () => {
             expect(response.status).toBe(200);
             expect(response.data).toHaveProperty('journeys');
             expect(Array.isArray(response.data.journeys)).toBe(true);
-            console.log('GET /plan-journey (test 1):', JSON.stringify(response.data.journeys, null, 2));
+            //console.log('GET /plan-journey (test 1):', JSON.stringify(response.data.journeys, null, 2));
 
             const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671`);
             expect(response2.status).toBe(200);
             expect(response2.data).toHaveProperty('journeys');
             expect(Array.isArray(response2.data.journeys)).toBe(true);
-            console.log('GET /plan-journey (test 2):', JSON.stringify(response2.data.journeys, null, 2));
+            //console.log('GET /plan-journey (test 2):', JSON.stringify(response2.data.journeys, null, 2));
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error('Error fetching path:', error.message);
