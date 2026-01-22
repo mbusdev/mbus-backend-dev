@@ -1,8 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-import { 
-    Transfer, 
-    StopID, 
+import {
+    Transfer,
+    StopID,
     TimetableLeg
 } from "./raptor/types";
 import { RaptorAlgorithm } from "./raptor/RaptorAlgorithm";
@@ -17,12 +17,12 @@ import * as path from "node:path";
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 
 
-import { 
-    curBusPositions, 
-    cachedPredsByStopId, 
-    cachedRoutes, 
-    cachedPredsByVid, 
-    cachedStopLocations, 
+import {
+    curBusPositions,
+    cachedPredsByStopId,
+    cachedRoutes,
+    cachedPredsByVid,
+    cachedStopLocations,
     curRouteSelections,
     stopIdToName,
     tatripidToRt,
@@ -83,7 +83,7 @@ const busColorManager = new BusColorManager();
 
 dotenv.config();
 const router = express.Router();
-const routeImages: {[k: string]: string} = metadata.routeImages;
+const routeImages: { [k: string]: string } = metadata.routeImages;
 
 setInterval(updateBusPositions, 7500);
 setInterval(getSelectableRoutes, 60000);
@@ -91,7 +91,7 @@ setInterval(rebuildGraph, 10 * 1000);
 setInterval(processReminders, 10 * 1000);
 setInterval(() => reminderSubscriptions.describe(), 60000);
 getSelectableRoutes();
-rebuildGraph(); 
+rebuildGraph();
 
 import * as process from "node:process";
 import { getMessaging } from "firebase-admin/messaging";
@@ -124,19 +124,19 @@ router.get('/getSelectableRoutes', (req, res) => {
 });
 
 router.get('/getAllRoutes', (req, res) => {
-    res.send({routes: cachedRoutes});
+    res.send({ routes: cachedRoutes });
 });
 
 router.get('/getrouteCache', (req, res) => {
-    res.send({routes: routeTimingCache});
+    res.send({ routes: routeTimingCache });
 });
 
 router.get('/getVehicleImage/:route', (req, res) => {
-   const { route } = req.params;
+    const { route } = req.params;
 
-   const dirname = import.meta.dirname;
-   const assetPath = path.join(dirname, 'assets');
-   const imagePath = path.join(assetPath, 'main2025');
+    const dirname = import.meta.dirname;
+    const assetPath = path.join(dirname, 'assets');
+    const imagePath = path.join(assetPath, 'main2025');
 
     if (!route || !(route in routeImages)) {
         res.sendFile(path.join(assetPath, 'bus_CN.png'));
@@ -147,7 +147,7 @@ router.get('/getVehicleImage/:route', (req, res) => {
 });
 
 router.get('/getRouteInfoVersion', (req, res) => {
-    res.send(JSON.stringify({version: metadata.metadata.version}));
+    res.send(JSON.stringify({ version: metadata.metadata.version }));
 });
 
 router.get('/getRouteInformation', (req, res) => {
@@ -228,9 +228,9 @@ router.get('/getAllPredictions', async (req, res) => {
 
 router.get('/getAllStops', (req, res) => {
     const stopsList = Object.entries(cachedStopLocations).map(([stpid, stopInfo]) => ({
-    stpid,
-    ...stopInfo,
-  }));
+        stpid,
+        ...stopInfo,
+    }));
     res.json(Object.values(stopsList));
 });
 
@@ -257,11 +257,11 @@ router.get('/getRouteColors', (req, res) => {
 router.get('/getRouteColor/:routeId', (req, res) => {
     const { routeId } = req.params;
     const routeInfo = busColorManager.getRouteInfo(routeId);
-    
+
     if (!routeInfo) {
         return res.status(404).json({ error: `Route '${routeId}' not found` });
     }
-    
+
     res.json({
         routeId: routeInfo.routeId,
         color: routeInfo.color,
@@ -273,7 +273,7 @@ router.get('/getRouteColor/:routeId', (req, res) => {
 router.get('/getFrontendData', (req, res) => {
     try {
         const routes = busColorManager.getAllRoutes();
-        
+
         const response = {
             routes: routes.map(route => ({
                 routeId: route.routeId,
@@ -287,7 +287,7 @@ router.get('/getFrontendData', (req, res) => {
                 lastUpdated: new Date().toISOString()
             }
         };
-        
+
         res.json(response);
     } catch (error) {
         res.status(500).json({ error: 'Failed to get frontend data' });
@@ -296,127 +296,127 @@ router.get('/getFrontendData', (req, res) => {
 
 
 router.get('/nearest-stops', (req, res) => {
-  try {
-    const { lat, lon, k = '2' } = req.query;
+    try {
+        const { lat, lon, k = '2' } = req.query;
 
-    const originLat = parseFloat(lat as string);
-    const originLon = parseFloat(lon as string);
-    const numStops = parseInt(k as string);
+        const originLat = parseFloat(lat as string);
+        const originLon = parseFloat(lon as string);
+        const numStops = parseInt(k as string);
 
-    if (isNaN(originLat) || isNaN(originLon)) {
-      return res.status(400).json({ error: 'Invalid or missing lat/lon' });
+        if (isNaN(originLat) || isNaN(originLon)) {
+            return res.status(400).json({ error: 'Invalid or missing lat/lon' });
+        }
+        if (isNaN(numStops) || numStops <= 0) {
+            return res.status(400).json({ error: 'Parameter k must be a positive integer' });
+        }
+
+        const heap = new MaxPriorityQueue<{ stpid: string; name: string; lat: number; lon: number; distance: number }>({
+            compare: (a, b) => a.distance - b.distance
+        });
+
+        for (const [stpid, stop] of Object.entries(cachedStopLocations)) {
+            const latDiff = (stop.lat - originLat) * 111320;
+            const lonDiff = (stop.lon - originLon) * 111320 * Math.cos(originLat * Math.PI / 180);
+            const distance = Math.sqrt(latDiff ** 2 + lonDiff ** 2);
+
+            const stopWithDist = {
+                stpid,
+                name: stop.name,
+                lat: stop.lat,
+                lon: stop.lon,
+                distance
+            };
+
+            if (heap.size() < numStops) {
+                heap.enqueue(stopWithDist);
+            } else if (distance < heap.front().distance) {
+                heap.dequeue();
+                heap.enqueue(stopWithDist);
+            }
+        }
+
+        const nearestStops = heap.toArray().sort((a, b) => a.distance - b.distance);
+        res.json({ nearestStops });
+    } catch (error) {
+        console.error('Error in /nearest-stops:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-    if (isNaN(numStops) || numStops <= 0) {
-      return res.status(400).json({ error: 'Parameter k must be a positive integer' });
-    }
-
-    const heap = new MaxPriorityQueue<{ stpid: string; name: string; lat: number; lon: number; distance: number }>({
-      compare: (a, b) => a.distance - b.distance
-    });
-
-    for (const [stpid, stop] of Object.entries(cachedStopLocations)) {
-      const latDiff = (stop.lat - originLat) * 111320;
-      const lonDiff = (stop.lon - originLon) * 111320 * Math.cos(originLat * Math.PI / 180);
-      const distance = Math.sqrt(latDiff ** 2 + lonDiff ** 2);
-
-      const stopWithDist = {
-        stpid,
-        name: stop.name,
-        lat: stop.lat,
-        lon: stop.lon,
-        distance
-      };
-
-      if (heap.size() < numStops) {
-        heap.enqueue(stopWithDist);
-      } else if (distance < heap.front().distance) {
-        heap.dequeue();
-        heap.enqueue(stopWithDist);
-      }
-    }
-
-    const nearestStops = heap.toArray().sort((a, b) => a.distance - b.distance);
-    res.json({ nearestStops });
-  } catch (error) {
-    console.error('Error in /nearest-stops:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
 });
 
 function optimizeWalkingFastest(journey: any, cachedGraph: any): any {
-  if (!journey) return journey;
+    if (!journey) return journey;
 
-  const optimizedLegs: any[] = [];
-  const WALKING_SPEED_KMH = 4;
-  const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
+    const optimizedLegs: any[] = [];
+    const WALKING_SPEED_KMH = 4;
+    const WALKING_SPEED_MS = WALKING_SPEED_KMH * 1000 / 3600;
 
-  function distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const dx = (lat2 - lat1) * 111320;
-    const dy = (lon2 - lon1) * 111320 * Math.cos(lat1 * Math.PI / 180);
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  for (let i = 0; i < journey.legs.length; i++) {
-    const leg = journey.legs[i];
-
-    // Look for a transfer followed by a bus trip
-    if (leg.trip && i > 0 && "duration" in journey.legs[i - 1]) {
-      const transfer = journey.legs[i - 1] as Transfer;
-      const tripLeg = leg as TimetableLeg;
-      const trip = tripLeg.trip;
-
-      const originalBoardStop = tripLeg.stopTimes[0].stop;
-      const boardIdx = trip.stopTimes.findIndex(st => st.stop === originalBoardStop);
-      const walkStartTime = transfer.startTime;
-
-      let bestStop = originalBoardStop;
-      let bestIdx = boardIdx;
-      let bestDistance = Number.MAX_SAFE_INTEGER;
-
-      const originLoc = cachedStopLocations[transfer.origin];
-      if (!originLoc) {
-        optimizedLegs.push(leg);
-        continue;
-      }
-
-      for (let j = boardIdx; j < trip.stopTimes.length; j++) {
-        const candidate = trip.stopTimes[j];
-        const stopLoc = cachedStopLocations[candidate.stop];
-        if (!stopLoc) continue;
-
-        const dist = distanceMeters(originLoc.lat, originLoc.lon, stopLoc.lat, stopLoc.lon);
-        const walkArrival = walkStartTime + dist / WALKING_SPEED_MS;
-        const busArrival = candidate.arrivalTime - (cachedGraph.interchange[candidate.stop] ?? 0);
-
-        if (walkArrival <= busArrival && dist < bestDistance) {
-          bestStop = candidate.stop;
-          bestIdx = j;
-          bestDistance = dist;
-        }
-      }
-
-      if (bestStop !== originalBoardStop) {
-        console.log(`Optimized walking to ${bestStop} instead of ${originalBoardStop}, saving ${Math.round(bestDistance)} meters`);
-        // Update transfer
-        transfer.destination = bestStop;
-        transfer.duration = Math.round(bestDistance / WALKING_SPEED_MS);
-
-        // Trim trip leg to start from bestStop
-        tripLeg.stopTimes = trip.stopTimes.slice(bestIdx);
-
-        // Refresh trip leg duration
-        if (tripLeg.stopTimes.length > 1) {
-          const firstStop = tripLeg.stopTimes[0];
-          const lastStop = tripLeg.stopTimes[tripLeg.stopTimes.length - 1];
-          (tripLeg as any).duration = lastStop.arrivalTime - firstStop.departureTime;
-        }
-      }
+    function distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+        const dx = (lat2 - lat1) * 111320;
+        const dy = (lon2 - lon1) * 111320 * Math.cos(lat1 * Math.PI / 180);
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
-    optimizedLegs.push(leg);
-  }
+    for (let i = 0; i < journey.legs.length; i++) {
+        const leg = journey.legs[i];
 
-  return { ...journey, legs: optimizedLegs };
+        // Look for a transfer followed by a bus trip
+        if (leg.trip && i > 0 && "duration" in journey.legs[i - 1]) {
+            const transfer = journey.legs[i - 1] as Transfer;
+            const tripLeg = leg as TimetableLeg;
+            const trip = tripLeg.trip;
+
+            const originalBoardStop = tripLeg.stopTimes[0].stop;
+            const boardIdx = trip.stopTimes.findIndex(st => st.stop === originalBoardStop);
+            const walkStartTime = transfer.startTime;
+
+            let bestStop = originalBoardStop;
+            let bestIdx = boardIdx;
+            let bestDistance = Number.MAX_SAFE_INTEGER;
+
+            const originLoc = cachedStopLocations[transfer.origin];
+            if (!originLoc) {
+                optimizedLegs.push(leg);
+                continue;
+            }
+
+            for (let j = boardIdx; j < trip.stopTimes.length; j++) {
+                const candidate = trip.stopTimes[j];
+                const stopLoc = cachedStopLocations[candidate.stop];
+                if (!stopLoc) continue;
+
+                const dist = distanceMeters(originLoc.lat, originLoc.lon, stopLoc.lat, stopLoc.lon);
+                const walkArrival = walkStartTime + dist / WALKING_SPEED_MS;
+                const busArrival = candidate.arrivalTime - (cachedGraph.interchange[candidate.stop] ?? 0);
+
+                if (walkArrival <= busArrival && dist < bestDistance) {
+                    bestStop = candidate.stop;
+                    bestIdx = j;
+                    bestDistance = dist;
+                }
+            }
+
+            if (bestStop !== originalBoardStop) {
+                console.log(`Optimized walking to ${bestStop} instead of ${originalBoardStop}, saving ${Math.round(bestDistance)} meters`);
+                // Update transfer
+                transfer.destination = bestStop;
+                transfer.duration = Math.round(bestDistance / WALKING_SPEED_MS);
+
+                // Trim trip leg to start from bestStop
+                tripLeg.stopTimes = trip.stopTimes.slice(bestIdx);
+
+                // Refresh trip leg duration
+                if (tripLeg.stopTimes.length > 1) {
+                    const firstStop = tripLeg.stopTimes[0];
+                    const lastStop = tripLeg.stopTimes[tripLeg.stopTimes.length - 1];
+                    (tripLeg as any).duration = lastStop.arrivalTime - firstStop.departureTime;
+                }
+            }
+        }
+
+        optimizedLegs.push(leg);
+    }
+
+    return { ...journey, legs: optimizedLegs };
 }
 
 router.get('/plan-journey', async (req, res) => {
@@ -477,10 +477,10 @@ router.get('/plan-journey', async (req, res) => {
                 const latDiff = (stopLocation.lat - originLatNum) * 111320;
                 const lonDiff = (stopLocation.lon - originLonNum) * 111320 * Math.cos(originLatNum * Math.PI / 180);
                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
-                
+
                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;
                 const transferDuration = Math.round(walkingTimeSeconds);
-                
+
                 const transfer: Transfer = {
                     origin: originStopId,
                     destination: stopId,
@@ -499,10 +499,10 @@ router.get('/plan-journey', async (req, res) => {
                 const latDiff = (destLatNum - stopLocation.lat) * 111320;
                 const lonDiff = (destLonNum - stopLocation.lon) * 111320 * Math.cos(stopLocation.lat * Math.PI / 180);
                 const distance = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
-                
+
                 let walkingTimeSeconds = distance / WALKING_SPEED_MS;
                 const transferDuration = Math.round(walkingTimeSeconds);
-                
+
                 const transfer: Transfer = {
                     origin: stopId,
                     destination: destStopId,
@@ -520,7 +520,7 @@ router.get('/plan-journey', async (req, res) => {
         const directDistance = Math.sqrt(directLatDiff * directLatDiff + directLonDiff * directLonDiff);
 
         let directWalkingTimeSeconds = directDistance / WALKING_SPEED_MS;
-        
+
         const directTransferDuration = Math.round(directWalkingTimeSeconds);
         //console.log(`Walking Distance: ${directTransferDuration}`);
 
@@ -564,7 +564,7 @@ router.get('/plan-journey', async (req, res) => {
                         destination_id: leg.destination,
                         destination: leg.destination === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.destination === 'VIRTUAL_DESTINATION' ? 'End' : (stopIdToName[leg.destination] || leg.destination))
                     };
-                    if(leg.trip && leg.trip.tripId){
+                    if (leg.trip && leg.trip.tripId) {
                         // Add duration for bus legs
                         if (leg.stopTimes && leg.stopTimes.length > 0) {
                             const firstStop = leg.stopTimes[0];
@@ -590,8 +590,8 @@ router.get('/plan-journey', async (req, res) => {
         const leastTransfers = journeys.length > 0 ? journeys.reduce((best, j) => leastChanges(best, j) ? j : best, journeys[0]) : null;
         const leastWalk = journeys.length > 0 ? journeys.reduce((best, j) => leastWalking(best, j) ? j : best, journeys[0]) : null;
         const uniqueJourneys = [fastest, leastTransfers, leastWalk]
-          .filter((j, i, arr) => j && arr.findIndex(x => x === j) === i)
-          .map(formatJourney);
+            .filter((j, i, arr) => j && arr.findIndex(x => x === j) === i)
+            .map(formatJourney);
         res.json({ journeys: uniqueJourneys.slice(0, 3) });
     } catch (error) {
         console.error('Error planning journey:', error);
@@ -633,7 +633,7 @@ router.post('/swapToken', (req, res) => {
 // Responds with { reminders: Array<{ stpid: string, rtid: string, thresh: number | null }> }
 router.get('/activeReminders/:registrationToken', (req, res) => {
     const token = req.params.registrationToken as RegistrationToken;
-    res.send({ reminders: reminderSubscriptions.activeRemindersFor(token) });    
+    res.send({ reminders: reminderSubscriptions.activeRemindersFor(token) });
     res.status(200);
 });
 
@@ -649,10 +649,10 @@ router.post('/notifyMeLater', (req, res) => {
         return;
     }
     setTimeout(() => {
-      console.log("sending push notification..");
-      getMessaging()
-          .send({notification: {title: "hi", body: "hello world!"}, token: registrationToken})
-          .catch((e) => console.log("Failed to send message: ", e));
+        console.log("sending push notification..");
+        getMessaging()
+            .send({ notification: { title: "hi", body: "hello world!" }, token: registrationToken })
+            .catch((e) => console.log("Failed to send message: ", e));
     }, 10000);
     res.sendStatus(200);
 });
