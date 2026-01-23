@@ -19,7 +19,7 @@ describe('API Endpoints', () => {
             const response = await axios.get(`${BASE_URL}/getAllPredictions`);
             expect(response.status).toBe(200);
             expect(Array.isArray(response.data)).toBe(true);
-            
+
             // Extract and log unique stop IDs
             const stopIds = new Set<string>();
             response.data.forEach((bus: any) => {
@@ -31,7 +31,7 @@ describe('API Endpoints', () => {
                     });
                 }
             });
-            
+
             const stopIdsArray = Array.from(stopIds);
             console.log('Available stop IDs:', stopIdsArray);
             expect(stopIdsArray.length).toBeGreaterThan(0);
@@ -53,7 +53,7 @@ describe('API Endpoints', () => {
             const response = await axios.get(`${BASE_URL}/plan-journey?originLat=42.264356&originLon=-83.744353999999&destLat=42.268067999999&destLon=-83.747307000001`);
             expect(response.status).toBe(200);
             console.log('Path test 1:', JSON.stringify(response.data, null, 2));
-            
+
             // Test another path with different coordinates
             // const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.277682&originLon=-83.734936&destLat=42.290425&destLon=-83.718150999999`);
             const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671?walkingPenalty=8`);
