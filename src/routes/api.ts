@@ -529,6 +529,35 @@ export function activeRemindersForToken(req: express.Request, res: express.Respo
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
 
+/** Lets you run the equivalent of several setReminder and unsetReminders in one call
+ *  @param req - Express request expecting
+ *      {
+ *          token: string,
+ *          modifications: Array<
+ *              { action: "set", stpid: string, rtid: string, thresh: number }
+ *              | { action: "unset", stpid: string, rtid: string }
+ *          >
+ *      }
+ *  @param res - Express response, 200 if success
+ */
+export function modifyReminders(req: express.Request, res: express.Response) {
+    const token = req.body.token as reminderService.RegistrationToken;
+    const modifications = req.body.modifications as Array<
+        { action: "set", stpid: string, rtid: string, thresh: number }
+        | { action: "unset", stpid: string, rtid: string }
+    >;
+    for (const modification of modifications) {
+        const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
+        if (modification.action == "set") {
+            reminderService.reminderSubscriptions.add(event, modification.thresh, token);            
+        } else {
+            reminderService.reminderSubscriptions.remove(event, token);
+        }
+    }
+    res.status(200);
+}
+router.post('/modifyReminders', modifyReminders);
+
 // testing purposes
 // router.post('/notifyMeLater', (req, res) => {
 //     console.log("got request");
