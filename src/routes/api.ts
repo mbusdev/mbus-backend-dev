@@ -5,6 +5,7 @@ import axios from "axios";
 import * as state from '../state/transitState';
 import * as meta from '../services/metadata';
 import * as journeyService from '../services/journey';
+import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
 
@@ -470,5 +471,82 @@ export function getKeyStops(req: express.Request, res: express.Response) {
     res.send(KEY_STOPS);
 }
 router.get('/get-key-stops', getKeyStops);
+
+// Notifications / Reminders
+
+/**
+ * @param req - Express request, expects {token: string, stpid: string, rtid: string, thresh: number} in the body
+ * @param res - Express response, 200 if success
+ */
+export function setReminder(req: express.Request, res: express.Response) {
+    const token = req.body.token as reminderService.RegistrationToken;
+    const stpid: string = req.body.stpid;
+    const rtid: string = req.body.rtid;
+    const thresh: number = req.body.thresh;
+    reminderService.reminderSubscriptions.add({ stpid, rtid } as reminderService.Event, thresh, token);
+    res.sendStatus(200);
+}
+router.post('/setReminder', setReminder);
+
+/**
+ * @param req - Express request, expects {token: string, stpid: string, rtid: string} in the body
+ * @param res - Express response, 200 if success
+ */
+export function unsetReminder(req: express.Request, res: express.Response) {
+    const token = req.body.token as reminderService.RegistrationToken;
+    const stpid: string = req.body.stpid;
+    const rtid: string = req.body.rtid;
+    reminderService.reminderSubscriptions.remove({ stpid, rtid } as reminderService.Event, token);
+    res.sendStatus(200);
+}
+router.post('/unsetReminder', unsetReminder);
+
+/**
+ * @param req - Express request, expects {oldTok: string, newTok: string} in the body
+ * @param res - Express response, 200 if success
+ * 
+ * Upon responding with 200, future calls to /setReminder, /unsetReminder, and /activeReminders
+ * will need the new token
+ */
+export function swapToken(req: express.Request, res: express.Response) {
+    const oldTok = req.body.oldTok as reminderService.RegistrationToken;
+    const newTok = req.body.newTok as reminderService.RegistrationToken;
+    reminderService.reminderSubscriptions.swapToken(oldTok, newTok);
+    res.sendStatus(200);
+}
+router.post('/swapToken', swapToken);
+
+/**
+ * @param req - Express request, token is path encoded
+ * @param res - Express response with
+ * { reminders: Array<{ stpid: string, rtid: string, thresh: number | null }> } as the body
+ */
+export function activeRemindersForToken(req: express.Request, res: express.Response) {
+    const token = req.params.registrationToken as reminderService.RegistrationToken;
+    console.log(`Got request for active reminders of ${token}`);
+    res.send({ reminders: reminderService.reminderSubscriptions.activeRemindersFor(token) });
+    res.status(200);
+}
+router.get('/activeReminders/:registrationToken', activeRemindersForToken);
+
+// testing purposes
+// router.post('/notifyMeLater', (req, res) => {
+//     console.log("got request");
+//     const registrationToken = req.body.token;
+//     if (registrationToken === undefined) {
+//         console.log("got request with no token");
+//         console.log(req.body);
+//         res.send("registration token missing");
+//         res.status(400);
+//         return;
+//     }
+//     setTimeout(() => {
+//         console.log("sending push notification..");
+//         getMessaging()
+//             .send({ notification: { title: "hi", body: "hello world!" }, token: registrationToken })
+//             .catch((e) => console.log("Failed to send message: ", e));
+//     }, 10000);
+//     res.sendStatus(200);
+// });
 
 export default router;
