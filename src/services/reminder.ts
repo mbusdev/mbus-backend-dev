@@ -93,7 +93,14 @@ class ReminderSubscriptions {
             }
         }
         this.subscriptions = newSubscriptions;
-        console.log(`Process completed with ${notifications.reminder.size}, ${notifications.atTheStop.size}, ${notifications.delayed.size}, ${notifications.disappeared.size}`);
+        if (notifications.reminder.size !== 0 || notifications.atTheStop.size !== 0 || notifications.delayed.size !== 0 || notifications.disappeared.size !== 0) {
+            console.log(
+                `Process completed with ${notifications.reminder.size} threshold reminders, `
+                    + `${notifications.atTheStop.size} at the stop reminders, `
+                    + `${notifications.delayed.size} delayed notifications, `
+                    + `${notifications.disappeared.size} disappeared notifications`
+            );
+        }
         return notifications;
     }
 
@@ -187,7 +194,8 @@ function processReminders() {
             {
                 notification: {
                     title: `Bus Delayed`,
-                    body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s).`
+                    body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s). `
+                        + `New time is ${arrivalTime?.curr ?? 'unknown'} minute(s).`
                 }
             },
             tokens

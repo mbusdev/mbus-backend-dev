@@ -2,6 +2,7 @@ import express from "express";
 import * as path from "path";
 import * as process from "node:process";
 import axios from "axios";
+import { getMessaging } from "firebase-admin/messaging";
 import * as state from '../state/transitState';
 import * as meta from '../services/metadata';
 import * as journeyService from '../services/journey';
@@ -524,8 +525,8 @@ router.post('/swapToken', swapToken);
 export function activeRemindersForToken(req: express.Request, res: express.Response) {
     const token = req.params.registrationToken as reminderService.RegistrationToken;
     console.log(`Got request for active reminders of ${token}`);
-    res.send({ reminders: reminderService.reminderSubscriptions.activeRemindersFor(token) });
     res.status(200);
+    res.send({ reminders: reminderService.reminderSubscriptions.activeRemindersFor(token) });
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
 
@@ -554,28 +555,28 @@ export function modifyReminders(req: express.Request, res: express.Response) {
             reminderService.reminderSubscriptions.remove(event, token);
         }
     }
-    res.status(200);
+    res.sendStatus(200);
 }
 router.post('/modifyReminders', modifyReminders);
 
 // testing purposes
-// router.post('/notifyMeLater', (req, res) => {
-//     console.log("got request");
-//     const registrationToken = req.body.token;
-//     if (registrationToken === undefined) {
-//         console.log("got request with no token");
-//         console.log(req.body);
-//         res.send("registration token missing");
-//         res.status(400);
-//         return;
-//     }
-//     setTimeout(() => {
-//         console.log("sending push notification..");
-//         getMessaging()
-//             .send({ notification: { title: "hi", body: "hello world!" }, token: registrationToken })
-//             .catch((e) => console.log("Failed to send message: ", e));
-//     }, 10000);
-//     res.sendStatus(200);
-// });
+router.post('/notifyMeLater', (req, res) => {
+    console.log("got request");
+    const registrationToken = req.body.token;
+    if (registrationToken === undefined) {
+        console.log("got request with no token");
+        console.log(req.body);
+        res.send("registration token missing");
+        res.status(400);
+        return;
+    }
+    setTimeout(() => {
+        console.log("sending push notification..");
+        getMessaging()
+            .send({ notification: { title: "hi", body: "hello world!" }, token: registrationToken })
+            .catch((e) => console.log("Failed to send message: ", e));
+    }, 10000);
+    res.sendStatus(200);
+});
 
 export default router;
