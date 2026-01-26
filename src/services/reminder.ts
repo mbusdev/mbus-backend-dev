@@ -16,16 +16,25 @@ type Event = {
     readonly __brand: "event"
 }
 
+function Event(x: { stpid: string, rtid: string }): Event {
+    return x as Event;
+}
+
 type RegistrationToken = string & { readonly __brand: "registration_token" }
+
+function RegistrationToken(x: string): RegistrationToken {
+    return x as RegistrationToken;
+}
+
 type EventKey = string & { readonly __brand: "event_key" }
 
-function encodeEvent(e: Event): EventKey {
+function EventKey(e: Event): EventKey {
     return `${e.stpid}|${e.rtid}` as EventKey;
 }
 
 function decodeEvent(e: EventKey): Event {
     const split = e.split('|');
-    return { stpid: split[0], rtid: split[1] } as Event;
+    return Event({ stpid: split[0], rtid: split[1] });
 }
 
 // Subscriptions go through a pipeline, starting in the waiting for reminder
@@ -74,21 +83,42 @@ class ReminderSubscriptions {
         };
         const newSubscriptions: typeof this.subscriptions = [];
         for (const subscription of this.subscriptions) {
-            const key = encodeEvent(subscription.event);
+            const key = EventKey(subscription.event);
             const arrivalTime = arrivalTimes.get(key);
+
+            console.log(`process() is operating on ${key}...`);
+            console.log(`the arrival time is ${JSON.stringify(arrivalTime)}`);
+            console.log(`subscription is for ${JSON.stringify(subscription.event)} @ ${subscription.thresh}`);
+
+            // There might be times where the prediction of the bus skips past DUE/1, which results in a disappeared or
+            // delayed notification when there really shouldn't be. `shouldBeArrivingThresh` overrides a bus
+            // disappeared notification with an at the stop one if the arrival time is at or below it.
+            // Delayed notifications are also overriden if the pre-delay arrival time is at or below 
+            const shouldBeArrivingThresh = 3;
+
             if (arrivalTime === undefined || arrivalTime.curr === null) {
+                // disappeared
+                console.log("disappeared notification");
                 addHelper(notifications.disappeared, key, subscription.token);
-            } else if (subscription.thresh === null && arrivalTime.curr === 0) {
+            } else if (arrivalTime.curr === 1) {
+                // at the stop
+                console.log("ats notification");
                 addHelper(notifications.atTheStop, key, subscription.token);
             } else if (arrivalTime.prev !== null && arrivalTime.curr > arrivalTime.prev) {
+                // delayed
+                console.log("delayed notification");
                 addHelper(notifications.delayed, key, subscription.token);
                 newSubscriptions.push(subscription);  // keep subscription if delayed
-            } else if (subscription.thresh !== null && arrivalTime.prev !== null
-                && arrivalTime.curr <= subscription.thresh && arrivalTime.curr < arrivalTime.prev) {
+            } else if (subscription.thresh !== null
+                && arrivalTime.curr <= subscription.thresh
+            ) {
+                console.log("reminder notification");
+                // reminder
                 addHelper(notifications.reminder, key, subscription.token);
                 // replace with next in pipeline, a subscription to bus at stop
                 newSubscriptions.push({ event: subscription.event, thresh: null, token: subscription.token });
             } else {
+                console.log("no notification");
                 newSubscriptions.push(subscription);  // keep subscription by default
             }
         }
@@ -96,9 +126,9 @@ class ReminderSubscriptions {
         if (notifications.reminder.size !== 0 || notifications.atTheStop.size !== 0 || notifications.delayed.size !== 0 || notifications.disappeared.size !== 0) {
             console.log(
                 `Process completed with ${notifications.reminder.size} threshold reminders, `
-                    + `${notifications.atTheStop.size} at the stop reminders, `
-                    + `${notifications.delayed.size} delayed notifications, `
-                    + `${notifications.disappeared.size} disappeared notifications`
+                + `${notifications.atTheStop.size} at the stop reminders, `
+                + `${notifications.delayed.size} delayed notifications, `
+                + `${notifications.disappeared.size} disappeared notifications`
             );
         }
         return notifications;
@@ -124,7 +154,7 @@ class ReminderSubscriptions {
         return this.subscriptions
             .filter((s) => s.token === id)
             .map((s) => {
-                return {stpid: s.event.stpid, rtid: s.event.rtid, thresh: s.thresh };
+                return { stpid: s.event.stpid, rtid: s.event.rtid, thresh: s.thresh };
             });
     }
 
@@ -148,8 +178,12 @@ function processReminders() {
     for (const stpid of stpids) {
         for (const vehicle of state.cachedPredsByStopId[stpid]) {
             const rtid = vehicle.rt;
-            const prediction = vehicle.prdctdn === 'DUE' ? 0 : parseInt(vehicle.prdctdn);
-            const key = encodeEvent({ stpid: stpid, rtid: rtid } as Event);
+            if (typeof rtid !== "string") {
+                console.log("prediction found that is missing rtid!");
+                continue;
+            }
+            const prediction = vehicle.prdctdn === 'DUE' ? 1 : parseInt(vehicle.prdctdn);
+            const key = EventKey(Event({ stpid: stpid, rtid: rtid }));
             let time = arrivalTimes.get(key);
             if (time === undefined) {
                 arrivalTimes.set(key, { curr: null, prev: null });
@@ -158,6 +192,20 @@ function processReminders() {
             if (time.curr === null || prediction < time.curr)
                 time.curr = prediction;
         }
+    }
+
+    const keys = new Set<EventKey>();
+    for (const event of reminderSubscriptions.subscriptions) {
+        const key = EventKey(event.event);
+        keys.add(key);
+    }
+    console.log("Arrival Times Information");
+    for (const key of keys) {
+        const arrivalTime = arrivalTimes.get(key);
+        if (arrivalTime?.curr == arrivalTime?.prev) {
+            continue;
+        }
+        console.log(` - ${key}: c = ${arrivalTime?.curr} p = ${arrivalTime?.prev}`);
     }
 
     // send push notifications as needed

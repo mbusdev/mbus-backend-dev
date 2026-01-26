@@ -3,6 +3,7 @@ import * as path from "path";
 import * as process from "node:process";
 import axios from "axios";
 import { getMessaging } from "firebase-admin/messaging";
+import * as z from "zod";
 import * as state from '../state/transitState';
 import * as meta from '../services/metadata';
 import * as journeyService from '../services/journey';
@@ -475,92 +476,122 @@ router.get('/get-key-stops', getKeyStops);
 
 // Notifications / Reminders
 
+const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
 /**
- * @param req - Express request, expects {token: string, stpid: string, rtid: string, thresh: number} in the body
- * @param res - Express response, 200 if success
+ * @param req - Express request, expects `SetReminderBody` in the body
+ * @param res - Express response, error message as string if error occurs
  */
 export function setReminder(req: express.Request, res: express.Response) {
-    const token = req.body.token as reminderService.RegistrationToken;
-    const stpid: string = req.body.stpid;
-    const rtid: string = req.body.rtid;
-    const thresh: number = req.body.thresh;
-    reminderService.reminderSubscriptions.add({ stpid, rtid } as reminderService.Event, thresh, token);
-    res.sendStatus(200);
+    const result = SetReminderBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { token, stpid, rtid, thresh } = result.data;
+        reminderService.reminderSubscriptions.add(
+            reminderService.Event({ stpid, rtid }),
+            thresh,
+            reminderService.RegistrationToken(token)
+        );
+        res.sendStatus(200);
+    }
+
 }
 router.post('/setReminder', setReminder);
 
+const UnsetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string() });
 /**
- * @param req - Express request, expects {token: string, stpid: string, rtid: string} in the body
- * @param res - Express response, 200 if success
+ * @param req - Express request, `UnsetReminderBody` in the body
+ * @param res - Express response, error message as string if error occurs
  */
 export function unsetReminder(req: express.Request, res: express.Response) {
-    const token = req.body.token as reminderService.RegistrationToken;
-    const stpid: string = req.body.stpid;
-    const rtid: string = req.body.rtid;
-    reminderService.reminderSubscriptions.remove({ stpid, rtid } as reminderService.Event, token);
-    res.sendStatus(200);
+    const result = UnsetReminderBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { token ,stpid, rtid } = result.data;
+        reminderService.reminderSubscriptions.remove(
+            { stpid, rtid } as reminderService.Event, reminderService.RegistrationToken(token)
+        );
+        res.sendStatus(200);
+    }
 }
 router.post('/unsetReminder', unsetReminder);
 
+const SwapTokenBody = z.object({ oldTok: z.string(), newTok: z.string() });
 /**
- * @param req - Express request, expects {oldTok: string, newTok: string} in the body
- * @param res - Express response, 200 if success
+ * @param req - Express request, `SwapTokenBody` in the body
+ * @param res - Express response, error message as string if error occurs
  * 
  * Upon responding with 200, future calls to /setReminder, /unsetReminder, and /activeReminders
  * will need the new token
  */
 export function swapToken(req: express.Request, res: express.Response) {
-    const oldTok = req.body.oldTok as reminderService.RegistrationToken;
-    const newTok = req.body.newTok as reminderService.RegistrationToken;
-    reminderService.reminderSubscriptions.swapToken(oldTok, newTok);
-    res.sendStatus(200);
+    const result = SwapTokenBody.safeParse(req.body)
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { oldTok, newTok } = req.body;
+        reminderService.reminderSubscriptions.swapToken(oldTok, newTok);
+        res.sendStatus(200);
+    }
 }
 router.post('/swapToken', swapToken);
 
 /**
  * @param req - Express request, token is path encoded
- * @param res - Express response with
- * { reminders: Array<{ stpid: string, rtid: string, thresh: number | null }> } as the body
+ * @param res - Express response 
  */
-export function activeRemindersForToken(req: express.Request, res: express.Response) {
-    const token = req.params.registrationToken as reminderService.RegistrationToken;
+export function activeRemindersForToken(
+    req: express.Request,
+    res: express.Response<{ reminders: Array<{ stpid: string, rtid: string, thresh: number | null }> }>
+) {
+    const token = reminderService.RegistrationToken(req.params.registrationToken);
     console.log(`Got request for active reminders of ${token}`);
     res.status(200);
     res.send({ reminders: reminderService.reminderSubscriptions.activeRemindersFor(token) });
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
 
+const ModifyRemindersBody = z.object({
+    token: z.string(),
+    modifications: z.array(
+        z.union([
+            z.object({ action: z.literal("set"), stpid: z.string(), rtid: z.string(), thresh: z.number() }),
+            z.object({ action: z.literal("unset"), stpid: z.string(), rtid: z.string() })
+        ])
+    )
+});
 /** Lets you run the equivalent of several setReminder and unsetReminders in one call
- *  @param req - Express request expecting
- *      {
- *          token: string,
- *          modifications: Array<
- *              { action: "set", stpid: string, rtid: string, thresh: number }
- *              | { action: "unset", stpid: string, rtid: string }
- *          >
- *      }
- *  @param res - Express response, 200 if success
+ *  @param req - Express request expecting `ModifyRemindersBody` in body
+ *  @param res - Express response
  */
 export function modifyReminders(req: express.Request, res: express.Response) {
-    const token = req.body.token as reminderService.RegistrationToken;
-    const modifications = req.body.modifications as Array<
-        { action: "set", stpid: string, rtid: string, thresh: number }
-        | { action: "unset", stpid: string, rtid: string }
-    >;
-    for (const modification of modifications) {
-        const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
-        if (modification.action == "set") {
-            reminderService.reminderSubscriptions.add(event, modification.thresh, token);            
-        } else {
-            reminderService.reminderSubscriptions.remove(event, token);
+    const result = ModifyRemindersBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { token, modifications } = result.data;
+        for (const modification of modifications) {
+            const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
+            if (modification.action == "set") {
+                reminderService.reminderSubscriptions.add(
+                    event, modification.thresh, reminderService.RegistrationToken(token)
+                );            
+            } else {
+                reminderService.reminderSubscriptions.remove(event, reminderService.RegistrationToken(token));
+            }
         }
+        res.sendStatus(200);
     }
-    res.sendStatus(200);
 }
 router.post('/modifyReminders', modifyReminders);
 
 // testing purposes
-router.post('/notifyMeLater', (req, res) => {
+export function notifyMeLater(req: express.Request, res: express.Response) {
     console.log("got request");
     const registrationToken = req.body.token;
     if (registrationToken === undefined) {
@@ -577,6 +608,7 @@ router.post('/notifyMeLater', (req, res) => {
             .catch((e) => console.log("Failed to send message: ", e));
     }, 10000);
     res.sendStatus(200);
-});
+}
+router.post('/notifyMeLater', notifyMeLater);
 
 export default router;
