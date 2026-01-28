@@ -53,6 +53,7 @@ class ReminderSubscriptions {
     add(event: Event, thresh: number, token: RegistrationToken) {
         console.log("Adding a reminder subscription");
         this.subscriptions.push({ event, thresh, token });
+        sendReminderUpdateToAll(new Set([token]));
     }
 
     // removes all subscriptions involving both `event` and `token`
@@ -60,6 +61,7 @@ class ReminderSubscriptions {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
             .filter((s) => s.event.rtid !== event.rtid || s.event.stpid !== event.stpid || s.token !== token);
+        sendReminderUpdateToAll(new Set([token]));
     }
 
     // updates the status of all registrations, returning an object representing the
@@ -68,7 +70,8 @@ class ReminderSubscriptions {
         reminder: Map<EventKey, Set<RegistrationToken>>,
         atTheStop: Map<EventKey, Set<RegistrationToken>>,
         disappeared: Map<EventKey, Set<RegistrationToken>>,
-        delayed: Map<EventKey, Set<RegistrationToken>>
+        delayed: Map<EventKey, Set<RegistrationToken>>,
+        updated: Set<RegistrationToken>
     } {
         const addHelper = (map: Map<EventKey, Set<RegistrationToken>>, key: EventKey, token: RegistrationToken) => {
             let tokens = map.get(key);
@@ -79,13 +82,20 @@ class ReminderSubscriptions {
             tokens.add(token);
         };
         const notifications = {
-            reminder: new Map(), atTheStop: new Map(), disappeared: new Map(), delayed: new Map()
+            reminder: new Map(),
+            atTheStop: new Map(),
+            disappeared: new Map(),
+            delayed: new Map(),
+            updated: new Set<RegistrationToken>()
         };
 
         const newSubscriptions: typeof this.subscriptions = [];
         for (const subscription of this.subscriptions) {
             const key = EventKey(subscription.event);
             const arrivalTime = arrivalTimes.get(key);
+            if (arrivalTime !== undefined && arrivalTime.curr !== arrivalTime.prev) {
+                notifications.updated.add(subscription.token);
+            }
 
             const logInfo = () => {
                 console.log(`process() is operating on ${key}...`);
@@ -176,11 +186,21 @@ class ReminderSubscriptions {
         });
     }
 
-    activeRemindersFor(id: RegistrationToken): Array<{ stpid: string, rtid: string, thresh: number | null }> {
+    activeRemindersFor(id: RegistrationToken): Array<{
+        stpid: string,
+        rtid: string,
+        thresh: number | null,
+        eta: number | null
+    }> {
         return this.subscriptions
             .filter((s) => s.token === id)
             .map((s) => {
-                return { stpid: s.event.stpid, rtid: s.event.rtid, thresh: s.thresh };
+                return {
+                    stpid: s.event.stpid,
+                    rtid: s.event.rtid,
+                    thresh: s.thresh,
+                    eta: arrivalTimes.get(EventKey(s.event))?.curr ?? null
+                };
             });
     }
 
@@ -199,10 +219,28 @@ function processReminders() {
         v.curr = null;
     }
 
-    const stpids = Object.keys(state.cachedPredsByStopId);
     // determine arrival time updates for each stop
-    for (const stpid of stpids) {
+    for (const stpid of Object.keys(state.cachedPredsByStopId)) {
         for (const vehicle of state.cachedPredsByStopId[stpid]) {
+            const rtid = vehicle.rt;
+            if (typeof rtid !== "string") {
+                console.log("prediction found that is missing rtid!");
+                continue;
+            }
+            const prediction = vehicle.prdctdn === 'DUE' ? 1 : parseInt(vehicle.prdctdn);
+            const key = EventKey(Event({ stpid: stpid, rtid: rtid }));
+            let time = arrivalTimes.get(key);
+            if (time === undefined) {
+                arrivalTimes.set(key, { curr: null, prev: null });
+                time = arrivalTimes.get(key)!;
+            }
+            if (time.curr === null || prediction < time.curr)
+                time.curr = prediction;
+        }
+    }
+    // also do the ride
+    for (const stpid of Object.keys(state.cachedRidePredsByStopId)) {
+        for (const vehicle of state.cachedRidePredsByStopId[stpid]) {
             const rtid = vehicle.rt;
             if (typeof rtid !== "string") {
                 console.log("prediction found that is missing rtid!");
@@ -243,12 +281,10 @@ function processReminders() {
     for (const [eventKey, tokens] of notifications.reminder) {
         const event = decodeEvent(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
-        sendToAll(
+        sendNotifToAll(
             {
-                notification: {
-                    title: 'Bus Arrival Reminder',
-                    body: `${event.rtid} is ${arrivalTimes.get(eventKey)?.curr} minute(s) away from ${stopName}`
-                }
+                title: 'Bus Arrival Reminder',
+                body: `${event.rtid} is ${arrivalTimes.get(eventKey)?.curr} minute(s) away from ${stopName}`
             },
             tokens
         );
@@ -268,13 +304,11 @@ function processReminders() {
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
         const arrivalTime = arrivalTimes.get(eventKey);
         const delay = arrivalTime?.curr !== null && arrivalTime?.prev ? `${arrivalTime.curr - arrivalTime.prev}` : `some`;
-        sendToAll(
+        sendNotifToAll(
             {
-                notification: {
-                    title: `Bus Delayed`,
-                    body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s). `
-                        + `New time is ${arrivalTime?.curr ?? 'unknown'} minute(s).`
-                }
+                title: `Bus Delayed`,
+                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s). `
+                    + `New time is ${arrivalTime?.curr ?? 'unknown'} minute(s).`
             },
             tokens
         );
@@ -282,21 +316,38 @@ function processReminders() {
     for (const [eventKey, tokens] of notifications.disappeared) {
         const event = decodeEvent(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
-        sendToAll(
+        sendNotifToAll(
             {
-                notification: {
-                    title: `Bus Disappeared`,
-                    body: `The ${event.rtid} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
-                }
+                title: `Bus Disappeared`,
+                body: `The ${event.rtid} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
             },
             tokens
         );
     }
+    // send reminder updates
+    sendReminderUpdateToAll(notifications.updated);
+}
 
+// tell clients to fetch active reminders again, should be called when
+// arrival times change or reminders are added, removed, or completed
+function sendReminderUpdateToAll(tokens: Set<string>) {
+    sendToAll({
+        data: { kind: "reminderUpdate" }
+    }, tokens);
+}
+
+function sendNotifToAll(notif: { title: string, body: string }, tokens: Set<string>) {
+    sendToAll(
+        { notification: notif },
+        // { notification: notif, data: notif/*android: { notification: { ...notif, channel_id: "high_importance_channel" }}*/ },
+        tokens
+    );
 }
 
 function sendToAll(msg: any, tokens: Set<string>) {
+    if (tokens.size === 0) return;
     console.log(`sending a message to ${tokens.size} devices`);
+    console.log(`msg is ${JSON.stringify(msg)}`);
     const group = new Set<string>();
     for (const token of tokens) {
         if (group.size === 500) {
@@ -310,7 +361,9 @@ function sendToAll(msg: any, tokens: Set<string>) {
 
 // REQUIRES: tokens.size <= 500
 function sendToAllHelper(msg: any, tokens: Set<string>) {
+    console.log(`helper sending to ${tokens.size}`);
     const payload = { tokens: Array.from(tokens), ...msg };
+    console.log(`payload: ${JSON.stringify(payload)}`);
     getMessaging().sendEachForMulticast(payload)
         .then((res) => {
             if (res.failureCount > 0) {
@@ -319,10 +372,11 @@ function sendToAllHelper(msg: any, tokens: Set<string>) {
                     if (!res.success) {
                         console.log(`message send ${idx} failed`);
                         console.log(res.error);
+                        console.log(`tokens was: ${JSON.stringify(Array.from(tokens))}`);
                     }
                 })
             }
         });
 }
 
-export { processReminders, reminderSubscriptions, Event, RegistrationToken };
+export { processReminders, reminderSubscriptions, Event, EventKey, RegistrationToken, sendNotifToAll, arrivalTimes };

@@ -546,12 +546,16 @@ router.post('/swapToken', swapToken);
  */
 export function activeRemindersForToken(
     req: express.Request,
-    res: express.Response<{ reminders: Array<{ stpid: string, rtid: string, thresh: number | null }> }>
+    res: express.Response<{
+        reminders: Array<{ stpid: string, rtid: string, thresh: number | null, eta: number | null }>
+    }>
 ) {
     const token = reminderService.RegistrationToken(req.params.registrationToken);
     console.log(`Got request for active reminders of ${token}`);
     res.status(200);
-    res.send({ reminders: reminderService.reminderSubscriptions.activeRemindersFor(token) });
+    res.send({
+        reminders: reminderService.reminderSubscriptions.activeRemindersFor(token)
+    });
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
 
@@ -592,7 +596,7 @@ router.post('/modifyReminders', modifyReminders);
 
 // testing purposes
 export function notifyMeLater(req: express.Request, res: express.Response) {
-    console.log("got request");
+    console.log("got notifyMeLater request");
     const registrationToken = req.body.token;
     if (registrationToken === undefined) {
         console.log("got request with no token");
@@ -602,11 +606,9 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
         return;
     }
     setTimeout(() => {
-        console.log("sending push notification..");
-        getMessaging()
-            .send({ notification: { title: "hi", body: "hello world!" }, token: registrationToken })
-            .catch((e) => console.log("Failed to send message: ", e));
-    }, 10000);
+        console.log(`sending test push notification to ${registrationToken}`);
+        reminderService.sendNotifToAll({ title: "hi", body: "hello world!"}, new Set([registrationToken]));
+    }, 0);
     res.sendStatus(200);
 }
 router.post('/notifyMeLater', notifyMeLater);
