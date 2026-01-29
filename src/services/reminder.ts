@@ -1,0 +1,382 @@
+
+import dotenv from "dotenv";
+import * as state from "../state/transitState";
+// import { cachedPredsByStopId, stopIdToName } from "./busService";
+import { getMessaging } from "firebase-admin/messaging";
+import { applicationDefault, initializeApp } from "firebase-admin/app";
+
+dotenv.config()
+
+// Initialize Firebase
+initializeApp({ credential: applicationDefault() });
+
+type Event = {
+    stpid: string,
+    rtid: string,
+    readonly __brand: "event"
+}
+
+function Event(x: { stpid: string, rtid: string }): Event {
+    return x as Event;
+}
+
+type RegistrationToken = string & { readonly __brand: "registration_token" }
+
+function RegistrationToken(x: string): RegistrationToken {
+    return x as RegistrationToken;
+}
+
+type EventKey = string & { readonly __brand: "event_key" }
+
+function EventKey(e: Event): EventKey {
+    return `${e.stpid}|${e.rtid}` as EventKey;
+}
+
+function decodeEvent(e: EventKey): Event {
+    const split = e.split('|');
+    return Event({ stpid: split[0], rtid: split[1] });
+}
+
+// Subscriptions go through a pipeline, starting in the waiting for reminder
+// stage. After the bus in x minutes notification is set they move to the
+// waiting for bus stage, where they stay until the bus is arriving notification
+// is sent. Being in the second stage is repsented by having a threshold of null.
+class ReminderSubscriptions {
+    // a thresh of null means being in the second stage
+    subscriptions: Array<{ event: Event, thresh: number | null, token: RegistrationToken }>
+
+    constructor() {
+        this.subscriptions = [];
+    }
+
+    // addition is done to the start of the pipeline
+    add(event: Event, thresh: number, token: RegistrationToken) {
+        console.log("Adding a reminder subscription");
+        this.subscriptions.push({ event, thresh, token });
+        sendReminderUpdateToAll(new Set([token]));
+    }
+
+    // removes all subscriptions involving both `event` and `token`
+    remove(event: Event, token: RegistrationToken) {
+        console.log("Removing a reminder subscription");
+        this.subscriptions = this.subscriptions
+            .filter((s) => s.event.rtid !== event.rtid || s.event.stpid !== event.stpid || s.token !== token);
+        sendReminderUpdateToAll(new Set([token]));
+    }
+
+    // updates the status of all registrations, returning an object representing the
+    // notifications that should be sent
+    process(arrivalTimes: Map<EventKey, { curr: number | null, prev: number | null }>): {
+        reminder: Map<EventKey, Set<RegistrationToken>>,
+        atTheStop: Map<EventKey, Set<RegistrationToken>>,
+        disappeared: Map<EventKey, Set<RegistrationToken>>,
+        delayed: Map<EventKey, Set<RegistrationToken>>,
+        updated: Set<RegistrationToken>
+    } {
+        const addHelper = (map: Map<EventKey, Set<RegistrationToken>>, key: EventKey, token: RegistrationToken) => {
+            let tokens = map.get(key);
+            if (tokens === undefined) {
+                map.set(key, new Set());
+                tokens = map.get(key)!;
+            }
+            tokens.add(token);
+        };
+        const notifications = {
+            reminder: new Map(),
+            atTheStop: new Map(),
+            disappeared: new Map(),
+            delayed: new Map(),
+            updated: new Set<RegistrationToken>()
+        };
+
+        const newSubscriptions: typeof this.subscriptions = [];
+        for (const subscription of this.subscriptions) {
+            const key = EventKey(subscription.event);
+            const arrivalTime = arrivalTimes.get(key);
+            if (arrivalTime !== undefined && arrivalTime.curr !== arrivalTime.prev) {
+                notifications.updated.add(subscription.token);
+            }
+
+            const logInfo = () => {
+                console.log(`process() is operating on ${key}...`);
+                console.log(`the arrival time is ${JSON.stringify(arrivalTime)}`);
+                console.log(`subscription is for ${JSON.stringify(subscription.event)} @ ${subscription.thresh}`);
+            };
+
+            // There might be times where the prediction of the bus skips past DUE/1, which results in a disappeared or
+            // delayed notification when there really shouldn't be. 
+            // `shouldBeArrivingThresh` overrides a bus disappeared notification with an at the stop one if the arrival
+            // time is at or below it. It also overrides a delayed notification if the delay amount is more than
+            // `maxDelayWhenShouldBeArriving`
+            const shouldBeArrivingThresh = 3;
+            const maxDelayWhenShouldBeArriving = 1;
+
+            if (arrivalTime === undefined || arrivalTime.curr === null) {
+                // disappeared
+                if (arrivalTime !== undefined
+                    && arrivalTime.prev !== null
+                    && arrivalTime.prev <= shouldBeArrivingThresh
+                ) {
+                    // override
+                    console.log("disappeared notification was overriden!");
+                    addHelper(notifications.atTheStop, key, subscription.token);
+                    logInfo();
+                } else {
+                    console.log("disappeared notification!");
+                    addHelper(notifications.disappeared, key, subscription.token);
+                    logInfo();
+                }
+            } else if (arrivalTime.curr === 1) {
+                // at the stop
+                addHelper(notifications.atTheStop, key, subscription.token);
+                logInfo();
+            } else if (arrivalTime.prev !== null && arrivalTime.curr > arrivalTime.prev) {
+                // delayed
+                if (arrivalTime.prev <= shouldBeArrivingThresh
+                    && arrivalTime.curr - arrivalTime.prev > maxDelayWhenShouldBeArriving
+                ) {
+                    // override
+                    console.log("delayed notification was overriden!");
+                    addHelper(notifications.atTheStop, key, subscription.token);
+                    logInfo();
+                } else {
+                    console.log("delayed notification!");
+                    addHelper(notifications.delayed, key, subscription.token);
+                    newSubscriptions.push(subscription);  // keep subscription if delayed but not if overriden
+                    logInfo();
+                }
+            } else if (subscription.thresh !== null
+                && arrivalTime.curr <= subscription.thresh
+            ) {
+                console.log("reminder notification");
+                // reminder
+                addHelper(notifications.reminder, key, subscription.token);
+                // replace with next in pipeline, a subscription to bus at stop
+                newSubscriptions.push({ event: subscription.event, thresh: null, token: subscription.token });
+                logInfo();
+            } else {
+                newSubscriptions.push(subscription);  // keep subscription by default
+            }
+        }
+        this.subscriptions = newSubscriptions;
+        if (notifications.reminder.size !== 0 || notifications.atTheStop.size !== 0 || notifications.delayed.size !== 0 || notifications.disappeared.size !== 0) {
+            console.log(
+                `Process completed with ${notifications.reminder.size} threshold reminders, `
+                + `${notifications.atTheStop.size} at the stop reminders, `
+                + `${notifications.delayed.size} delayed notifications, `
+                + `${notifications.disappeared.size} disappeared notifications`
+            );
+        }
+        return notifications;
+    }
+
+    // removes all subscriptions involving `event`
+    removeAllFor(event: Event) {
+        this.subscriptions = this.subscriptions
+            .filter((s) => s.event.rtid !== event.rtid || s.event.stpid !== event.stpid);
+    }
+
+    swapToken(from: RegistrationToken, to: RegistrationToken) {
+        this.subscriptions = this.subscriptions.map((s) => {
+            if (s.token === from) {
+                return { ...s, token: to };
+            } else {
+                return s;
+            }
+        });
+    }
+
+    activeRemindersFor(id: RegistrationToken): Array<{
+        stpid: string,
+        rtid: string,
+        thresh: number | null,
+        eta: number | null
+    }> {
+        return this.subscriptions
+            .filter((s) => s.token === id)
+            .map((s) => {
+                return {
+                    stpid: s.event.stpid,
+                    rtid: s.event.rtid,
+                    thresh: s.thresh,
+                    eta: arrivalTimes.get(EventKey(s.event))?.curr ?? null
+                };
+            });
+    }
+
+    describe() {
+        console.log(`There are ${this.subscriptions.length} reminder subscriptions`);
+    }
+}
+
+const reminderSubscriptions = new ReminderSubscriptions();
+const arrivalTimes: Map<EventKey, { curr: number | null, prev: number | null }> = new Map();
+
+function processReminders() {
+    // move current arrival times to prev
+    for (const [_k, v] of arrivalTimes) {
+        v.prev = v.curr;
+        v.curr = null;
+    }
+
+    // determine arrival time updates for each stop
+    for (const stpid of Object.keys(state.cachedPredsByStopId)) {
+        for (const vehicle of state.cachedPredsByStopId[stpid]) {
+            const rtid = vehicle.rt;
+            if (typeof rtid !== "string") {
+                console.log("prediction found that is missing rtid!");
+                continue;
+            }
+            const prediction = vehicle.prdctdn === 'DUE' ? 1 : parseInt(vehicle.prdctdn);
+            const key = EventKey(Event({ stpid: stpid, rtid: rtid }));
+            let time = arrivalTimes.get(key);
+            if (time === undefined) {
+                arrivalTimes.set(key, { curr: null, prev: null });
+                time = arrivalTimes.get(key)!;
+            }
+            if (time.curr === null || prediction < time.curr)
+                time.curr = prediction;
+        }
+    }
+    // also do the ride
+    for (const stpid of Object.keys(state.cachedRidePredsByStopId)) {
+        for (const vehicle of state.cachedRidePredsByStopId[stpid]) {
+            const rtid = vehicle.rt;
+            if (typeof rtid !== "string") {
+                console.log("prediction found that is missing rtid!");
+                continue;
+            }
+            const prediction = vehicle.prdctdn === 'DUE' ? 1 : parseInt(vehicle.prdctdn);
+            const key = EventKey(Event({ stpid: stpid, rtid: rtid }));
+            let time = arrivalTimes.get(key);
+            if (time === undefined) {
+                arrivalTimes.set(key, { curr: null, prev: null });
+                time = arrivalTimes.get(key)!;
+            }
+            if (time.curr === null || prediction < time.curr)
+                time.curr = prediction;
+        }
+    }
+
+    const keys = new Set<EventKey>();
+    for (const event of reminderSubscriptions.subscriptions) {
+        const key = EventKey(event.event);
+        keys.add(key);
+    }
+    let didLogHeader = false;
+    for (const key of keys) {
+        const arrivalTime = arrivalTimes.get(key);
+        if (arrivalTime?.curr == arrivalTime?.prev) {
+            continue;
+        }
+        if (!didLogHeader) {
+            console.log("Arrival Times Information");
+            didLogHeader = true;
+        }
+        console.log(` - ${key}: c = ${arrivalTime?.curr} p = ${arrivalTime?.prev}`);
+    }
+
+    // send push notifications as needed
+    const notifications = reminderSubscriptions.process(arrivalTimes);
+    for (const [eventKey, tokens] of notifications.reminder) {
+        const event = decodeEvent(eventKey);
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        sendNotifToAll(
+            {
+                title: 'Bus Arrival Reminder',
+                body: `${event.rtid} is ${arrivalTimes.get(eventKey)?.curr} minute(s) away from ${stopName}`
+            },
+            tokens
+        );
+    }
+    for (const [eventKey, tokens] of notifications.atTheStop) {
+        const event = decodeEvent(eventKey);
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        sendToAll(
+            {
+                notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
+            },
+            tokens
+        );
+    }
+    for (const [eventKey, tokens] of notifications.delayed) {
+        const event = decodeEvent(eventKey);
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        const arrivalTime = arrivalTimes.get(eventKey);
+        const delay = arrivalTime?.curr !== null && arrivalTime?.prev ? `${arrivalTime.curr - arrivalTime.prev}` : `some`;
+        sendNotifToAll(
+            {
+                title: `Bus Delayed`,
+                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s). `
+                    + `New time is ${arrivalTime?.curr ?? 'unknown'} minute(s).`
+            },
+            tokens
+        );
+    }
+    for (const [eventKey, tokens] of notifications.disappeared) {
+        const event = decodeEvent(eventKey);
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        sendNotifToAll(
+            {
+                title: `Bus Disappeared`,
+                body: `The ${event.rtid} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
+            },
+            tokens
+        );
+    }
+    // send reminder updates
+    sendReminderUpdateToAll(notifications.updated);
+}
+
+// tell clients to fetch active reminders again, should be called when
+// arrival times change or reminders are added, removed, or completed
+function sendReminderUpdateToAll(tokens: Set<string>) {
+    sendToAll({
+        data: { kind: "reminderUpdate" }
+    }, tokens);
+}
+
+function sendNotifToAll(notif: { title: string, body: string }, tokens: Set<string>) {
+    sendToAll(
+        { notification: notif },
+        // { notification: notif, data: notif/*android: { notification: { ...notif, channel_id: "high_importance_channel" }}*/ },
+        tokens
+    );
+}
+
+function sendToAll(msg: any, tokens: Set<string>) {
+    if (tokens.size === 0) return;
+    console.log(`sending a message to ${tokens.size} devices`);
+    console.log(`msg is ${JSON.stringify(msg)}`);
+    const group = new Set<string>();
+    for (const token of tokens) {
+        if (group.size === 500) {
+            sendToAllHelper(msg, group);
+            group.clear();
+        }
+        group.add(token);
+    }
+    sendToAllHelper(msg, group);
+}
+
+// REQUIRES: tokens.size <= 500
+function sendToAllHelper(msg: any, tokens: Set<string>) {
+    console.log(`helper sending to ${tokens.size}`);
+    const payload = { tokens: Array.from(tokens), ...msg };
+    console.log(`payload: ${JSON.stringify(payload)}`);
+    getMessaging().sendEachForMulticast(payload)
+        .then((res) => {
+            if (res.failureCount > 0) {
+                console.log(`${res.failureCount} messages failed to send!`);
+                res.responses.forEach((res, idx) => {
+                    if (!res.success) {
+                        console.log(`message send ${idx} failed`);
+                        console.log(res.error);
+                        console.log(`tokens was: ${JSON.stringify(Array.from(tokens))}`);
+                    }
+                })
+            }
+        });
+}
+
+export { processReminders, reminderSubscriptions, Event, EventKey, RegistrationToken, sendNotifToAll, arrivalTimes };

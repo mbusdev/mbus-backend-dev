@@ -2,9 +2,12 @@ import express from "express";
 import * as path from "path";
 import * as process from "node:process";
 import axios from "axios";
+import { getMessaging } from "firebase-admin/messaging";
+import * as z from "zod";
 import * as state from '../state/transitState';
 import * as meta from '../services/metadata';
 import * as journeyService from '../services/journey';
+import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
 
@@ -442,7 +445,7 @@ export function getStartupMessages(req: express.Request, res: express.Response) 
 router.get('/get-startup-messages', getStartupMessages);
 
 /**
- * Returns special startup messages (e.g., holiday greetings).
+ * Returns key stops.
  * @param req - Express request
  * @param res - Express response
  * @returns JSON object with message details.
@@ -470,5 +473,144 @@ export function getKeyStops(req: express.Request, res: express.Response) {
     res.send(KEY_STOPS);
 }
 router.get('/get-key-stops', getKeyStops);
+
+// Notifications / Reminders
+
+const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
+/**
+ * @param req - Express request, expects `SetReminderBody` in the body
+ * @param res - Express response, error message as string if error occurs
+ */
+export function setReminder(req: express.Request, res: express.Response) {
+    const result = SetReminderBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { token, stpid, rtid, thresh } = result.data;
+        reminderService.reminderSubscriptions.add(
+            reminderService.Event({ stpid, rtid }),
+            thresh,
+            reminderService.RegistrationToken(token)
+        );
+        res.sendStatus(200);
+    }
+
+}
+router.post('/setReminder', setReminder);
+
+const UnsetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string() });
+/**
+ * @param req - Express request, `UnsetReminderBody` in the body
+ * @param res - Express response, error message as string if error occurs
+ */
+export function unsetReminder(req: express.Request, res: express.Response) {
+    const result = UnsetReminderBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { token ,stpid, rtid } = result.data;
+        reminderService.reminderSubscriptions.remove(
+            { stpid, rtid } as reminderService.Event, reminderService.RegistrationToken(token)
+        );
+        res.sendStatus(200);
+    }
+}
+router.post('/unsetReminder', unsetReminder);
+
+const SwapTokenBody = z.object({ oldTok: z.string(), newTok: z.string() });
+/**
+ * @param req - Express request, `SwapTokenBody` in the body
+ * @param res - Express response, error message as string if error occurs
+ * 
+ * Upon responding with 200, future calls to /setReminder, /unsetReminder, and /activeReminders
+ * will need the new token
+ */
+export function swapToken(req: express.Request, res: express.Response) {
+    const result = SwapTokenBody.safeParse(req.body)
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { oldTok, newTok } = req.body;
+        reminderService.reminderSubscriptions.swapToken(oldTok, newTok);
+        res.sendStatus(200);
+    }
+}
+router.post('/swapToken', swapToken);
+
+/**
+ * @param req - Express request, token is path encoded
+ * @param res - Express response 
+ */
+export function activeRemindersForToken(
+    req: express.Request,
+    res: express.Response<{
+        reminders: Array<{ stpid: string, rtid: string, thresh: number | null, eta: number | null }>
+    }>
+) {
+    const token = reminderService.RegistrationToken(req.params.registrationToken);
+    console.log(`Got request for active reminders of ${token}`);
+    res.status(200);
+    res.send({
+        reminders: reminderService.reminderSubscriptions.activeRemindersFor(token)
+    });
+}
+router.get('/activeReminders/:registrationToken', activeRemindersForToken);
+
+const ModifyRemindersBody = z.object({
+    token: z.string(),
+    modifications: z.array(
+        z.union([
+            z.object({ action: z.literal("set"), stpid: z.string(), rtid: z.string(), thresh: z.number() }),
+            z.object({ action: z.literal("unset"), stpid: z.string(), rtid: z.string() })
+        ])
+    )
+});
+/** Lets you run the equivalent of several setReminder and unsetReminders in one call
+ *  @param req - Express request expecting `ModifyRemindersBody` in body
+ *  @param res - Express response
+ */
+export function modifyReminders(req: express.Request, res: express.Response) {
+    const result = ModifyRemindersBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400);
+        res.send(result.error.message);
+    } else {
+        const { token, modifications } = result.data;
+        for (const modification of modifications) {
+            const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
+            if (modification.action == "set") {
+                reminderService.reminderSubscriptions.add(
+                    event, modification.thresh, reminderService.RegistrationToken(token)
+                );            
+            } else {
+                reminderService.reminderSubscriptions.remove(event, reminderService.RegistrationToken(token));
+            }
+        }
+        res.sendStatus(200);
+    }
+}
+router.post('/modifyReminders', modifyReminders);
+
+// testing purposes
+export function notifyMeLater(req: express.Request, res: express.Response) {
+    console.log("got notifyMeLater request");
+    const registrationToken = req.body.token;
+    if (registrationToken === undefined) {
+        console.log("got request with no token");
+        console.log(req.body);
+        res.send("registration token missing");
+        res.status(400);
+        return;
+    }
+    setTimeout(() => {
+        console.log(`sending test push notification to ${registrationToken}`);
+        reminderService.sendNotifToAll({ title: "hi", body: "hello world!"}, new Set([registrationToken]));
+    }, 0);
+    res.sendStatus(200);
+}
+router.post('/notifyMeLater', notifyMeLater);
 
 export default router;
