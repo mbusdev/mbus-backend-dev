@@ -3,6 +3,7 @@ import path from 'path';
 import { writeFileSync, readFileSync, existsSync } from "fs";
 import { GraphMLNode, GraphMLEdge, LandmarkDef } from './types';
 import { haversine, loadMap } from './loadMap';
+import { LRUCache } from 'lru-cache'; 
 
 /**
  * Standard response for a single point-to-point walking query.
@@ -48,6 +49,10 @@ let stopNodeMap: Record<string, { nodeId: string, distToNode: number }> = {};
 let relevantStopNodes = new Set<string>();
 
 let walkingCache: { [key: string]: WalkingResponse } = {};
+
+const networkDistanceCache = new LRUCache<string, Map<string, number>>({
+    max: 5000,
+});
 
 /**
  * Finds the nearest street graph node to a given lat/lon.
@@ -380,7 +385,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
 /**
  * Optimized method to get walking distances from an origin to ALL known bus stops.
  * Optionally includes a direct walk to a specific destination point.
- * Uses a single Dijkstra pass with early termination.
+ * Uses a single Dijkstra pass with early termination and LRU Cache.
  * @param lat - Origin latitude.
  * @param lon - Origin longitude.
  * @param destLat - (Optional) Destination latitude for direct walk.
@@ -398,30 +403,48 @@ export function getWalkingDistancesFrom(
 
     let destNodeId: string | undefined;
     let destNodeDist = 0;
-    let addedToSet = false;
-
+    
+    // Resolve destination node if provided
     if (destLat !== undefined && destLon !== undefined) {
         const dNode = nearestNode(graphNodes, destLat, destLon);
         if (dNode.id) {
             destNodeId = dNode.id;
             destNodeDist = dNode.dist;
-            if (!relevantStopNodes.has(destNodeId)) {
-                relevantStopNodes.add(destNodeId);
-                addedToSet = true;
-            }
         }
     }
 
-    const nodeDistances = computeDijkstraAll(nearest.id, relevantStopNodes);
+    // 2. Create the Cache Key using IDs
+    const cacheKey = `${nearest.id}::${destNodeId || ''}`; 
 
-    if (addedToSet && destNodeId) {
-        relevantStopNodes.delete(destNodeId);
+    let nodeDistances = networkDistanceCache.get(cacheKey); 
+
+    if (!nodeDistances) {
+        
+        let addedToSet = false;
+        if (destNodeId && !relevantStopNodes.has(destNodeId)) {
+            relevantStopNodes.add(destNodeId);
+            addedToSet = true;
+        }
+
+        // Run Dijkstra
+        nodeDistances = computeDijkstraAll(nearest.id, relevantStopNodes);
+
+        // Cleanup set
+        if (addedToSet && destNodeId) {
+            relevantStopNodes.delete(destNodeId);
+        }
+
+        networkDistanceCache.set(cacheKey, nodeDistances);
     }
+
     const results: { stopId: string, duration: number }[] = [];
 
+    // Process Bus Stops
     for (const [stopId, mapData] of Object.entries(stopNodeMap)) {
         const distOnStreet = nodeDistances.get(mapData.nodeId);
+        
         if (distOnStreet !== undefined) {
+            // (User->StartNode) + (StartNode->EndNode [CACHED]) + (EndNode->BusStop)
             const totalDist = nearest.dist + distOnStreet + mapData.distToNode;
             results.push({
                 stopId,
@@ -430,7 +453,6 @@ export function getWalkingDistancesFrom(
         }
     }
 
-    // map destination
     if (destNodeId) {
         const distOnStreet = nodeDistances.get(destNodeId);
         if (distOnStreet !== undefined) {
