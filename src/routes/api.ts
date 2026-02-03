@@ -293,11 +293,22 @@ router.get('/getRideStopPredictions/:stopId', getRideStopPredictions);
  * @returns JSON array of objects, each with `vid` and `stops` (predictions).
  */
 export function getAllPredictions(req: express.Request, res: express.Response) {
-    const allPreds = Object.entries(state.cachedPredsByVid).map(([vid, preds]) => ({
-        vid,
-        stops: preds
-    }));
-    res.json(allPreds);
+    const now = new Date();
+    const currentTime = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+
+    const reconstructed = state.cachedGraph.trips
+        .filter(t => t.vid)
+        .map(t => ({
+            vid: t.vid,
+            stops: t.stopTimes.map(st => ({
+                stpid: st.stop,
+                stpnm: state.stopIdToName[st.stop] || "Unknown", // Re-lookup name
+                rt: st.rt,
+                prdctdn: Math.max(0, Math.floor((st.arrivalTime - currentTime) / 60)).toString()
+            }))
+        }));
+
+    res.json(reconstructed);
 }
 router.get('/getAllPredictions', getAllPredictions);
 

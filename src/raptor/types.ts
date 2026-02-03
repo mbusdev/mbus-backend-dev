@@ -30,6 +30,8 @@ export interface StopTime {
   heursticCost?: number; 
   /** Real-time status string (if available). */
   rt? : string;
+  /** If the stop is predicted or not. */
+  isExtrapolated? : boolean
 }
 
 /**
