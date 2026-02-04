@@ -283,15 +283,18 @@ function processPredictions(rawChunks: any[]) {
             if (!state.routeTimingCache[rt]) state.routeTimingCache[rt] = {};
             const fromKey = from.stpid + (from.rtdir || "");
             if (!state.routeTimingCache[rt][fromKey]) state.routeTimingCache[rt][fromKey] = {};
-            state.routeTimingCache[rt][fromKey][to.stpid] = {
-                diff: diff,
-                rtdir: to.rtdir,
-                rtNext: to.rt
+            state.routeTimingCache[rt][fromKey] = {
+                [to.stpid]: {
+                    diff: diff,
+                    rtdir: to.rtdir,
+                    rtNext: to.rt
+                }
             };
         }
     });
 
-    // extrapolate
+
+    // extrapolate predictions
     formattedPredictions.forEach((trip: any) => {
         let stopsAdded = 0;
         while (stopsAdded < 20 && trip.stops.length > 0) {
@@ -314,7 +317,8 @@ function processPredictions(rawChunks: any[]) {
                 stpid: nextStopId,
                 prdctdn: nextPrdctdn,
                 rt: rtNext,
-                rtdir: rtdir
+                rtdir: rtdir,
+                isExtrapolated: true
             });
             stopsAdded++;
         }
@@ -370,6 +374,8 @@ function updatePredictionLookups(preds: any[]) {
 
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
+            if (stop.isExtrapolated) return; 
+
             const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid, des: trip.des };
 
             if (!state.cachedPredsByStopId[stop.stpid]) state.cachedPredsByStopId[stop.stpid] = [];
