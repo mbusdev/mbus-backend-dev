@@ -212,6 +212,7 @@ function processPredictions(rawChunks: any[]) {
                 stop.rtdir = prd.rtdir;
                 stop.rt = prd.rt;
                 stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
+                stop.prdtm = parseInt(prd.prdtm);
             });
         }
         return acc;

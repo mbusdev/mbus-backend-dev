@@ -67,7 +67,8 @@ export async function fetchPredictions(stopIds: string[], routes: string[]) {
                     requestType: 'getpredictions',
                     stpid: chunk.join(','),
                     rt: routes.join(','),
-                    tmres: 's'
+                    tmres: 's',
+                    unixTime: true,
                 }
             });
             return res.data;
