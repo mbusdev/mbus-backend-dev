@@ -1,7 +1,6 @@
 
 import dotenv from "dotenv";
 import * as state from "../state/transitState";
-// import { cachedPredsByStopId, stopIdToName } from "./busService";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 
@@ -37,13 +36,29 @@ function decodeEvent(e: EventKey): Event {
     return Event({ stpid: split[0], rtid: split[1] });
 }
 
-// Subscriptions go through a pipeline, starting in the waiting for reminder
-// stage. After the bus in x minutes notification is set they move to the
-// waiting for bus stage, where they stay until the bus is arriving notification
-// is sent. Being in the second stage is repsented by having a threshold of null.
+/** Waiting for a prediction of the right `event` to have a arrival timestamp that is at or after `mustBeAfter` and an
+ *  arrival time less than `thresh`. A bus is xx minutes from the stop notification is then sent. To handle delayed and
+ *  disappeared notifications, a `candidateVid` is set to the soonest arriving bus that arrives after `mustbeAfter`.
+ */
+type SubscriptionPreThreshold = {
+    stage: 0,
+    event: Event,
+    thresh: number,
+    mustBeAfter: number,
+    candidateVid: string,
+    candidateVidPredPrev: number | null
+};
+/** Waiting for the bus indicated by `vid` to be at the stop indicated by `stpid`. Logic for what notification to send
+ *  is complicated by arrival times sometimes skipping DUE, see `ReminderSubscriptons.process` for details.
+ */
+type SubscriptionPostThreshold = { stage: 1, stpid: string, vid: string, vidPredPrev: number | null };
+
+/** Subscriptions go through a pipeline, see types above for details. */
 class ReminderSubscriptions {
     // a thresh of null means being in the second stage
-    subscriptions: Array<{ event: Event, thresh: number | null, token: RegistrationToken }>
+    subscriptions: Array<{
+        token: RegistrationToken, subscription: SubscriptionPreThreshold | SubscriptionPostThreshold
+    }>
 
     constructor() {
         this.subscriptions = [];
@@ -210,7 +225,6 @@ class ReminderSubscriptions {
 }
 
 const reminderSubscriptions = new ReminderSubscriptions();
-const arrivalTimes: Map<EventKey, { curr: number | null, prev: number | null }> = new Map();
 
 function processReminders() {
     // move current arrival times to prev
