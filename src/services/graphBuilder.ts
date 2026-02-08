@@ -387,6 +387,9 @@ function updatePredictionLookups(preds: any[]) {
             }
         });
     });
+    // sort
+    sortPreds(state.cachedPredsByStopId);
+    sortPreds(state.cachedPredsByVid);
 }
 
 
@@ -412,6 +415,16 @@ function updateRideLookups(preds: any[]) {
             }
         });
     });
+    // sort
+    sortPreds(state.cachedRidePredsByStopId);
+    sortPreds(state.cachedRidePredsByVid);
+}
+
+/** Sorts every prediction list contained in `x` by arrival timestamp */
+function sortPreds(x: Record<string, state.Prediction[]>) {
+    for (const k in x) {
+        x[k].sort((lhs, rhs) => lhs.prdtm - rhs.prdtm);
+    }
 }
 
 /**
