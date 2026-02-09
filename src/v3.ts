@@ -177,8 +177,8 @@ router.get('/getStartupInfo', (req, res) => {
         },
         // adding data here will show a persistant message on launch 
         persistant_message: {
-            title: "",
-            subtitle: ""
+            title: "Bus data issue",
+            subtitle: "There is an issue with the bus data that the university provides us. We have notified the university and are working on a fix. In the meantime, bus predictions are down. We apologize for the inconvenience and hope to have this resolved soon."
         },
         // adding data here will show a one-time message on launch (not yet implemented)
         one_time_message: {
