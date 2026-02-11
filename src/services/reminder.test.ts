@@ -7,6 +7,7 @@ import { sortPreds } from './graphBuilder';
 
 const testToken = r.RegistrationToken("token1");
 const testEvent = r.Event({ stpid: "stop1", rtid: "route1" });
+const testEventDiffRt = r.Event({ stpid: "stop1", rtid: "route2" });
 
 function createCaches(preds: Prediction[]): { byStop: Record<string, Prediction[]>, byVid: Record<string, Prediction[]> } {
     const byStop: Record<string, Prediction[]> = {};
@@ -67,28 +68,55 @@ describe('Reminders', () => {
         expect(reminders.disappeared.size).toBe(0);
     });
 
+    it('should not trigger for busses of other routes', () => {
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid } = createCaches([
+            { rt: testEventDiffRt.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "2" }
+        ]);
+        subs.add(testEvent, 3, testToken, byStop, Date.now());
+        const reminders = subs.process(byStop, byVid, Date.now());
+        expect(reminders.reminder.size).toBe(0);
+    });
+
+    it('should only get removed by the remove method if explicitly targeted', () => {
+        const subs = new t.ReminderSubscriptions();
+        subs.add(testEvent, 3, testToken, {}, Date.now());
+        subs.add(testEventDiffRt, 3, testToken, {}, Date.now());
+        subs.add(testEvent, 3, r.RegistrationToken("anotherToken"), {}, Date.now());
+        expect(subs.subscriptions.length).toBe(3);
+        subs.remove(testEvent, testToken);
+        expect(subs.subscriptions.length).toBe(2);
+    });
+
     it('should send at the stop notifications', () => {
+        // TODO
+        expect(false).toBe(true);
         // const subs = new t.ReminderSubscriptions
     });
 
     it('should send delayed notifications', () => {
         // TODO 
+        expect(false).toBe(true);
     });
 
     it('should send disappeared notifications', () => {
         // TODO
+        expect(false).toBe(true);
     });
 
     it('should override some delayed notifications', () => {
         // TODO
+        expect(false).toBe(true);
     });
 
     it('should override some disappeared notifications', () => {
         // TODO
+        expect(false).toBe(true);
     });
 
     it('should have reasonable performance', () => {
         // TODO
+        expect(false).toBe(true);
     });
 });
 

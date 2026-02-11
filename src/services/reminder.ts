@@ -188,8 +188,10 @@ class ReminderSubscriptions {
                     (predsByStopId[s.subscription.event.stpid] ?? []).filter((p) => p.rt === s.subscription.event.rtid)
                 );
                 if (newCandidate === null) {
-                    // no candidate
-                    disappeared = true;
+                    if (s.subscription.candidateVid !== null) {
+                        // no candidate now + existed before
+                        disappeared = true;
+                    }
                 } else {
                     const pred = prdctdnToNum(newCandidate.prdctdn);
                     if (newCandidate.vid !== s.subscription.candidateVid) {
