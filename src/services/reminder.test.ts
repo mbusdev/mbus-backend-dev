@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import * as r from "./reminder";
 import { testing as t } from "./reminder";
@@ -89,34 +89,106 @@ describe('Reminders', () => {
     });
 
     it('should send at the stop notifications', () => {
-        // TODO
-        expect(false).toBe(true);
-        // const subs = new t.ReminderSubscriptions
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid } = createCaches([
+            { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "2" }
+        ]);
+        subs.add(testEvent, 3, testToken, byStop, Date.now());
+        subs.process(byStop, byVid, Date.now());
+        byStop["stop1"][0].prdctdn = "DUE"
+        expect(byStop["stop1"][0].prdctdn).toEqual(byVid["vid1"][0].prdctdn);
+        const reminders = subs.process(byStop, byVid, Date.now());
+        expect(reminders.atTheStop.size).toBe(1);
     });
 
     it('should send delayed notifications', () => {
-        // TODO 
-        expect(false).toBe(true);
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid } = createCaches([
+            { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" } 
+        ]);
+        subs.add(testEvent, 3, testToken, byStop, Date.now());
+        subs.process(byStop, byVid, Date.now());
+        byVid["vid1"][0].prdctdn = "5";
+        let reminders = subs.process(byStop, byVid, Date.now());
+        expect(reminders.delayed.size).toBe(1);
+
+        // now test behavior in stage 1
+        byVid["vid1"][0].prdctdn = "3";
+        const remindersToStage1 = subs.process(byStop, byVid, Date.now() + 2 * 60 * 1000);
+        expect(remindersToStage1.reminder.size).toBe(1);
+        expect(subs.subscriptions[0].subscription.stage).toBe(1);
+        byVid["vid1"][0].prdctdn = "4";
+        reminders = subs.process(byStop, byVid, Date.now() + 2 * 60 * 1000);
+        expect(reminders.delayed.size).toBe(1);
     });
 
-    it('should send disappeared notifications', () => {
-        // TODO
-        expect(false).toBe(true);
+    it('should send disappeared notifications (stage 0)', () => {
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid: _ } = createCaches([
+            { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" }
+        ]);
+        subs.add(testEvent, 3, testToken, byStop, Date.now());
+        const reminders = subs.process({}, {}, Date.now());
+        expect(reminders.disappeared.size).toBe(1);
+    });
+
+    it('should send disappeared notifications (stage 1)', () => {
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid } = createCaches([
+            { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 5 * 60 * 1000, prdctdn: "5" } 
+        ]);
+        subs.add(testEvent, 4, testToken, byStop, Date.now());
+        subs.process(byStop, byVid, Date.now());
+
+        // to stage 1
+        byVid["vid1"][0].prdctdn = "4";
+        const remindersToStage1 = subs.process(byStop, byVid, Date.now() + 2 * 60 * 1000);
+        expect(remindersToStage1.reminder.size).toBe(1);
+        expect(subs.subscriptions[0].subscription.stage).toBe(1);
+
+        const reminders = subs.process({}, {}, Date.now());
+        expect(reminders.disappeared.size).toBe(1);
     });
 
     it('should override some delayed notifications', () => {
-        // TODO
-        expect(false).toBe(true);
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid } = createCaches([
+            { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" } 
+        ]);
+        subs.add(testEvent, 3, testToken, byStop, Date.now());
+        subs.process(byStop, byVid, Date.now());
+        byVid["vid1"][0].prdctdn = "5";
+        let reminders = subs.process(byStop, byVid, Date.now());
+        expect(reminders.delayed.size).toBe(1);
+
+        // now test behavior in stage 1
+        byVid["vid1"][0].prdctdn = "3";
+        const remindersToStage1 = subs.process(byStop, byVid, Date.now() + 2 * 60 * 1000);
+        expect(remindersToStage1.reminder.size).toBe(1);
+        expect(subs.subscriptions[0].subscription.stage).toBe(1);
+        byVid["vid1"][0].prdctdn = "20";
+        reminders = subs.process(byStop, byVid, Date.now() + 2 * 60 * 1000);
+        expect(reminders.delayed.size).toBe(0);
+        expect(reminders.atTheStop.size).toBe(1);
     });
 
     it('should override some disappeared notifications', () => {
-        // TODO
-        expect(false).toBe(true);
-    });
+        const subs = new t.ReminderSubscriptions();
+        const { byStop, byVid } = createCaches([
+            { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 5 * 60 * 1000, prdctdn: "5" } 
+        ]);
+        subs.add(testEvent, 4, testToken, byStop, Date.now());
+        subs.process(byStop, byVid, Date.now());
 
-    it('should have reasonable performance', () => {
-        // TODO
-        expect(false).toBe(true);
+        // to stage 1
+        byVid["vid1"][0].prdctdn = "3";
+        const remindersToStage1 = subs.process(byStop, byVid, Date.now() + 2 * 60 * 1000);
+        expect(remindersToStage1.reminder.size).toBe(1);
+        expect(subs.subscriptions[0].subscription.stage).toBe(1);
+
+        const reminders = subs.process({}, {}, Date.now());
+        expect(reminders.disappeared.size).toBe(0);
+        expect(reminders.atTheStop.size).toBe(1);
     });
 });
 
