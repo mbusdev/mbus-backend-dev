@@ -1,8 +1,8 @@
-
 import dotenv from "dotenv";
-import * as state from "../state/transitState";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
+
+import * as state from "@/state/transitState";
 
 dotenv.config()
 
@@ -17,6 +17,10 @@ type Event = {
 
 function Event(x: { stpid: string, rtid: string }): Event {
     return x as Event;
+}
+
+function eventsEqual(e1: Event, e2: Event): boolean {
+    return e1.stpid === e2.stpid && e1.rtid === e2.rtid;
 }
 
 type RegistrationToken = string & { readonly __brand: "registration_token" }
@@ -40,48 +44,108 @@ function decodeEvent(e: EventKey): Event {
  *  arrival time less than `thresh`. A bus is xx minutes from the stop notification is then sent. To handle delayed and
  *  disappeared notifications, a `candidateVid` is set to the soonest arriving bus that arrives after `mustbeAfter`.
  */
-type SubscriptionPreThreshold = {
+type PreThreshold = {
     stage: 0,
     event: Event,
+    /** minutes */
     thresh: number,
+    /** unix epoch milliseconds */
     mustBeAfter: number,
-    candidateVid: string,
+    /** stores the bus that'll likely trigger the threshold notification, being only a candidate this can change
+    as things are updated and such a change won't trigger a disappeared notification */
+    candidateVid: string | null,
+    /** minutes */
     candidateVidPredPrev: number | null
 };
+
+/** constructor */
+function PreThreshold(event: Event, thresh: number, candidateVid: string | null, now: number): PreThreshold {
+    return {
+        stage: 0, event, thresh, mustBeAfter: now + thresh * 60 * 1000, candidateVid, candidateVidPredPrev: null
+    };
+}
+
+/** Finds the earlies prediction that is after 'mustBeAfter'
+ *  REQUIRES: `preds` is sorted ascending by `prdtm`
+ */
+function firstPredAfter(timestamp: number, preds: state.Prediction[]): state.Prediction | null {
+    return preds.find((p) => p.prdtm > timestamp) ?? null;
+}
+
 /** Waiting for the bus indicated by `vid` to be at the stop indicated by `stpid`. Logic for what notification to send
  *  is complicated by arrival times sometimes skipping DUE, see `ReminderSubscriptons.process` for details.
  */
-type SubscriptionPostThreshold = { stage: 1, stpid: string, vid: string, vidPredPrev: number | null };
+type PostThreshold = { stage: 1, event: Event, vid: string, vidPredPrev: number | null };
+
+/** constructor */
+function PostThreshold(prev: PreThreshold, vid: string): PostThreshold {
+    return {
+        stage: 1, event: prev.event, vid, vidPredPrev: prev.candidateVid === vid ? prev.candidateVidPredPrev : null
+    };
+}
+
+function prdctdnToNum(prdctdn: string): number {
+    return prdctdn === 'DUE' ? 1 : parseInt(prdctdn);
+}
 
 /** Subscriptions go through a pipeline, see types above for details. */
 class ReminderSubscriptions {
-    // a thresh of null means being in the second stage
     subscriptions: Array<{
-        token: RegistrationToken, subscription: SubscriptionPreThreshold | SubscriptionPostThreshold
+        token: RegistrationToken, subscription: PreThreshold | PostThreshold
     }>
 
     constructor() {
         this.subscriptions = [];
     }
 
-    // addition is done to the start of the pipeline
-    add(event: Event, thresh: number, token: RegistrationToken) {
+    /** Adds a new subscription, uses prediction data to determine a candidate vid.
+        REQUIRES: `predsByStopId` has predictions sorted by arrival timestamp
+    */
+    add(event: Event, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
         console.log("Adding a reminder subscription");
-        this.subscriptions.push({ event, thresh, token });
+        const predictions = predsByStopId[event.stpid];
+        const subscription = PreThreshold(event, thresh, null, now);
+        if (predictions) {
+            const relevant = predictions
+                .filter((p) => p.rt === event.rtid);
+            subscription.candidateVid = firstPredAfter(subscription.mustBeAfter, relevant)?.vid ?? null;
+        }
+        this.subscriptions.push({ token, subscription });
         sendReminderUpdateToAll(new Set([token]));
     }
 
-    // removes all subscriptions involving both `event` and `token`
+    /** removes all subscriptions that involve both `event` and `token` */
     remove(event: Event, token: RegistrationToken) {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
-            .filter((s) => s.event.rtid !== event.rtid || s.event.stpid !== event.stpid || s.token !== token);
+            .filter((s) => s.token != token || !eventsEqual(s.subscription.event, event))
         sendReminderUpdateToAll(new Set([token]));
     }
 
-    // updates the status of all registrations, returning an object representing the
-    // notifications that should be sent
-    process(arrivalTimes: Map<EventKey, { curr: number | null, prev: number | null }>): {
+    /**  updates the status of all registrations, returning an object representing the
+        notifications that should be sent
+
+         - threshold reminders are sent only for subscriptions of `PreThreshold`, and trigger when the candidate
+         vehicle has an arrival time at or under `thresh` and an arrival timestamp after `mustBeAfter`
+         - at the stop reminders are sent only for subscriptions of `PostThreshold` and trigger when the tracked
+         vehicle has a `pred` of 1/0 or if `pred` becomes `null` and `vidPredPrev <= shouldBeArrivingThresh`
+         - disappeared reminders are sent in both stages
+             - stage 0 if there no longer is a valid `candidateVid`
+             - stage 1 if the relevant `pred` of the tracked vehicle becomes `null` and the the bus isn't too close to
+             the stop
+        - delayed reminders are sent in both stages
+            - stage 0 if the relevant `pred` of the candidate vehicle increases (can also happen from the candidate
+            vehicle changing)
+            - stage 1 if the relevant `pred` goes up and it doesn't seem like the bus going past the stop (this is
+            still relevant even when tracking a specific vehicle if routes loop back on themselves weirdly)
+
+        REQUIRES: `predsByStopId` and `predsByVid` have predictions sorted by arrival timestamp
+      */
+    process(
+        predsByStopId: Record<string, state.Prediction[] | undefined>,
+        predsByVid: Record<string, state.Prediction[] | undefined>,
+        now: number
+    ): {
         reminder: Map<EventKey, Set<RegistrationToken>>,
         atTheStop: Map<EventKey, Set<RegistrationToken>>,
         disappeared: Map<EventKey, Set<RegistrationToken>>,
@@ -104,77 +168,123 @@ class ReminderSubscriptions {
             updated: new Set<RegistrationToken>()
         };
 
+        // TODO: send time update messages
+
         const newSubscriptions: typeof this.subscriptions = [];
-        for (const subscription of this.subscriptions) {
-            const key = EventKey(subscription.event);
-            const arrivalTime = arrivalTimes.get(key);
-            if (arrivalTime !== undefined && arrivalTime.curr !== arrivalTime.prev) {
-                notifications.updated.add(subscription.token);
+        for (const s of this.subscriptions) {
+            const key = EventKey(s.subscription.event);
+
+            // only one is sent, variable order is priority
+            let disappeared = false;
+            let delayed = false;
+            let threshold = false;
+            let ats = false;
+
+            if (s.subscription.stage === 0) {
+                // did the candidate vehicle change?
+                // PERF: caching these filter results might be good
+                const newCandidate = firstPredAfter(
+                    s.subscription.mustBeAfter,
+                    (predsByStopId[s.subscription.event.stpid] ?? []).filter((p) => p.rt === s.subscription.event.rtid)
+                );
+                if (newCandidate === null) {
+                    // no candidate
+                    disappeared = true;
+                } else {
+                    const pred = prdctdnToNum(newCandidate.prdctdn);
+                    if (newCandidate.vid !== s.subscription.candidateVid) {
+                        // new candidate
+                        console.log(`stage 0: new candidate, time is now ${pred}`);
+                        s.subscription.candidateVid = newCandidate.vid;
+                    } else {
+                        // same candidate
+                        console.log(`stage 0: same candidate, time is now ${pred}`);
+                    }
+                    if (s.subscription.candidateVidPredPrev !== null
+                        && pred > s.subscription.candidateVidPredPrev
+                    ) {
+                        // delayed
+                        delayed = true;
+                    }
+                    s.subscription.candidateVidPredPrev = pred;
+                    if (newCandidate.prdtm > s.subscription.mustBeAfter && pred <= s.subscription.thresh) {
+                        threshold = true;
+                    }
+                }
+            } else {
+                // There might be times where the prediction of the bus skips past DUE/1, which results in a
+                // disappeared or delayed notification when there really shouldn't be. `shouldBeArrivingThresh`
+                // overrides a bus disappeared notification with an at the stop one if the arrival time is at or below
+                // it. It also overrides a delayed notification if the delay amount is more than
+                // `maxDelayWhenShouldBeArriving`
+                const shouldBeArrivingThresh = 3;
+                const maxDelayWhenShouldBeArriving = 1;
+
+                const prdctdn = (predsByVid[s.subscription.vid] ?? [])
+                    .find((p) => p.stpid === s.subscription.event.stpid)?.prdctdn ?? null;
+                const currArrivalTime = prdctdn == null ? null : prdctdnToNum(prdctdn);
+                const prevArrivalTime = s.subscription.vidPredPrev;
+
+                console.log(`stage 1: time is now ${currArrivalTime}`);
+
+                if (currArrivalTime === null) {
+                    // disappeared
+                    if (prevArrivalTime !== null && prevArrivalTime <= shouldBeArrivingThresh
+                    ) {
+                        // override
+                        console.log("disappeared notification was overriden!");
+                        ats = true;
+                    } else {
+                        console.log("disappeared notification!");
+                        disappeared = true;
+                    }
+                } else if (currArrivalTime === 1) {
+                    // at the stop
+                    ats = true;
+                } else if (prevArrivalTime !== null && currArrivalTime > prevArrivalTime) {
+                    // delayed
+                    if (prevArrivalTime <= shouldBeArrivingThresh
+                        && currArrivalTime - prevArrivalTime > maxDelayWhenShouldBeArriving
+                    ) {
+                        // override
+                        console.log("delayed notification was overriden!");
+                        ats = true;
+                    } else {
+                        console.log("delayed notification!");
+                        delayed = true;
+                    }
+                }
+                s.subscription.vidPredPrev = currArrivalTime;
             }
 
-            const logInfo = () => {
-                console.log(`process() is operating on ${key}...`);
-                console.log(`the arrival time is ${JSON.stringify(arrivalTime)}`);
-                console.log(`subscription is for ${JSON.stringify(subscription.event)} @ ${subscription.thresh}`);
-            };
-
-            // There might be times where the prediction of the bus skips past DUE/1, which results in a disappeared or
-            // delayed notification when there really shouldn't be. 
-            // `shouldBeArrivingThresh` overrides a bus disappeared notification with an at the stop one if the arrival
-            // time is at or below it. It also overrides a delayed notification if the delay amount is more than
-            // `maxDelayWhenShouldBeArriving`
-            const shouldBeArrivingThresh = 3;
-            const maxDelayWhenShouldBeArriving = 1;
-
-            if (arrivalTime === undefined || arrivalTime.curr === null) {
-                // disappeared
-                if (arrivalTime !== undefined
-                    && arrivalTime.prev !== null
-                    && arrivalTime.prev <= shouldBeArrivingThresh
-                ) {
-                    // override
-                    console.log("disappeared notification was overriden!");
-                    addHelper(notifications.atTheStop, key, subscription.token);
-                    logInfo();
-                } else {
-                    console.log("disappeared notification!");
-                    addHelper(notifications.disappeared, key, subscription.token);
-                    logInfo();
+            if (disappeared) {
+                addHelper(notifications.disappeared, key, s.token);
+            } else if (delayed) {
+                addHelper(notifications.delayed, key, s.token);
+                newSubscriptions.push(s);
+            } else if (threshold) {
+                addHelper(notifications.reminder, key, s.token);
+                if (s.subscription.stage !== 0) {
+                    throw Error("A PostTheshold subscription tried to trigger a threshold notification");
                 }
-            } else if (arrivalTime.curr === 1) {
-                // at the stop
-                addHelper(notifications.atTheStop, key, subscription.token);
-                logInfo();
-            } else if (arrivalTime.prev !== null && arrivalTime.curr > arrivalTime.prev) {
-                // delayed
-                if (arrivalTime.prev <= shouldBeArrivingThresh
-                    && arrivalTime.curr - arrivalTime.prev > maxDelayWhenShouldBeArriving
-                ) {
-                    // override
-                    console.log("delayed notification was overriden!");
-                    addHelper(notifications.atTheStop, key, subscription.token);
-                    logInfo();
-                } else {
-                    console.log("delayed notification!");
-                    addHelper(notifications.delayed, key, subscription.token);
-                    newSubscriptions.push(subscription);  // keep subscription if delayed but not if overriden
-                    logInfo();
+                if (s.subscription.candidateVid === null) {
+                    throw Error("A threshold notification was triggered without a corresponding vid");
                 }
-            } else if (subscription.thresh !== null
-                && arrivalTime.curr <= subscription.thresh
-            ) {
-                console.log("reminder notification");
-                // reminder
-                addHelper(notifications.reminder, key, subscription.token);
-                // replace with next in pipeline, a subscription to bus at stop
-                newSubscriptions.push({ event: subscription.event, thresh: null, token: subscription.token });
-                logInfo();
+                newSubscriptions.push(
+                    { token: s.token, subscription: PostThreshold(s.subscription, s.subscription.candidateVid) }
+                );
+            } else if (ats) {
+                addHelper(notifications.atTheStop, key, s.token);
             } else {
-                newSubscriptions.push(subscription);  // keep subscription by default
+                newSubscriptions.push(s);
             }
         }
         this.subscriptions = newSubscriptions;
-        if (notifications.reminder.size !== 0 || notifications.atTheStop.size !== 0 || notifications.delayed.size !== 0 || notifications.disappeared.size !== 0) {
+        if (notifications.reminder.size !== 0
+            || notifications.atTheStop.size !== 0
+            || notifications.delayed.size !== 0
+            || notifications.disappeared.size !== 0
+        ) {
             console.log(
                 `Process completed with ${notifications.reminder.size} threshold reminders, `
                 + `${notifications.atTheStop.size} at the stop reminders, `
@@ -185,10 +295,12 @@ class ReminderSubscriptions {
         return notifications;
     }
 
-    // removes all subscriptions involving `event`
+    /** removes all subscriptions involving `event` */
     removeAllFor(event: Event) {
         this.subscriptions = this.subscriptions
-            .filter((s) => s.event.rtid !== event.rtid || s.event.stpid !== event.stpid);
+            .filter((s) => {
+                return eventsEqual(event, s.subscription.event);
+            });
     }
 
     swapToken(from: RegistrationToken, to: RegistrationToken) {
@@ -201,21 +313,11 @@ class ReminderSubscriptions {
         });
     }
 
-    activeRemindersFor(id: RegistrationToken): Array<{
-        stpid: string,
-        rtid: string,
-        thresh: number | null,
-        eta: number | null
-    }> {
+    activeRemindersFor(id: RegistrationToken): Array<PreThreshold | PostThreshold> {
         return this.subscriptions
             .filter((s) => s.token === id)
             .map((s) => {
-                return {
-                    stpid: s.event.stpid,
-                    rtid: s.event.rtid,
-                    thresh: s.thresh,
-                    eta: arrivalTimes.get(EventKey(s.event))?.curr ?? null
-                };
+                return s.subscription;
             });
     }
 
@@ -224,88 +326,36 @@ class ReminderSubscriptions {
     }
 }
 
-const reminderSubscriptions = new ReminderSubscriptions();
+const universityReminderSubscriptions = new ReminderSubscriptions();
 
-function processReminders() {
-    // move current arrival times to prev
-    for (const [_k, v] of arrivalTimes) {
-        v.prev = v.curr;
-        v.curr = null;
+function processUniversityReminders() {
+    try {
+        processRemindersHelper(state.cachedPredsByStopId, state.cachedPredsByVid);
+    } catch (e) {
+        console.log("Processing university reminders failed");
+        console.log(`${JSON.stringify(e)}`);
     }
+}
 
-    // determine arrival time updates for each stop
-    for (const stpid of Object.keys(state.cachedPredsByStopId)) {
-        for (const vehicle of state.cachedPredsByStopId[stpid]) {
-            const rtid = vehicle.rt;
-            if (typeof rtid !== "string") {
-                console.log("prediction found that is missing rtid!");
-                continue;
-            }
-            const prediction = vehicle.prdctdn === 'DUE' ? 1 : parseInt(vehicle.prdctdn);
-            const key = EventKey(Event({ stpid: stpid, rtid: rtid }));
-            let time = arrivalTimes.get(key);
-            if (time === undefined) {
-                arrivalTimes.set(key, { curr: null, prev: null });
-                time = arrivalTimes.get(key)!;
-            }
-            if (time.curr === null || prediction < time.curr)
-                time.curr = prediction;
-        }
-    }
-    // also do the ride
-    for (const stpid of Object.keys(state.cachedRidePredsByStopId)) {
-        for (const vehicle of state.cachedRidePredsByStopId[stpid]) {
-            const rtid = vehicle.rt;
-            if (typeof rtid !== "string") {
-                console.log("prediction found that is missing rtid!");
-                continue;
-            }
-            const prediction = vehicle.prdctdn === 'DUE' ? 1 : parseInt(vehicle.prdctdn);
-            const key = EventKey(Event({ stpid: stpid, rtid: rtid }));
-            let time = arrivalTimes.get(key);
-            if (time === undefined) {
-                arrivalTimes.set(key, { curr: null, prev: null });
-                time = arrivalTimes.get(key)!;
-            }
-            if (time.curr === null || prediction < time.curr)
-                time.curr = prediction;
-        }
-    }
-
-    const keys = new Set<EventKey>();
-    for (const event of reminderSubscriptions.subscriptions) {
-        const key = EventKey(event.event);
-        keys.add(key);
-    }
-    let didLogHeader = false;
-    for (const key of keys) {
-        const arrivalTime = arrivalTimes.get(key);
-        if (arrivalTime?.curr == arrivalTime?.prev) {
-            continue;
-        }
-        if (!didLogHeader) {
-            console.log("Arrival Times Information");
-            didLogHeader = true;
-        }
-        console.log(` - ${key}: c = ${arrivalTime?.curr} p = ${arrivalTime?.prev}`);
-    }
-
-    // send push notifications as needed
-    const notifications = reminderSubscriptions.process(arrivalTimes);
+function processRemindersHelper(
+    predsByStopId: Record<string, state.Prediction[] | undefined>,
+    predsByVid: Record<string, state.Prediction[] | undefined>
+) {
+    const notifications = universityReminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {
         const event = decodeEvent(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: 'Bus Arrival Reminder',
-                body: `${event.rtid} is ${arrivalTimes.get(eventKey)?.curr} minute(s) away from ${stopName}`
+                body: `${event.rtid} is ${"TODO"} minute(s) away from ${stopName}`
             },
             tokens
         );
     }
     for (const [eventKey, tokens] of notifications.atTheStop) {
         const event = decodeEvent(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
         sendToAll(
             {
                 notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
@@ -315,21 +365,21 @@ function processReminders() {
     }
     for (const [eventKey, tokens] of notifications.delayed) {
         const event = decodeEvent(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
-        const arrivalTime = arrivalTimes.get(eventKey);
-        const delay = arrivalTime?.curr !== null && arrivalTime?.prev ? `${arrivalTime.curr - arrivalTime.prev}` : `some`;
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
+        // const arrivalTime = arrivalTimes.get(eventKey);
+        // const delay = arrivalTime?.curr !== null && arrivalTime?.prev ? `${arrivalTime.curr - arrivalTime.prev}` : `some`;
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
-                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${delay} minute(s). `
-                    + `New time is ${arrivalTime?.curr ?? 'unknown'} minute(s).`
+                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${"TODO"} minute(s). `
+                    + `New time is ${"TODO"} minute(s).`
             },
             tokens
         );
     }
     for (const [eventKey, tokens] of notifications.disappeared) {
         const event = decodeEvent(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;
+        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: `Bus Disappeared`,
@@ -393,4 +443,15 @@ function sendToAllHelper(msg: any, tokens: Set<string>) {
         });
 }
 
-export { processReminders, reminderSubscriptions, Event, EventKey, RegistrationToken, sendNotifToAll, arrivalTimes };
+/** exported for tests */
+export const testing = {
+    ReminderSubscriptions,
+    eventsEqual
+};
+
+export {
+    processUniversityReminders,
+    universityReminderSubscriptions,
+    sendNotifToAll,
+    Event, EventKey, RegistrationToken,
+};

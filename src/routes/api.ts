@@ -499,10 +499,12 @@ export function setReminder(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { token, stpid, rtid, thresh } = result.data;
-        reminderService.reminderSubscriptions.add(
+        // TODO: support the ride
+        reminderService.universityReminderSubscriptions.add(
             reminderService.Event({ stpid, rtid }),
             thresh,
-            reminderService.RegistrationToken(token)
+            reminderService.RegistrationToken(token),
+            state.cachedPredsByStopId
         );
         res.sendStatus(200);
     }
@@ -522,7 +524,8 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { token ,stpid, rtid } = result.data;
-        reminderService.reminderSubscriptions.remove(
+        // TODO: support the ride
+        reminderService.universityReminderSubscriptions.remove(
             { stpid, rtid } as reminderService.Event, reminderService.RegistrationToken(token)
         );
         res.sendStatus(200);
@@ -545,7 +548,8 @@ export function swapToken(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { oldTok, newTok } = req.body;
-        reminderService.reminderSubscriptions.swapToken(oldTok, newTok);
+        // TODO: support the ride
+        reminderService.universityReminderSubscriptions.swapToken(oldTok, newTok);
         res.sendStatus(200);
     }
 }
@@ -564,8 +568,14 @@ export function activeRemindersForToken(
     const token = reminderService.RegistrationToken(req.params.registrationToken);
     console.log(`Got request for active reminders of ${token}`);
     res.status(200);
+    // TODO: support the ride
     res.send({
-        reminders: reminderService.reminderSubscriptions.activeRemindersFor(token)
+        reminders: reminderService
+            .universityReminderSubscriptions
+            .activeRemindersFor(token)
+            .map((r) => {
+                return { stpid: r.event.stpid, rtid: r.event.rtid, thresh: null, eta: null };
+            })
     });
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
@@ -593,11 +603,14 @@ export function modifyReminders(req: express.Request, res: express.Response) {
         for (const modification of modifications) {
             const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
             if (modification.action == "set") {
-                reminderService.reminderSubscriptions.add(
-                    event, modification.thresh, reminderService.RegistrationToken(token)
+                // TODO: support the ride
+                reminderService.universityReminderSubscriptions.add(
+                    event, modification.thresh, reminderService.RegistrationToken(token), state.cachedPredsByStopId
                 );            
             } else {
-                reminderService.reminderSubscriptions.remove(event, reminderService.RegistrationToken(token));
+                reminderService.universityReminderSubscriptions.remove(
+                    event, reminderService.RegistrationToken(token)
+                );
             }
         }
         res.sendStatus(200);

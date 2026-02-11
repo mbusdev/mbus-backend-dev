@@ -421,7 +421,7 @@ function updateRideLookups(preds: any[]) {
 }
 
 /** Sorts every prediction list contained in `x` by arrival timestamp */
-function sortPreds(x: Record<string, state.Prediction[]>) {
+export function sortPreds(x: Record<string, state.Prediction[]>) {
     for (const k in x) {
         x[k].sort((lhs, rhs) => lhs.prdtm - rhs.prdtm);
     }
