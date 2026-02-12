@@ -499,12 +499,19 @@ export function setReminder(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { token, stpid, rtid, thresh } = result.data;
-        // TODO: support the ride
-        reminderService.universityReminderSubscriptions.add(
+        const info = reminderService.infoToUseForRoute(rtid);
+        if (info === null) {
+            res.status(400);
+            res.send(`Invalid route ${rtid}`);
+            return;
+        }
+        const { reminderSubscriptions, predsByStopId } = info;
+        reminderSubscriptions.add(
             reminderService.Event({ stpid, rtid }),
             thresh,
             reminderService.RegistrationToken(token),
-            state.cachedPredsByStopId
+            predsByStopId,
+            Date.now(),
         );
         res.sendStatus(200);
     }
@@ -524,9 +531,15 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { token ,stpid, rtid } = result.data;
-        // TODO: support the ride
-        reminderService.universityReminderSubscriptions.remove(
-            { stpid, rtid } as reminderService.Event, reminderService.RegistrationToken(token)
+        const info = reminderService.infoToUseForRoute(rtid);
+        if (info === null) {
+            res.status(400);
+            res.send(`Invalid route ${rtid}`);
+            return;
+        }
+        const { reminderSubscriptions } = info;
+        reminderSubscriptions.remove(
+            reminderService.Event({ stpid, rtid }), reminderService.RegistrationToken(token)
         );
         res.sendStatus(200);
     }
@@ -548,8 +561,8 @@ export function swapToken(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { oldTok, newTok } = req.body;
-        // TODO: support the ride
         reminderService.universityReminderSubscriptions.swapToken(oldTok, newTok);
+        reminderService.rideReminderSubscriptions.swapToken(oldTok, newTok);
         res.sendStatus(200);
     }
 }
@@ -568,14 +581,20 @@ export function activeRemindersForToken(
     const token = reminderService.RegistrationToken(req.params.registrationToken);
     console.log(`Got request for active reminders of ${token}`);
     res.status(200);
-    // TODO: support the ride
+    const universityReminders = reminderService
+        .universityReminderSubscriptions
+        .activeRemindersFor(token)
+        .map((r) => {
+            return { stpid: r.event.stpid, rtid: r.event.rtid, thresh: null, eta: null };
+        });
+    const rideReminders = reminderService
+        .rideReminderSubscriptions
+        .activeRemindersFor(token)
+        .map((r) => {
+            return { stpid: r.event.stpid, rtid: r.event.rtid, thresh: null, eta: null };
+        });
     res.send({
-        reminders: reminderService
-            .universityReminderSubscriptions
-            .activeRemindersFor(token)
-            .map((r) => {
-                return { stpid: r.event.stpid, rtid: r.event.rtid, thresh: null, eta: null };
-            })
+        reminders: universityReminders.concat(rideReminders)
     });
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
@@ -601,14 +620,24 @@ export function modifyReminders(req: express.Request, res: express.Response) {
     } else {
         const { token, modifications } = result.data;
         for (const modification of modifications) {
-            const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
+            const event = reminderService.Event({ stpid: modification.stpid, rtid: modification.rtid });
+            const info = reminderService.infoToUseForRoute(modification.rtid);
+            if (info === null) {
+                res.status(400);
+                res.send(`Invalid route ${modification.rtid}`);
+                return;
+            }
+            const { reminderSubscriptions, predsByStopId } = info;
             if (modification.action == "set") {
-                // TODO: support the ride
-                reminderService.universityReminderSubscriptions.add(
-                    event, modification.thresh, reminderService.RegistrationToken(token), state.cachedPredsByStopId
+                reminderSubscriptions.add(
+                    event,
+                    modification.thresh,
+                    reminderService.RegistrationToken(token),
+                    predsByStopId,
+                    Date.now()
                 );            
             } else {
-                reminderService.universityReminderSubscriptions.remove(
+                reminderSubscriptions.remove(
                     event, reminderService.RegistrationToken(token)
                 );
             }

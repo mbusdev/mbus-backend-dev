@@ -9,13 +9,14 @@ dotenv.config()
 // Initialize Firebase
 initializeApp({ credential: applicationDefault() });
 
-type Event = {
+export type Event = {
     stpid: string,
     rtid: string,
     readonly __brand: "event"
 }
 
-function Event(x: { stpid: string, rtid: string }): Event {
+/** constructor */
+export function Event(x: { stpid: string, rtid: string }): Event {
     return x as Event;
 }
 
@@ -23,15 +24,16 @@ function eventsEqual(e1: Event, e2: Event): boolean {
     return e1.stpid === e2.stpid && e1.rtid === e2.rtid;
 }
 
-type RegistrationToken = string & { readonly __brand: "registration_token" }
+export type RegistrationToken = string & { readonly __brand: "registration_token" }
 
-function RegistrationToken(x: string): RegistrationToken {
+export function RegistrationToken(x: string): RegistrationToken {
     return x as RegistrationToken;
 }
 
-type EventKey = string & { readonly __brand: "event_key" }
+export type EventKey = string & { readonly __brand: "event_key" }
 
-function EventKey(e: Event): EventKey {
+/** constructor */
+export function EventKey(e: Event): EventKey {
     return `${e.stpid}|${e.rtid}` as EventKey;
 }
 
@@ -328,22 +330,33 @@ class ReminderSubscriptions {
     }
 }
 
-const universityReminderSubscriptions = new ReminderSubscriptions();
+export const universityReminderSubscriptions = new ReminderSubscriptions();
+export const rideReminderSubscriptions = new ReminderSubscriptions();
 
-function processUniversityReminders() {
+export function processUniversityReminders() {
     try {
-        processRemindersHelper(state.cachedPredsByStopId, state.cachedPredsByVid);
+        processRemindersHelper(universityReminderSubscriptions, state.cachedPredsByStopId, state.cachedPredsByVid);
     } catch (e) {
         console.log("Processing university reminders failed");
         console.log(`${JSON.stringify(e)}`);
     }
 }
 
+export function processRideReminders() {
+    try {
+        processRemindersHelper(rideReminderSubscriptions, state.cachedRidePredsByStopId, state.cachedRidePredsByVid);
+    } catch (e) {
+        console.log("Processing ride reminders failed");
+        console.log(`${JSON.stringify(e)}`);
+    }
+}
+
 function processRemindersHelper(
+    reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
     predsByVid: Record<string, state.Prediction[] | undefined>
 ) {
-    const notifications = universityReminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
+    const notifications = reminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {
         const event = decodeEvent(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
@@ -402,7 +415,7 @@ function sendReminderUpdateToAll(tokens: Set<string>) {
     }, tokens);
 }
 
-function sendNotifToAll(notif: { title: string, body: string }, tokens: Set<string>) {
+export function sendNotifToAll(notif: { title: string, body: string }, tokens: Set<string>) {
     sendToAll(
         { notification: notif },
         // { notification: notif, data: notif/*android: { notification: { ...notif, channel_id: "high_importance_channel" }}*/ },
@@ -445,15 +458,30 @@ function sendToAllHelper(msg: any, tokens: Set<string>) {
         });
 }
 
+export function infoToUseForRoute(rtid: string): {
+    reminderSubscriptions: ReminderSubscriptions,
+    predsByStopId: typeof state.cachedPredsByStopId,
+    predsByVid: typeof state.cachedPredsByVid
+} | null {
+    if (state.validRoutes.has(rtid)) {
+        return {
+            reminderSubscriptions: universityReminderSubscriptions,
+            predsByStopId: state.cachedPredsByStopId,
+            predsByVid: state.cachedPredsByVid,
+        };
+    } else if (state.validRideRoutes.has(rtid)) {
+        return {
+            reminderSubscriptions: rideReminderSubscriptions,
+            predsByStopId: state.cachedRidePredsByStopId,
+            predsByVid: state.cachedRidePredsByVid,
+        };
+    } else {
+        return null;
+    }
+}
+
 /** exported for tests */
 export const testing = {
     ReminderSubscriptions,
     eventsEqual
-};
-
-export {
-    processUniversityReminders,
-    universityReminderSubscriptions,
-    sendNotifToAll,
-    Event, EventKey, RegistrationToken,
 };

@@ -10,7 +10,7 @@ export const cachedRoutes: Record<string, any> = {};
 export const cachedRideRoutes: Record<string, any> = {};
 
 /** Represents a bus prediction. */
-export type Prediction = { vid: string; stpid: string; prdtm: number, prdctdn: string } & Record<string, any>;
+export type Prediction = { rt: string, vid: string; stpid: string; prdtm: number, prdctdn: string } & Record<string, any>;
 
 /** Predictions indexed by vehicle ID. */
 export const cachedPredsByVid: Record<string, Prediction[]> = {};

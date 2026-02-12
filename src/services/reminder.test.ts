@@ -124,7 +124,7 @@ describe('Reminders', () => {
 
     it('should send disappeared notifications (stage 0)', () => {
         const subs = new t.ReminderSubscriptions();
-        const { byStop, byVid: _ } = createCaches([
+        const { byStop } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" }
         ]);
         subs.add(testEvent, 3, testToken, byStop, Date.now());
