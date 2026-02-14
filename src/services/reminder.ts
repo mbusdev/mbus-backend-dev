@@ -3,52 +3,22 @@ import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 
 import * as state from "@/state/transitState";
+import { BaseEvent, DelayEvent, eventsEqual, toKey, Key, RegistrationToken, ThresholdEvent, fromKey, delayEvent, thresholdEvent } from "./reminderTypes";
+
+export * from "./reminderTypes";
 
 dotenv.config()
 
 // Initialize Firebase
 initializeApp({ credential: applicationDefault() });
 
-export type Event = {
-    stpid: string,
-    rtid: string,
-    readonly __brand: "event"
-}
-
-/** constructor */
-export function Event(x: { stpid: string, rtid: string }): Event {
-    return x as Event;
-}
-
-function eventsEqual(e1: Event, e2: Event): boolean {
-    return e1.stpid === e2.stpid && e1.rtid === e2.rtid;
-}
-
-export type RegistrationToken = string & { readonly __brand: "registration_token" }
-
-export function RegistrationToken(x: string): RegistrationToken {
-    return x as RegistrationToken;
-}
-
-export type EventKey = string & { readonly __brand: "event_key" }
-
-/** constructor */
-export function EventKey(e: Event): EventKey {
-    return `${e.stpid}|${e.rtid}` as EventKey;
-}
-
-function decodeEvent(e: EventKey): Event {
-    const split = e.split('|');
-    return Event({ stpid: split[0], rtid: split[1] });
-}
-
 /** Waiting for a prediction of the right `event` to have a arrival timestamp that is at or after `mustBeAfter` and an
  *  arrival time less than `thresh`. A bus is xx minutes from the stop notification is then sent. To handle delayed and
  *  disappeared notifications, a `candidateVid` is set to the soonest arriving bus that arrives after `mustbeAfter`.
  */
-type PreThreshold = {
+export type PreThreshold = {
     stage: 0,
-    event: Event,
+    event: BaseEvent,
     /** minutes */
     thresh: number,
     /** unix epoch milliseconds */
@@ -60,8 +30,8 @@ type PreThreshold = {
     candidateVidPredPrev: number | null
 };
 
-/** constructor */
-function PreThreshold(event: Event, thresh: number, candidateVid: string | null, now: number): PreThreshold {
+/** factory */
+function preThreshold(event: BaseEvent, thresh: number, candidateVid: string | null, now: number): PreThreshold {
     return {
         stage: 0, event, thresh, mustBeAfter: now + thresh * 60 * 1000, candidateVid, candidateVidPredPrev: null
     };
@@ -77,10 +47,10 @@ function firstPredAfter(timestamp: number, preds: state.Prediction[]): state.Pre
 /** Waiting for the bus indicated by `vid` to be at the stop indicated by `stpid`. Logic for what notification to send
  *  is complicated by arrival times sometimes skipping DUE, see `ReminderSubscriptons.process` for details.
  */
-type PostThreshold = { stage: 1, event: Event, vid: string, vidPredPrev: number | null };
+export type PostThreshold = { stage: 1, event: BaseEvent, vid: string, vidPredPrev: number | null };
 
-/** constructor */
-function PostThreshold(prev: PreThreshold, vid: string): PostThreshold {
+/** factory */
+function postThreshold(prev: PreThreshold, vid: string): PostThreshold {
     return {
         stage: 1, event: prev.event, vid, vidPredPrev: prev.candidateVid === vid ? prev.candidateVidPredPrev : null
     };
@@ -89,6 +59,19 @@ function PostThreshold(prev: PreThreshold, vid: string): PostThreshold {
 function prdctdnToNum(prdctdn: string): number {
     return prdctdn === 'DUE' ? 1 : parseInt(prdctdn);
 }
+
+/** result of ReminderSubscriptons.process */
+type RemindersToTrigger = {
+    /** can be sent in bulk based off of route, stop, and threshold (or route, stop, and prdctdn) */
+    reminder: Map<Key<ThresholdEvent>, Set<RegistrationToken>>,
+    /** can be sent in bulk based off of what route and stop */
+    atTheStop: Map<Key<BaseEvent>, Set<RegistrationToken>>,
+    /** can be sent in bulk based off of route and stop */
+    disappeared: Map<Key<BaseEvent>, Set<RegistrationToken>>,
+    /** can be sent in bulk based off of route, stop, delay amount, arrival time (or vid?) */
+    delayed: Map<Key<DelayEvent>, Set<RegistrationToken>>,
+    updated: Set<RegistrationToken>
+}; 
 
 /** Subscriptions go through a pipeline, see types above for details. */
 class ReminderSubscriptions {
@@ -103,10 +86,10 @@ class ReminderSubscriptions {
     /** Adds a new subscription, uses prediction data to determine a candidate vid.
         REQUIRES: `predsByStopId` has predictions sorted by arrival timestamp
     */
-    add(event: Event, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
+    add(event: BaseEvent, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
         console.log("Adding a reminder subscription");
         const predictions = predsByStopId[event.stpid];
-        const subscription = PreThreshold(event, thresh, null, now);
+        const subscription = preThreshold(event, thresh, null, now);
         if (predictions) {
             const relevant = predictions
                 .filter((p) => p.rt === event.rtid);
@@ -117,7 +100,7 @@ class ReminderSubscriptions {
     }
 
     /** removes all subscriptions that involve both `event` and `token` */
-    remove(event: Event, token: RegistrationToken) {
+    remove(event: BaseEvent, token: RegistrationToken) {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
             .filter((s) => s.token != token || !eventsEqual(s.subscription.event, event))
@@ -146,23 +129,17 @@ class ReminderSubscriptions {
     process(
         predsByStopId: Record<string, state.Prediction[] | undefined>,
         predsByVid: Record<string, state.Prediction[] | undefined>,
-        now: number
-    ): {
-        reminder: Map<EventKey, Set<RegistrationToken>>,
-        atTheStop: Map<EventKey, Set<RegistrationToken>>,
-        disappeared: Map<EventKey, Set<RegistrationToken>>,
-        delayed: Map<EventKey, Set<RegistrationToken>>,
-        updated: Set<RegistrationToken>
-    } {
-        const addHelper = (map: Map<EventKey, Set<RegistrationToken>>, key: EventKey, token: RegistrationToken) => {
+        now: number,
+    ): RemindersToTrigger {
+        const addHelper = <K, T>(map: Map<Key<K>, Set<T>>, key: Key<K>, contents: T) => {
             let tokens = map.get(key);
             if (tokens === undefined) {
                 map.set(key, new Set());
                 tokens = map.get(key)!;
             }
-            tokens.add(token);
+            tokens.add(contents);
         };
-        const notifications = {
+        const notifications: RemindersToTrigger = {
             reminder: new Map(),
             atTheStop: new Map(),
             disappeared: new Map(),
@@ -170,17 +147,15 @@ class ReminderSubscriptions {
             updated: new Set<RegistrationToken>()
         };
 
-        // TODO: send time update messages
-
         const newSubscriptions: typeof this.subscriptions = [];
         for (const s of this.subscriptions) {
-            const key = EventKey(s.subscription.event);
-
             // only one is sent, variable order is priority
-            let disappeared = false;
-            let delayed = false;
-            let threshold = false;
-            let ats = false;
+            let disappeared: BaseEvent | null = null;
+            let delayed: DelayEvent | null = null;
+            let threshold: ThresholdEvent | null = null;
+            let ats: BaseEvent | null = null;
+
+            let timeChanged = false;
 
             if (s.subscription.stage === 0) {
                 // did the candidate vehicle change?
@@ -192,10 +167,13 @@ class ReminderSubscriptions {
                 if (newCandidate === null) {
                     if (s.subscription.candidateVid !== null) {
                         // no candidate now + existed before
-                        disappeared = true;
+                        disappeared = s.subscription.event;
                     }
                 } else {
                     const pred = prdctdnToNum(newCandidate.prdctdn);
+                    if (s.subscription.candidateVidPredPrev !== pred) {
+                        timeChanged = true;
+                    }
                     if (newCandidate.vid !== s.subscription.candidateVid) {
                         // new candidate
                         console.log(`stage 0: new candidate, time is now ${pred}`);
@@ -208,11 +186,13 @@ class ReminderSubscriptions {
                         && pred > s.subscription.candidateVidPredPrev
                     ) {
                         // delayed
-                        delayed = true;
+                        delayed = delayEvent(
+                            { ...s.subscription.event, prevPred: s.subscription.candidateVidPredPrev, currPred: pred }
+                        );
                     }
                     s.subscription.candidateVidPredPrev = pred;
                     if (newCandidate.prdtm > s.subscription.mustBeAfter && pred <= s.subscription.thresh) {
-                        threshold = true;
+                        threshold = thresholdEvent({ ...s.subscription.event, threshold: s.subscription.thresh })
                     }
                 }
             } else {
@@ -231,20 +211,23 @@ class ReminderSubscriptions {
 
                 console.log(`stage 1: time is now ${currArrivalTime}`);
 
+                if (currArrivalTime !== prevArrivalTime) {
+                    timeChanged = true;
+                }
                 if (currArrivalTime === null) {
                     // disappeared
                     if (prevArrivalTime !== null && prevArrivalTime <= shouldBeArrivingThresh
                     ) {
                         // override
                         console.log("disappeared notification was overriden!");
-                        ats = true;
+                        ats = s.subscription.event;
                     } else {
                         console.log("disappeared notification!");
-                        disappeared = true;
+                        disappeared = s.subscription.event;
                     }
                 } else if (currArrivalTime === 1) {
                     // at the stop
-                    ats = true;
+                    ats = s.subscription.event;
                 } else if (prevArrivalTime !== null && currArrivalTime > prevArrivalTime) {
                     // delayed
                     if (prevArrivalTime <= shouldBeArrivingThresh
@@ -252,22 +235,28 @@ class ReminderSubscriptions {
                     ) {
                         // override
                         console.log("delayed notification was overriden!");
-                        ats = true;
+                        ats = s.subscription.event;
                     } else {
                         console.log("delayed notification!");
-                        delayed = true;
+                        delayed = delayEvent(
+                            { ...s.subscription.event, prevPred: prevArrivalTime, currPred: currArrivalTime }
+                        );
                     }
                 }
                 s.subscription.vidPredPrev = currArrivalTime;
             }
 
+            if (disappeared || delayed|| threshold || ats || delayed || timeChanged) {
+                notifications.updated.add(s.token);
+            }
+
             if (disappeared) {
-                addHelper(notifications.disappeared, key, s.token);
+                addHelper(notifications.disappeared, toKey(disappeared), s.token);
             } else if (delayed) {
-                addHelper(notifications.delayed, key, s.token);
+                addHelper(notifications.delayed, toKey(delayed), s.token);
                 newSubscriptions.push(s);
             } else if (threshold) {
-                addHelper(notifications.reminder, key, s.token);
+                addHelper(notifications.reminder, toKey(threshold), s.token);
                 if (s.subscription.stage !== 0) {
                     throw Error("A PostTheshold subscription tried to trigger a threshold notification");
                 }
@@ -275,10 +264,10 @@ class ReminderSubscriptions {
                     throw Error("A threshold notification was triggered without a corresponding vid");
                 }
                 newSubscriptions.push(
-                    { token: s.token, subscription: PostThreshold(s.subscription, s.subscription.candidateVid) }
+                    { token: s.token, subscription: postThreshold(s.subscription, s.subscription.candidateVid) }
                 );
             } else if (ats) {
-                addHelper(notifications.atTheStop, key, s.token);
+                addHelper(notifications.atTheStop, toKey(ats), s.token);
             } else {
                 newSubscriptions.push(s);
             }
@@ -300,7 +289,7 @@ class ReminderSubscriptions {
     }
 
     /** removes all subscriptions involving `event` */
-    removeAllFor(event: Event) {
+    removeAllFor(event: BaseEvent) {
         this.subscriptions = this.subscriptions
             .filter((s) => {
                 return eventsEqual(event, s.subscription.event);
@@ -358,18 +347,18 @@ function processRemindersHelper(
 ) {
     const notifications = reminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {
-        const event = decodeEvent(eventKey);
+        const event = fromKey(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: 'Bus Arrival Reminder',
-                body: `${event.rtid} is ${"TODO"} minute(s) away from ${stopName}`
+                body: `${event.rtid} is less than ${event.threshold} minute(s) away from ${stopName}`
             },
             tokens
         );
     }
     for (const [eventKey, tokens] of notifications.atTheStop) {
-        const event = decodeEvent(eventKey);
+        const event = fromKey(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
         sendToAll(
             {
@@ -379,21 +368,19 @@ function processRemindersHelper(
         );
     }
     for (const [eventKey, tokens] of notifications.delayed) {
-        const event = decodeEvent(eventKey);
+        const event = fromKey(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
-        // const arrivalTime = arrivalTimes.get(eventKey);
-        // const delay = arrivalTime?.curr !== null && arrivalTime?.prev ? `${arrivalTime.curr - arrivalTime.prev}` : `some`;
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
-                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${"TODO"} minute(s). `
-                    + `New time is ${"TODO"} minute(s).`
+                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${event.currPred - event.prevPred}`
+                    + `minute(s). New time is ${event.currPred} minute(s).`
             },
             tokens
         );
     }
     for (const [eventKey, tokens] of notifications.disappeared) {
-        const event = decodeEvent(eventKey);
+        const event = fromKey(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {

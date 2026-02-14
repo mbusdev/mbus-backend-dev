@@ -2,7 +2,6 @@ import express from "express";
 import * as path from "path";
 import * as process from "node:process";
 import axios from "axios";
-import { getMessaging } from "firebase-admin/messaging";
 import * as z from "zod";
 import * as state from '../state/transitState';
 import * as meta from '../services/metadata';
@@ -507,9 +506,9 @@ export function setReminder(req: express.Request, res: express.Response) {
         }
         const { reminderSubscriptions, predsByStopId } = info;
         reminderSubscriptions.add(
-            reminderService.Event({ stpid, rtid }),
+            reminderService.baseEvent({ stpid, rtid }),
             thresh,
-            reminderService.RegistrationToken(token),
+            reminderService.registrationToken(token),
             predsByStopId,
             Date.now(),
         );
@@ -539,7 +538,7 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         }
         const { reminderSubscriptions } = info;
         reminderSubscriptions.remove(
-            reminderService.Event({ stpid, rtid }), reminderService.RegistrationToken(token)
+            reminderService.baseEvent({ stpid, rtid }), reminderService.registrationToken(token)
         );
         res.sendStatus(200);
     }
@@ -568,31 +567,37 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
+type ActiveReminderInfo = { stpid: string, rtid: string, thresh: number | null, eta: number | null };
+
 /**
  * @param req - Express request, token is path encoded
  * @param res - Express response 
  */
 export function activeRemindersForToken(
     req: express.Request,
-    res: express.Response<{
-        reminders: Array<{ stpid: string, rtid: string, thresh: number | null, eta: number | null }>
-    }>
+    res: express.Response<{ reminders: Array<ActiveReminderInfo> }>
 ) {
-    const token = reminderService.RegistrationToken(req.params.registrationToken);
+    const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold):
+        ActiveReminderInfo =>
+    {
+        return {
+            stpid: r.event.stpid,
+            rtid: r.event.rtid,
+            thresh: r.stage === 0 ? r.thresh : null,
+            eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+        };
+    };
+    const token = reminderService.registrationToken(req.params.registrationToken);
     console.log(`Got request for active reminders of ${token}`);
     res.status(200);
     const universityReminders = reminderService
         .universityReminderSubscriptions
         .activeRemindersFor(token)
-        .map((r) => {
-            return { stpid: r.event.stpid, rtid: r.event.rtid, thresh: null, eta: null };
-        });
+        .map(subscriptionInfo);
     const rideReminders = reminderService
         .rideReminderSubscriptions
         .activeRemindersFor(token)
-        .map((r) => {
-            return { stpid: r.event.stpid, rtid: r.event.rtid, thresh: null, eta: null };
-        });
+        .map(subscriptionInfo);
     res.send({
         reminders: universityReminders.concat(rideReminders)
     });
@@ -620,7 +625,7 @@ export function modifyReminders(req: express.Request, res: express.Response) {
     } else {
         const { token, modifications } = result.data;
         for (const modification of modifications) {
-            const event = reminderService.Event({ stpid: modification.stpid, rtid: modification.rtid });
+            const event = reminderService.baseEvent({ stpid: modification.stpid, rtid: modification.rtid });
             const info = reminderService.infoToUseForRoute(modification.rtid);
             if (info === null) {
                 res.status(400);
@@ -632,13 +637,13 @@ export function modifyReminders(req: express.Request, res: express.Response) {
                 reminderSubscriptions.add(
                     event,
                     modification.thresh,
-                    reminderService.RegistrationToken(token),
+                    reminderService.registrationToken(token),
                     predsByStopId,
                     Date.now()
                 );            
             } else {
                 reminderSubscriptions.remove(
-                    event, reminderService.RegistrationToken(token)
+                    event, reminderService.registrationToken(token)
                 );
             }
         }
