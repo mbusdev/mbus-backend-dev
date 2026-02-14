@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 
-import * as r from "./reminder";
-import { testing as t } from "./reminder";
-import { Prediction } from '../state/transitState';
-import { sortPreds } from './graphBuilder';
+import * as r from "@/services/reminder";
+import { testing as t } from "@/services/reminder";
+import { Prediction } from '@/state/transitState';
+import { sortPreds } from '@/services/graphBuilder';
 
-const testToken = r.RegistrationToken("token1");
-const testEvent = r.Event({ stpid: "stop1", rtid: "route1" });
-const testEventDiffRt = r.Event({ stpid: "stop1", rtid: "route2" });
+const testToken = r.registrationToken("token1");
+const testEvent = r.baseEvent({ stpid: "stop1", rtid: "route1" });
+const testEventDiffRt = r.baseEvent({ stpid: "stop1", rtid: "route2" });
 
 function createCaches(preds: Prediction[]): { byStop: Record<string, Prediction[]>, byVid: Record<string, Prediction[]> } {
     const byStop: Record<string, Prediction[]> = {};
@@ -52,7 +52,13 @@ describe('Reminders', () => {
         const remindersLater = subs.process(byStopLater, byVidLater, Date.now() + 60 * 1000);
         console.log(remindersLater);
         expect(remindersLater.reminder.size).toBe(1);
-        expect(remindersLater.reminder.get(r.EventKey(testEvent))?.has(testToken));
+        expect(
+            remindersLater.reminder.get(
+                Array.from(remindersLater.reminder.keys())
+                    .find((thresholdEvent) => r.sameBaseEvent(r.fromKey(thresholdEvent), testEvent))!
+            )!.has(testToken)
+        )
+            .toBe(true);
 
         expect(subs.activeRemindersFor(testToken).length).toBe(1);
         expect(t.eventsEqual(subs.activeRemindersFor(testToken)[0].event, testEvent)).toBe(true);
@@ -82,7 +88,7 @@ describe('Reminders', () => {
         const subs = new t.ReminderSubscriptions();
         subs.add(testEvent, 3, testToken, {}, Date.now());
         subs.add(testEventDiffRt, 3, testToken, {}, Date.now());
-        subs.add(testEvent, 3, r.RegistrationToken("anotherToken"), {}, Date.now());
+        subs.add(testEvent, 3, r.registrationToken("anotherToken"), {}, Date.now());
         expect(subs.subscriptions.length).toBe(3);
         subs.remove(testEvent, testToken);
         expect(subs.subscriptions.length).toBe(2);

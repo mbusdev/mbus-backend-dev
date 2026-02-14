@@ -24,6 +24,10 @@ export type BaseEvent = CoreEvent & {
     equals(other: Event): boolean
 }
 
+export function sameBaseEvent(e1: CoreEvent, e2: CoreEvent): boolean {
+    return e1.stpid === e2.stpid && e1.rtid === e2.rtid;
+}
+
 export function eventsEqual(e1: BaseEvent, e2: BaseEvent): boolean {
     return e1.stpid === e2.stpid && e1.rtid === e2.rtid;
 }
