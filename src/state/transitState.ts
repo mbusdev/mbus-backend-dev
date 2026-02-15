@@ -23,6 +23,8 @@ export const cachedRidePredsByStopId: Record<string, Prediction[]> = {};
 
 /** Map of stop IDs to their human-readable names. */
 export const stopIdToName: Record<string, string> = {};
+/** Map of ride stop IDs to their human-readable names. */
+export const rideStopIdToName: Record<string, string> = {};
 /** Map of trip IDs to route names. */
 export const tatripidToRt: Record<string, string> = {};
 

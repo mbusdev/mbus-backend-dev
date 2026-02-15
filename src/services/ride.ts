@@ -69,7 +69,9 @@ export async function fetchPredictions(stopIds: string[], routes: string[]) {
                     requestType: 'getpredictions',
                     stpid: chunk.join(','),
                     rt: routes.join(','),
-                    tmres: 's'
+                    tmres: 's',
+                    // theride doesn't seem to support unix timestamps so this doesn't do anything
+                    unixTime: true,
                 }
             });
             return res.data;

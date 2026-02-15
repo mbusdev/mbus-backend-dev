@@ -3,7 +3,10 @@ import { describe, it, expect } from 'vitest';
 import * as r from "@/services/reminder";
 import { testing as t } from "@/services/reminder";
 import { Prediction } from '@/state/transitState';
-import { sortPreds } from '@/services/graphBuilder';
+import * as state from '@/state/transitState';
+import { initializeRoutes, rebuildGraph, sortPreds, updateBusPositions } from '@/services/graphBuilder';
+import axios from 'axios';
+import { configDotenv } from 'dotenv';
 
 const testToken = r.registrationToken("token1");
 const testEvent = r.baseEvent({ stpid: "stop1", rtid: "route1" });
@@ -195,6 +198,47 @@ describe('Reminders', () => {
         const reminders = subs.process({}, {}, Date.now());
         expect(reminders.disappeared.size).toBe(0);
         expect(reminders.atTheStop.size).toBe(1);
+    });
+
+    it('should get unix timestamp from ride bus api', async () => {
+        configDotenv();
+        const RIDE_API_KEY = process.env.RIDE_API_KEY;
+        const BASE_URL = 'https://rt.theride.org/bustime/api/v3/';
+
+        const client = axios.create({
+            baseURL: BASE_URL,
+            params: { key: RIDE_API_KEY, format: 'json' }
+        });
+        const res = await client.get('/gettime', { params: { unixTime: true } });
+        expect(Math.abs(parseInt(res.data["bustime-response"]["tm"]) - Date.now())).toBeLessThan(60 * 1000);
+    });
+
+    it('should have cached preds in a good state', async () => {
+        // simulate one cycle of the core jobs
+        await initializeRoutes();
+        await rebuildGraph();
+        await updateBusPositions();
+        // are there preds?
+        expect(Object.keys(state.cachedPredsByStopId).length).toBeGreaterThan(0);
+        expect(Object.keys(state.cachedPredsByVid).length).toBeGreaterThan(0);
+        expect(Object.keys(state.cachedRidePredsByStopId).length).toBeGreaterThan(0);
+        expect(Object.keys(state.cachedRidePredsByVid).length).toBeGreaterThan(0);
+        // are the expected fields all there?
+        const sample: Prediction = { rt: "", stpid: "", vid: "", prdtm: 0, prdctdn: "" };
+        const allThere = (x: Prediction) => {
+            for (const k in sample) {
+                expect(k + ":" +typeof x[k]).toBe(k + ":" + typeof sample[k]);
+                if (k == "prdtm") {
+                    expect(x[k]).toBeGreaterThanOrEqual(Date.now() - 15 * 1000);
+                }
+            }  
+        };
+        [state.cachedPredsByStopId, state.cachedPredsByVid, state.cachedRidePredsByStopId, state.cachedRidePredsByVid]
+            .forEach((preds) => {
+                for (const k in preds) {
+                    preds[k].every(allThere);
+                }
+            });
     });
 });
 

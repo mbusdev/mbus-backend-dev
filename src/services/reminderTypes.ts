@@ -21,7 +21,6 @@ type CoreEvent = {
 
 export type BaseEvent = CoreEvent & {
     readonly __brand: "event"
-    equals(other: Event): boolean
 }
 
 export function sameBaseEvent(e1: CoreEvent, e2: CoreEvent): boolean {

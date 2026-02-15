@@ -160,9 +160,11 @@ class ReminderSubscriptions {
             if (s.subscription.stage === 0) {
                 // did the candidate vehicle change?
                 // PERF: caching these filter results might be good
+                const relevantPreds = (predsByStopId[s.subscription.event.stpid] ?? [])
+                    .filter((p) => p.rt === s.subscription.event.rtid);
                 const newCandidate = firstPredAfter(
                     s.subscription.mustBeAfter,
-                    (predsByStopId[s.subscription.event.stpid] ?? []).filter((p) => p.rt === s.subscription.event.rtid)
+                    relevantPreds
                 );
                 if (newCandidate === null) {
                     if (s.subscription.candidateVid !== null) {
@@ -359,7 +361,15 @@ function processRemindersHelper(
     }
     for (const [eventKey, tokens] of notifications.atTheStop) {
         const event = fromKey(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
+        let stopName = event.stpid;
+        const universityName = state.stopIdToName[event.stpid];
+        const rideName = state.rideStopIdToName[event.stpid];
+        if (universityName) {
+            stopName = universityName;
+        }
+        if (rideName) {
+            stopName = rideName;
+        }
         sendToAll(
             {
                 notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
@@ -381,7 +391,15 @@ function processRemindersHelper(
     }
     for (const [eventKey, tokens] of notifications.disappeared) {
         const event = fromKey(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
+        let stopName = event.stpid;
+        const universityName = state.stopIdToName[event.stpid];
+        const rideName = state.rideStopIdToName[event.stpid];
+        if (universityName) {
+            stopName = universityName;
+        }
+        if (rideName) {
+            stopName = rideName;
+        }
         sendNotifToAll(
             {
                 title: `Bus Disappeared`,
