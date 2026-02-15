@@ -290,14 +290,6 @@ class ReminderSubscriptions {
         return notifications;
     }
 
-    /** removes all subscriptions involving `event` */
-    removeAllFor(event: BaseEvent) {
-        this.subscriptions = this.subscriptions
-            .filter((s) => {
-                return eventsEqual(event, s.subscription.event);
-            });
-    }
-
     swapToken(from: RegistrationToken, to: RegistrationToken) {
         this.subscriptions = this.subscriptions.map((s) => {
             if (s.token === from) {
@@ -314,10 +306,6 @@ class ReminderSubscriptions {
             .map((s) => {
                 return s.subscription;
             });
-    }
-
-    describe() {
-        console.log(`There are ${this.subscriptions.length} reminder subscriptions`);
     }
 }
 
