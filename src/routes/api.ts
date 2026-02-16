@@ -2,7 +2,6 @@ import express from "express";
 import * as path from "path";
 import * as process from "node:process";
 import axios from "axios";
-import { getMessaging } from "firebase-admin/messaging";
 import * as z from "zod";
 import * as state from '../state/transitState';
 import * as meta from '../services/metadata';
@@ -499,10 +498,19 @@ export function setReminder(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { token, stpid, rtid, thresh } = result.data;
-        reminderService.reminderSubscriptions.add(
-            reminderService.Event({ stpid, rtid }),
+        const info = reminderService.infoToUseForRoute(rtid);
+        if (info === null) {
+            res.status(400);
+            res.send(`Invalid route ${rtid}`);
+            return;
+        }
+        const { reminderSubscriptions, predsByStopId } = info;
+        reminderSubscriptions.add(
+            reminderService.baseEvent({ stpid, rtid }),
             thresh,
-            reminderService.RegistrationToken(token)
+            reminderService.registrationToken(token),
+            predsByStopId,
+            Date.now(),
         );
         res.sendStatus(200);
     }
@@ -522,8 +530,15 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { token ,stpid, rtid } = result.data;
-        reminderService.reminderSubscriptions.remove(
-            { stpid, rtid } as reminderService.Event, reminderService.RegistrationToken(token)
+        const info = reminderService.infoToUseForRoute(rtid);
+        if (info === null) {
+            res.status(400);
+            res.send(`Invalid route ${rtid}`);
+            return;
+        }
+        const { reminderSubscriptions } = info;
+        reminderSubscriptions.remove(
+            reminderService.baseEvent({ stpid, rtid }), reminderService.registrationToken(token)
         );
         res.sendStatus(200);
     }
@@ -545,11 +560,14 @@ export function swapToken(req: express.Request, res: express.Response) {
         res.send(result.error.message);
     } else {
         const { oldTok, newTok } = req.body;
-        reminderService.reminderSubscriptions.swapToken(oldTok, newTok);
+        reminderService.universityReminderSubscriptions.swapToken(oldTok, newTok);
+        reminderService.rideReminderSubscriptions.swapToken(oldTok, newTok);
         res.sendStatus(200);
     }
 }
 router.post('/swapToken', swapToken);
+
+type ActiveReminderInfo = { stpid: string, rtid: string, thresh: number | null, eta: number | null };
 
 /**
  * @param req - Express request, token is path encoded
@@ -557,15 +575,31 @@ router.post('/swapToken', swapToken);
  */
 export function activeRemindersForToken(
     req: express.Request,
-    res: express.Response<{
-        reminders: Array<{ stpid: string, rtid: string, thresh: number | null, eta: number | null }>
-    }>
+    res: express.Response<{ reminders: Array<ActiveReminderInfo> }>
 ) {
-    const token = reminderService.RegistrationToken(req.params.registrationToken);
+    const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold):
+        ActiveReminderInfo =>
+    {
+        return {
+            stpid: r.event.stpid,
+            rtid: r.event.rtid,
+            thresh: r.stage === 0 ? r.thresh : null,
+            eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+        };
+    };
+    const token = reminderService.registrationToken(req.params.registrationToken);
     console.log(`Got request for active reminders of ${token}`);
     res.status(200);
+    const universityReminders = reminderService
+        .universityReminderSubscriptions
+        .activeRemindersFor(token)
+        .map(subscriptionInfo);
+    const rideReminders = reminderService
+        .rideReminderSubscriptions
+        .activeRemindersFor(token)
+        .map(subscriptionInfo);
     res.send({
-        reminders: reminderService.reminderSubscriptions.activeRemindersFor(token)
+        reminders: universityReminders.concat(rideReminders)
     });
 }
 router.get('/activeReminders/:registrationToken', activeRemindersForToken);
@@ -591,13 +625,26 @@ export function modifyReminders(req: express.Request, res: express.Response) {
     } else {
         const { token, modifications } = result.data;
         for (const modification of modifications) {
-            const event = { stpid: modification.stpid, rtid: modification.rtid } as reminderService.Event;
+            const event = reminderService.baseEvent({ stpid: modification.stpid, rtid: modification.rtid });
+            const info = reminderService.infoToUseForRoute(modification.rtid);
+            if (info === null) {
+                res.status(400);
+                res.send(`Invalid route ${modification.rtid}`);
+                return;
+            }
+            const { reminderSubscriptions, predsByStopId } = info;
             if (modification.action == "set") {
-                reminderService.reminderSubscriptions.add(
-                    event, modification.thresh, reminderService.RegistrationToken(token)
+                reminderSubscriptions.add(
+                    event,
+                    modification.thresh,
+                    reminderService.registrationToken(token),
+                    predsByStopId,
+                    Date.now()
                 );            
             } else {
-                reminderService.reminderSubscriptions.remove(event, reminderService.RegistrationToken(token));
+                reminderSubscriptions.remove(
+                    event, reminderService.registrationToken(token)
+                );
             }
         }
         res.sendStatus(200);

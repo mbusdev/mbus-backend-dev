@@ -81,6 +81,7 @@ export async function rebuildGraph() {
         });
         const rawRidePreds = await rideBus.fetchPredictions(Array.from(rideStopIds), DEFAULT_RIDE_ROUTES);
         const formattedRidePreds = processRidePredictions(rawRidePreds);
+        populateRideLookupMaps(formattedRidePreds);
         updateRideLookups(formattedRidePreds);
         
         state.setCachedGraph({
@@ -96,7 +97,7 @@ export async function rebuildGraph() {
 
 /**
  * Populates lookup maps for stop names and trip-to-route mappings.
- * @paramw preds List of processed predictions
+ * @param preds List of processed predictions
  */
 function populateLookupMaps(preds: any[]) {
     Object.values(state.cachedRoutes).forEach((patterns: any) => {
@@ -121,6 +122,27 @@ function populateLookupMaps(preds: any[]) {
                 state.tatripidToRt[trip.tatripid] = firstStopWithRt.rt;
             }
         }
+    });
+}
+
+/**
+ * Populates the lookup map for ride stop names
+ * @param preds List of processed predictions from the ride
+ */
+function populateRideLookupMaps(preds: any[]) {
+    Object.values(state.cachedRideRoutes).forEach((patterns: any) => {
+        patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+            if (pt.stpid && pt.stpnm) {
+                state.rideStopIdToName[pt.stpid] = pt.stpnm;
+            }
+        }));
+    });
+    preds.forEach((trip: any) => {
+        trip.stops.forEach((stop: any) => {
+            if (stop.stpid && stop.stpnm) {
+                state.rideStopIdToName[stop.stpid] = stop.stpnm;
+            }
+        });
     });
 }
 
@@ -212,6 +234,7 @@ function processPredictions(rawChunks: any[]) {
                 stop.rtdir = prd.rtdir;
                 stop.rt = prd.rt;
                 stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
+                stop.prdtm = parseInt(prd.prdtm);
             });
         }
         return acc;
@@ -355,6 +378,11 @@ function processRidePredictions(rawChunks: any[]) {
                 stop.rtdir = prd.rtdir;
                 stop.rt = prd.rt;
                 stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
+                // console.log(prd.prdtm);
+                // prdtm is in format YYYYMMDD HH:MM:SS
+                // stop.prdtm = parseInt(prd.prdtm);
+                // TODO: use actual timestamp
+                stop.prdtm = Date.now() + (parseInt(stop.prdctdn) + 0.5) * 60 * 1000;
             });
         }
         return acc;
@@ -386,6 +414,9 @@ function updatePredictionLookups(preds: any[]) {
             }
         });
     });
+    // sort
+    sortPreds(state.cachedPredsByStopId);
+    sortPreds(state.cachedPredsByVid);
 }
 
 
@@ -411,6 +442,16 @@ function updateRideLookups(preds: any[]) {
             }
         });
     });
+    // sort
+    sortPreds(state.cachedRidePredsByStopId);
+    sortPreds(state.cachedRidePredsByVid);
+}
+
+/** Sorts every prediction list contained in `x` by arrival timestamp */
+export function sortPreds(x: Record<string, state.Prediction[]>) {
+    for (const k in x) {
+        x[k].sort((lhs, rhs) => lhs.prdtm - rhs.prdtm);
+    }
 }
 
 /**

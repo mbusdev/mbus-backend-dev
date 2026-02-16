@@ -10,7 +10,7 @@ export const cachedRoutes: Record<string, any> = {};
 export const cachedRideRoutes: Record<string, any> = {};
 
 /** Represents a bus prediction. */
-export type Prediction = { vid: string; stpid: string } & Record<string, any>;
+export type Prediction = { rt: string, vid: string; stpid: string; prdtm: number, prdctdn: string } & Record<string, any>;
 
 /** Predictions indexed by vehicle ID. */
 export const cachedPredsByVid: Record<string, Prediction[]> = {};
@@ -23,6 +23,8 @@ export const cachedRidePredsByStopId: Record<string, Prediction[]> = {};
 
 /** Map of stop IDs to their human-readable names. */
 export const stopIdToName: Record<string, string> = {};
+/** Map of ride stop IDs to their human-readable names. */
+export const rideStopIdToName: Record<string, string> = {};
 /** Map of trip IDs to route names. */
 export const tatripidToRt: Record<string, string> = {};
 
