@@ -6,7 +6,7 @@ const ROUTE_CONFIG: Record<string, { color: string, image: string }> = {
     "BB": { color: "#2F773F", image: "bus_BB.png" },
     "CN": { color: "#643076", image: "bus_CN.png" },
     "CS": { color: "#3559B8", image: "bus_CS.png" },
-    "CSX": { color: "#1C2256", image: "bus_CSX.png" },
+    "CSX": { color: "#9B70FF", image: "bus_CSX.png" },
     "DD": { color: "#A9C534", image: "bus_DD.png" },
     "MX": { color: "#5EC7DE", image: "bus_MX.png" },
     "NE": { color: "#C55188", image: "bus_NE.png" },
