@@ -93,7 +93,13 @@ class ReminderSubscriptions {
         if (predictions) {
             const relevant = predictions
                 .filter((p) => p.rt === event.rtid);
-            subscription.candidateVid = firstPredAfter(subscription.mustBeAfter, relevant)?.vid ?? null;
+            const candidate = firstPredAfter(subscription.mustBeAfter, relevant);
+            subscription.candidateVid = candidate?.vid ?? null;
+            if (candidate?.prdctdn) {
+                subscription.candidateVidPredPrev = prdctdnToNum(candidate?.prdctdn);
+            } else {
+                subscription.candidateVidPredPrev = null;
+            }
         }
         this.subscriptions.push({ token, subscription });
         sendReminderUpdateToAll(new Set([token]));
