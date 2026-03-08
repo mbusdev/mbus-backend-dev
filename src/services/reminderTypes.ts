@@ -38,17 +38,20 @@ export function baseEvent(x: { stpid: string, rtid: string }): BaseEvent {
 
 export type ThresholdEvent = CoreEvent & {
     threshold: number,
+    exactly: boolean,
     readonly __brand: "thresholdEvent"
 };
 
 /** factory */
-export function thresholdEvent(x: { stpid: string, rtid: string, threshold: number }): ThresholdEvent {
+export function thresholdEvent(
+    x: { stpid: string, rtid: string, threshold: number, exactly: boolean }
+): ThresholdEvent {
     return x as ThresholdEvent;
 }
 
 export type DelayEvent = CoreEvent & {
     prevPred: number,
-    currPred: number,    
+    currPred: number,
     readonly __brand: "delayEvent"
 };
 

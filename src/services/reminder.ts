@@ -71,7 +71,7 @@ type RemindersToTrigger = {
     /** can be sent in bulk based off of route, stop, delay amount, arrival time (or vid?) */
     delayed: Map<Key<DelayEvent>, Set<RegistrationToken>>,
     updated: Set<RegistrationToken>
-}; 
+};
 
 /** Subscriptions go through a pipeline, see types above for details. */
 class ReminderSubscriptions {
@@ -204,7 +204,11 @@ class ReminderSubscriptions {
                     }
                     s.subscription.candidateVidPredPrev = pred;
                     if (newCandidate.prdtm > s.subscription.mustBeAfter && pred <= s.subscription.thresh) {
-                        threshold = thresholdEvent({ ...s.subscription.event, threshold: s.subscription.thresh })
+                        threshold = thresholdEvent({
+                            ...s.subscription.event,
+                            threshold: s.subscription.thresh,
+                            exactly: pred == s.subscription.thresh
+                        });
                     }
                 }
             } else {
@@ -258,7 +262,7 @@ class ReminderSubscriptions {
                 s.subscription.vidPredPrev = currArrivalTime;
             }
 
-            if (disappeared || delayed|| threshold || ats || delayed || timeChanged) {
+            if (disappeared || delayed || threshold || ats || delayed || timeChanged) {
                 notifications.updated.add(s.token);
             }
 
@@ -340,6 +344,13 @@ export function processRideReminders() {
     }
 }
 
+function minutes(x: number): string {
+    if (x === 1 || x === -1) {
+        return `${x} minute`;
+    }
+    return `${x} minutes`;
+}
+
 function processRemindersHelper(
     reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
@@ -349,13 +360,23 @@ function processRemindersHelper(
     for (const [eventKey, tokens] of notifications.reminder) {
         const event = fromKey(eventKey);
         const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
-        sendNotifToAll(
-            {
-                title: 'Bus Arrival Reminder',
-                body: `${event.rtid} is less than ${event.threshold} minute(s) away from ${stopName}`
-            },
-            tokens
-        );
+        if (event.exactly) {
+            sendNotifToAll(
+                {
+                    title: 'Bus Arrival Reminder',
+                    body: `${event.rtid} is ${minutes(event.threshold)} away from ${stopName}`
+                },
+                tokens
+            );
+        } else {
+            sendNotifToAll(
+                {
+                    title: 'Bus Arrival Reminder',
+                    body: `${event.rtid} is less than ${minutes(event.threshold)} away from ${stopName}`
+                },
+                tokens
+            );
+        }
     }
     for (const [eventKey, tokens] of notifications.atTheStop) {
         const event = fromKey(eventKey);
@@ -381,8 +402,8 @@ function processRemindersHelper(
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
-                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${event.currPred - event.prevPred}`
-                    + `minute(s). New time is ${event.currPred} minute(s).`
+                body: `The ${event.rtid} bus en route to ${stopName} got delayed by `
+                    + `${minutes(event.currPred - event.prevPred)}. New time is ${minutes(event.currPred)}.`
             },
             tokens
         );
