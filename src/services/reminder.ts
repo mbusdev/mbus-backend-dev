@@ -83,7 +83,8 @@ class ReminderSubscriptions {
         this.subscriptions = [];
     }
 
-    /** Adds a new subscription, uses prediction data to determine a candidate vid.
+    /** Adds a new subscription, uses prediction data to determine a candidate vid. Existing reminders for the same
+        event and token are removed.
         REQUIRES: `predsByStopId` has predictions sorted by arrival timestamp
     */
     add(event: BaseEvent, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
@@ -101,16 +102,19 @@ class ReminderSubscriptions {
                 subscription.candidateVidPredPrev = null;
             }
         }
+        // remove existing
+        this.remove(event, token, true);
         this.subscriptions.push({ token, subscription });
         sendReminderUpdateToAll(new Set([token]));
     }
 
     /** removes all subscriptions that involve both `event` and `token` */
-    remove(event: BaseEvent, token: RegistrationToken) {
+    remove(event: BaseEvent, token: RegistrationToken, noUpdate?: boolean) {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
             .filter((s) => s.token != token || !eventsEqual(s.subscription.event, event))
-        sendReminderUpdateToAll(new Set([token]));
+        if (!noUpdate)
+            sendReminderUpdateToAll(new Set([token]));
     }
 
     /**  updates the status of all registrations, returning an object representing the
