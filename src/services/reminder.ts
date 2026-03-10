@@ -328,7 +328,12 @@ export const rideReminderSubscriptions = new ReminderSubscriptions();
 
 export function processUniversityReminders() {
     try {
-        processRemindersHelper(universityReminderSubscriptions, state.cachedPredsByStopId, state.cachedPredsByVid);
+        processRemindersHelper(
+            universityReminderSubscriptions,
+            state.cachedPredsByStopId,
+            state.cachedPredsByVid,
+            state.stopIdToName
+        );
     } catch (e) {
         console.log("Processing university reminders failed");
         console.log(`${JSON.stringify(e)}`);
@@ -337,7 +342,12 @@ export function processUniversityReminders() {
 
 export function processRideReminders() {
     try {
-        processRemindersHelper(rideReminderSubscriptions, state.cachedRidePredsByStopId, state.cachedRidePredsByVid);
+        processRemindersHelper(
+            rideReminderSubscriptions,
+            state.cachedRidePredsByStopId,
+            state.cachedRidePredsByVid,
+            state.rideStopIdToName,
+        );
     } catch (e) {
         console.log("Processing ride reminders failed");
         console.log(`${JSON.stringify(e)}`);
@@ -354,12 +364,13 @@ function minutes(x: number): string {
 function processRemindersHelper(
     reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
-    predsByVid: Record<string, state.Prediction[] | undefined>
+    predsByVid: Record<string, state.Prediction[] | undefined>,
+    stopIdToName: Record<string, string>
 ) {
     const notifications = reminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {
         const event = fromKey(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         if (event.exactly) {
             sendNotifToAll(
                 {
@@ -380,15 +391,7 @@ function processRemindersHelper(
     }
     for (const [eventKey, tokens] of notifications.atTheStop) {
         const event = fromKey(eventKey);
-        let stopName = event.stpid;
-        const universityName = state.stopIdToName[event.stpid];
-        const rideName = state.rideStopIdToName[event.stpid];
-        if (universityName) {
-            stopName = universityName;
-        }
-        if (rideName) {
-            stopName = rideName;
-        }
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendToAll(
             {
                 notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
@@ -398,7 +401,7 @@ function processRemindersHelper(
     }
     for (const [eventKey, tokens] of notifications.delayed) {
         const event = fromKey(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
@@ -410,15 +413,7 @@ function processRemindersHelper(
     }
     for (const [eventKey, tokens] of notifications.disappeared) {
         const event = fromKey(eventKey);
-        let stopName = event.stpid;
-        const universityName = state.stopIdToName[event.stpid];
-        const rideName = state.rideStopIdToName[event.stpid];
-        if (universityName) {
-            stopName = universityName;
-        }
-        if (rideName) {
-            stopName = rideName;
-        }
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: `Bus Disappeared`,
