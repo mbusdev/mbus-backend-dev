@@ -71,7 +71,7 @@ type RemindersToTrigger = {
     /** can be sent in bulk based off of route, stop, delay amount, arrival time (or vid?) */
     delayed: Map<Key<DelayEvent>, Set<RegistrationToken>>,
     updated: Set<RegistrationToken>
-}; 
+};
 
 /** Subscriptions go through a pipeline, see types above for details. */
 class ReminderSubscriptions {
@@ -83,7 +83,8 @@ class ReminderSubscriptions {
         this.subscriptions = [];
     }
 
-    /** Adds a new subscription, uses prediction data to determine a candidate vid.
+    /** Adds a new subscription, uses prediction data to determine a candidate vid. Existing reminders for the same
+        event and token are removed.
         REQUIRES: `predsByStopId` has predictions sorted by arrival timestamp
     */
     add(event: BaseEvent, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
@@ -93,18 +94,27 @@ class ReminderSubscriptions {
         if (predictions) {
             const relevant = predictions
                 .filter((p) => p.rt === event.rtid);
-            subscription.candidateVid = firstPredAfter(subscription.mustBeAfter, relevant)?.vid ?? null;
+            const candidate = firstPredAfter(subscription.mustBeAfter, relevant);
+            subscription.candidateVid = candidate?.vid ?? null;
+            if (candidate?.prdctdn) {
+                subscription.candidateVidPredPrev = prdctdnToNum(candidate?.prdctdn);
+            } else {
+                subscription.candidateVidPredPrev = null;
+            }
         }
+        // remove existing
+        this.remove(event, token, true);
         this.subscriptions.push({ token, subscription });
         sendReminderUpdateToAll(new Set([token]));
     }
 
     /** removes all subscriptions that involve both `event` and `token` */
-    remove(event: BaseEvent, token: RegistrationToken) {
+    remove(event: BaseEvent, token: RegistrationToken, noUpdate?: boolean) {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
             .filter((s) => s.token != token || !eventsEqual(s.subscription.event, event))
-        sendReminderUpdateToAll(new Set([token]));
+        if (!noUpdate)
+            sendReminderUpdateToAll(new Set([token]));
     }
 
     /**  updates the status of all registrations, returning an object representing the
@@ -194,7 +204,11 @@ class ReminderSubscriptions {
                     }
                     s.subscription.candidateVidPredPrev = pred;
                     if (newCandidate.prdtm > s.subscription.mustBeAfter && pred <= s.subscription.thresh) {
-                        threshold = thresholdEvent({ ...s.subscription.event, threshold: s.subscription.thresh })
+                        threshold = thresholdEvent({
+                            ...s.subscription.event,
+                            threshold: s.subscription.thresh,
+                            exactly: pred == s.subscription.thresh
+                        });
                     }
                 }
             } else {
@@ -248,7 +262,7 @@ class ReminderSubscriptions {
                 s.subscription.vidPredPrev = currArrivalTime;
             }
 
-            if (disappeared || delayed|| threshold || ats || delayed || timeChanged) {
+            if (disappeared || delayed || threshold || ats || delayed || timeChanged) {
                 notifications.updated.add(s.token);
             }
 
@@ -314,7 +328,12 @@ export const rideReminderSubscriptions = new ReminderSubscriptions();
 
 export function processUniversityReminders() {
     try {
-        processRemindersHelper(universityReminderSubscriptions, state.cachedPredsByStopId, state.cachedPredsByVid);
+        processRemindersHelper(
+            universityReminderSubscriptions,
+            state.cachedPredsByStopId,
+            state.cachedPredsByVid,
+            state.stopIdToName
+        );
     } catch (e) {
         console.log("Processing university reminders failed");
         console.log(`${JSON.stringify(e)}`);
@@ -323,41 +342,56 @@ export function processUniversityReminders() {
 
 export function processRideReminders() {
     try {
-        processRemindersHelper(rideReminderSubscriptions, state.cachedRidePredsByStopId, state.cachedRidePredsByVid);
+        processRemindersHelper(
+            rideReminderSubscriptions,
+            state.cachedRidePredsByStopId,
+            state.cachedRidePredsByVid,
+            state.rideStopIdToName,
+        );
     } catch (e) {
         console.log("Processing ride reminders failed");
         console.log(`${JSON.stringify(e)}`);
     }
 }
 
+function minutes(x: number): string {
+    if (x === 1 || x === -1) {
+        return `${x} minute`;
+    }
+    return `${x} minutes`;
+}
+
 function processRemindersHelper(
     reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
-    predsByVid: Record<string, state.Prediction[] | undefined>
+    predsByVid: Record<string, state.Prediction[] | undefined>,
+    stopIdToName: Record<string, string>
 ) {
     const notifications = reminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {
         const event = fromKey(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
-        sendNotifToAll(
-            {
-                title: 'Bus Arrival Reminder',
-                body: `${event.rtid} is less than ${event.threshold} minute(s) away from ${stopName}`
-            },
-            tokens
-        );
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
+        if (event.exactly) {
+            sendNotifToAll(
+                {
+                    title: 'Bus Arrival Reminder',
+                    body: `${event.rtid} is ${minutes(event.threshold)} away from ${stopName}`
+                },
+                tokens
+            );
+        } else {
+            sendNotifToAll(
+                {
+                    title: 'Bus Arrival Reminder',
+                    body: `${event.rtid} is less than ${minutes(event.threshold)} away from ${stopName}`
+                },
+                tokens
+            );
+        }
     }
     for (const [eventKey, tokens] of notifications.atTheStop) {
         const event = fromKey(eventKey);
-        let stopName = event.stpid;
-        const universityName = state.stopIdToName[event.stpid];
-        const rideName = state.rideStopIdToName[event.stpid];
-        if (universityName) {
-            stopName = universityName;
-        }
-        if (rideName) {
-            stopName = rideName;
-        }
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendToAll(
             {
                 notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
@@ -367,27 +401,19 @@ function processRemindersHelper(
     }
     for (const [eventKey, tokens] of notifications.delayed) {
         const event = fromKey(eventKey);
-        const stopName = state.stopIdToName[event.stpid] ?? event.stpid;;
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
-                body: `The ${event.rtid} bus en route to ${stopName} got delayed by ${event.currPred - event.prevPred}`
-                    + `minute(s). New time is ${event.currPred} minute(s).`
+                body: `The ${event.rtid} bus en route to ${stopName} got delayed by `
+                    + `${minutes(event.currPred - event.prevPred)}. New time is ${minutes(event.currPred)}.`
             },
             tokens
         );
     }
     for (const [eventKey, tokens] of notifications.disappeared) {
         const event = fromKey(eventKey);
-        let stopName = event.stpid;
-        const universityName = state.stopIdToName[event.stpid];
-        const rideName = state.rideStopIdToName[event.stpid];
-        if (universityName) {
-            stopName = universityName;
-        }
-        if (rideName) {
-            stopName = rideName;
-        }
+        const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendNotifToAll(
             {
                 title: `Bus Disappeared`,
