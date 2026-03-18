@@ -174,8 +174,8 @@ router.get('/getStartupInfo', (req, res) => {
         },
         // adding data here will show a persistant message on launch 
         persistant_message: {
-            title: "",
-            subtitle: ""
+            title: "Update on missing bus predictions",
+            subtitle: "2/9 9:03 PM: The university has confirmed to us that they're actively working on fixing the issue with missing bus predictions. Thank you for your patience."
         },
         // adding data here will show a one-time message on launch (not yet implemented)
         one_time_message: {
