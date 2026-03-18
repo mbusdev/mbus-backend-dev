@@ -1,33 +1,41 @@
 /**
- * StopID e.g. NRW
+ * Unique identifier for a transit stop (e.g., "NRW").
  */
 export type StopID = string;
 
 /**
- * Time in seconds since midnight (note this may be greater than 24 hours).
+ * Time represented as seconds since midnight.
+ * Values may exceed 86400 (24 hours) for trips extending into the next day.
  */
 export type Time = number;
 
 /**
- * Duration in seconds
+ * A span of time measured in seconds.
  */
 export type Duration = number;
 
 /**
- * GTFS stop time
+ * Represents a scheduled stop event within a trip (GTFS StopTime).
  */
 export interface StopTime {
+  /** The ID of the stop. */
   stop: StopID;
   arrivalTime: Time;
   departureTime: Time;
+  /** Whether passengers can board the vehicle here. */
   pickUp: boolean;
+  /** Whether passengers can alight from the vehicle here. */
   dropOff: boolean;
-  heursticCost?: number; // Optional heuristic cost
+  /** Optional pre-calculated cost for routing heuristics. */
+  heursticCost?: number; 
+  /** Real-time status string (if available). */
   rt? : string;
+  /** If the stop is predicted or not. */
+  isExtrapolated? : boolean
 }
 
 /**
- * Leg of a journey
+ * Abstract representation of a connection between two stops.
  */
 export interface Leg {
   origin: StopID;
@@ -35,7 +43,7 @@ export interface Leg {
 }
 
 /**
- * Leg with a defined departure and arrival time
+ * A specific segment of a scheduled trip with fixed times.
  */
 export interface TimetableLeg extends Leg {
   stopTimes: StopTime[];
@@ -43,34 +51,38 @@ export interface TimetableLeg extends Leg {
 }
 
 /**
- * Leg with a duration instead of departure and arrival time
+ * A walking connection between two stops with a defined duration.
  */
 export interface Transfer extends Leg {
   duration: Duration;
+  /** Valid start time for this transfer window. */
   startTime: Time;
+  /** Valid end time for this transfer window. */
   endTime: Time;
 }
 
 /**
- * GTFS trip_id
+ * Unique identifier for a GTFS trip.
  */
 export type TripID = string;
 
 /**
- * GTFS trip
+ * Represents a transit vehicle run (GTFS Trip).
  */
 export interface Trip {
   tripId: TripID;
+  /** Vehicle ID, if available. */
   vid: string | null,
+  /** Ordered list of stops made by this trip. */
   stopTimes: StopTime[];
 }
 
 /**
- * Transfers indexed by origin stop
+ * Lookup map for walking transfers, indexed by the origin Stop ID.
  */
 export type TransfersByOrigin = Record<StopID, Transfer[]>;
 
 /**
- * Interchange times indexed by stop
+ * Map defining the minimum time required to switch vehicles at each stop.
  */
 export type Interchange = Record<StopID, Time>;
