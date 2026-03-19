@@ -1,14 +1,78 @@
 {
-  "buildingId": "DuderStadt",
+  "buildingId": "DC",
   "floor": 1,
   "nodes": [
     {
-      "id": "ds_f1_1317",
-      "name": "Room 1317",
+      "id": "dc_f1_1C01_door",
+      "name": "Building 1C01 door",
       "floor": 1,
-      "type": "room",
-      "x": 0,
-      "y": 0
+      "type": "door",
+      "x": -36.32,
+      "y": 2.55
+    },
+    {
+      "id": "dc_f1_1F03_door",
+      "name": "Room 1F03 door",
+      "floor": 1,
+      "type": "door",
+      "x": -31.45,
+      "y": 2.55
+    },
+    {
+      "id": "dc_f1_1L01_door",
+      "name": "Room 1L01 door",
+      "floor": 1,
+      "type": "door",
+      "x": -28.91,
+      "y": 2.55
+    },
+    {
+      "id": "dc_f1_1F04_door",
+      "name": "Room 1F04 door",
+      "floor": 1,
+      "type": "door",
+      "x": -26.38,
+      "y": 2.55
+    },
+    {
+      "id": "dc_f1_1317_sw_door",
+      "name": "Room 1317 SW door",
+      "floor": 1,
+      "type": "door",
+      "x": -4.02,
+      "y": -4
+    },
+    {
+      "id": "dc_f1_1317_se_door",
+      "name": "Room 1317 SE door",
+      "floor": 1,
+      "type": "door",
+      "x": 4.02,
+      "y": -4
+    },
+    {
+      "id": "dc_f1_1317_ne_door",
+      "name": "Room 1317 NE door",
+      "floor": 1,
+      "type": "door",
+      "x": 4.02,
+      "y": 4
+    },
+    {
+      "id": "dc_f1_1317_nw_door",
+      "name": "Room 1317 NW door",
+      "floor": 1,
+      "type": "door",
+      "x": -2.4,
+      "y": 2.35
+    },
+    {
+      "id": "dc_f1_1317_nw_door",
+      "name": "Room 1317 NW door",
+      "floor": 1,
+      "type": "door",
+      "x": -2.4,
+      "y": 2.35
     }
   ],
   "edges": []
