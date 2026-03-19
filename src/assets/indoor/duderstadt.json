@@ -1,0 +1,15 @@
+{
+  "buildingId": "DuderStadt",
+  "floor": 1,
+  "nodes": [
+    {
+      "id": "ds_f1_1317",
+      "name": "Room 1317",
+      "floor": 1,
+      "type": "room",
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "edges": []
+}
