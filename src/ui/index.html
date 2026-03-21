@@ -22,9 +22,30 @@
       <p id="instr">Left click to set start, right click to set end</p>
       <!-- <button onclick="loadPath()">Load Path</button> -->
     </div>
-    <div id="map"></div>
+    <div style="display: flex; flex-direction: row; width: 100%; flex: 1">
+      <div id="map"></div>
+      <div id="legend"></div>
+    </div>
   </div>
   <script>
+    const types = [
+      'pedestrian', 'footway', 'path', 'steps',
+      'living_street', 'residential', 'service',
+      'track', 'corridor', 'crossing', 'cycleway',
+      'bridleway', 'unclassified'
+    ];
+    const colors = [
+      'red', 'aquamarine', 'blue', 'hotpink',
+      'maroon', 'yellowgreen', 'slateblue',
+      'indigo', 'goldenrod', 'chocolate', 'black',
+      'red', 'lightsteelblue'
+    ];
+    const legend = document.getElementById('legend');
+    for (let i = 0; i < types.length; i++) {
+      const p = legend.appendChild(document.createElement('p'));
+      p.textContent = `${types[i]}: ${colors[i]}`;
+      p.style = `color: ${colors[i]}`;
+    }
     let start = null;
     let end = null;
     let markers = [];
@@ -35,8 +56,8 @@
 
     async function initMap() {
       console.log("hi");
-      const [{ Map, Polyline }, { AdvancedMarkerElement, PinElement }] = await Promise.all([
-        google.maps.importLibrary("maps"), google.maps.importLibrary("marker")
+      const [{ Map, Polyline }, { AdvancedMarkerElement, PinElement }, { SymbolPath }] = await Promise.all([
+        google.maps.importLibrary("maps"), google.maps.importLibrary("marker"), google.maps.importLibrary('core')
       ]);
       const map = new google.maps.Map(
         document.getElementById("map"),
@@ -48,33 +69,79 @@
         markers = [];
         polylines.map((p) => {p.setMap(null);})
         polylines = [];
+
         if (nodes.length > 0) {
-          const locations = nodes.map((x) => {return {lat: x.lat, lng: x.lon}});
+          const locations = nodes.map((x) => {return {lat: x.lat, lng: x.lon, ...x}});
+          let prevLoc = null;
           for (const l of locations) {
             markers.push(new AdvancedMarkerElement({
               map,
               position: l,
-              content: new PinElement({ scale: 0.66, glyphColor: "magenta", borderColor: "magenta", background: "magenta" }),
+              content: new PinElement({ scale: 0.2, glyphColor: "magenta", borderColor: "magenta", background: "magenta" }),
             }));
+            if (prevLoc) {
+    <!-- const WALKABLE_TYPES = new Set([ -->
+        <!-- 'pedestrian', 'footway', 'path', 'steps', -->
+        <!-- 'living_street', 'residential', 'service', -->
+        <!-- 'track', 'corridor', 'crossing', 'cycleway', -->
+        <!-- 'bridleway', 'unclassified' -->
+    <!-- ]); -->
+              <!-- let color = "grey"; -->
+              let color = []
+              if (l.prevEdgeTypes) {
+                for (let i = 0; i < types.length; i++) {
+                  if (l.prevEdgeTypes.includes(types[i])) {
+                    color.push(colors[i]);
+                  }
+                }
+              }
+              if (color.length == 0) {
+                color = ["grey"];
+              }
+              if (color.length > 1) {
+                console.log(color);
+              }
+              polylines.push(new Polyline({
+                map,
+                zIndex: 0 ,
+                path: [prevLoc, l],
+                strokeWeight: 4,
+                icons: color.map((c, i) => {
+                  <!-- console.log(c); -->
+                  return {
+                    icon: {path: SymbolPath.CIRCLE, fillColor: c, strokeColor: c, fillOpacity: 1},
+                    repeat: `${10 * color.length}px`,
+                    offset: `${10 * i}px`
+                  }
+                })
+                <!-- icons: [{icon: {path: SymbolPath.CIRCLE}, repeat: '10px', }] -->
+                <!-- strokeColor: color, -->
+                <!-- strokeWeight: 10 -->
+              }));
+            }
+            prevLoc = l;
           }
-          polylines.push(new Polyline({map, path: locations, strokeColor: "magenta", strokeWeight: 5}));
         }
+
         if (detailedPath.length > 0) {
           const locations = detailedPath.map((x) => {return {lat: x.lat, lng: x.lon}});
           for (const l of locations) {
             markers.push(new AdvancedMarkerElement({
               map,
+              zIndex: 1,
               position: l,
-              content: new PinElement({ scale: 0.33, glyphColor: "orange", borderColor: "orange", background: "orange" }),
+              content: new PinElement({ scale: 0.1, glyphColor: "orange", borderColor: "orange", background: "orange" }),
             }));
           }
-          polylines.push(new Polyline({map, path: locations, strokeColor: "orange"}));
+          polylines.push(new Polyline({map, zIndex: 1, path: locations, strokeColor: "orange"}));
         }
+
         if (start) {
           markers.push(new AdvancedMarkerElement({
             map, position: start, title: "start"
           }));
         }
+
         if (end) {
           markers.push(new AdvancedMarkerElement({
             map,

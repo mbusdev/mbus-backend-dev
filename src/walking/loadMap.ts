@@ -193,13 +193,15 @@ export function loadMap() {
                 graph.get(source)!.push({
                     to: target,
                     dist: length,
-                    geometry: forwardGeo
+                    geometry: forwardGeo,
+                    types: rawTypes,
                 });
                 // Add Target -> Source
                 graph.get(target)!.push({
                     to: source,
                     dist: length,
-                    geometry: reverseGeo
+                    geometry: reverseGeo,
+                    types: rawTypes,
                 });
                 totalEdges += 2;
             }

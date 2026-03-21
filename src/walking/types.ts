@@ -20,6 +20,8 @@ export type GraphMLEdge = {
     dist: number; 
     /** Detailed geometry points (WKT) for rendering curved paths. */
     geometry?: { lat: number, lon: number }[] 
+    /** Types of path */
+    types: string[]
 };
 
 /**
