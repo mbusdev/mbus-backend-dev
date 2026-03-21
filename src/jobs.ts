@@ -5,6 +5,7 @@ import { processRideReminders, processUniversityReminders } from './services/rem
  * Starts background jobs for updating bus positions, initializing routes, and rebuilding the graph.
  */
 export function startBackgroundJobs() {
+    return;
     initializeRoutes().then(() => {
         console.log("Routes initialized. Building initial graph...");
         rebuildGraph();
