@@ -14,6 +14,10 @@
   </p>
 </div>
 
+## Walking Path Viewer
+
+MAPS_KEY needs to be set, go to localhost:3000/ui/
+
 ## Setup
 
 First, obtain an API key for the Magic Bus backend from [the official Magic Bus Website](https://mbus.ltp.umich.edu/dev-account).

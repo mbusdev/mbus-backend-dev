@@ -19,7 +19,7 @@
 <body>
   <div style="display: flex; flex-direction: column; height: 100%">
     <div style="display: flex; flex-direction: row">
-      <p>Left click to set start, right click to set end</p>
+      <p id="instr">Left click to set start, right click to set end</p>
       <!-- <button onclick="loadPath()">Load Path</button> -->
     </div>
     <div id="map"></div>
@@ -30,6 +30,7 @@
     let markers = [];
     let polylines = [];
     let detailedPath = [];
+    let nodes = [];
     <!-- let loadNewPath = false; -->
 
     async function initMap() {
@@ -47,8 +48,27 @@
         markers = [];
         polylines.map((p) => {p.setMap(null);})
         polylines = [];
+        if (nodes.length > 0) {
+          const locations = nodes.map((x) => {return {lat: x.lat, lng: x.lon}});
+          for (const l of locations) {
+            markers.push(new AdvancedMarkerElement({
+              map,
+              position: l,
+              content: new PinElement({ scale: 0.66, glyphColor: "magenta", borderColor: "magenta", background: "magenta" }),
+            }));
+          }
+          polylines.push(new Polyline({map, path: locations, strokeColor: "magenta", strokeWeight: 5}));
+        }
         if (detailedPath.length > 0) {
-          polylines.push(new Polyline({map, path: detailedPath.map((x) => {return {lat: x.lat, lng: x.lon}})}));
+          const locations = detailedPath.map((x) => {return {lat: x.lat, lng: x.lon}});
+          for (const l of locations) {
+            markers.push(new AdvancedMarkerElement({
+              map,
+              position: l,
+              content: new PinElement({ scale: 0.33, glyphColor: "orange", borderColor: "orange", background: "orange" }),
+            }));
+          }
+          polylines.push(new Polyline({map, path: locations, strokeColor: "orange"}));
         }
         if (start) {
           markers.push(new AdvancedMarkerElement({
@@ -57,7 +77,10 @@
         }
         if (end) {
           markers.push(new AdvancedMarkerElement({
-            map, position: end, title: "end", content: new PinElement({ glyphColor: "darkgreen", borderColor: "green", background: "green" })
+            map,
+            position: end,
+            title: "end",
+            content: new PinElement({ glyphColor: "darkgreen", borderColor: "green", background: "green" }),
           }));
         }
       };
@@ -69,7 +92,10 @@
           fetch(req).then((res) => {
             res.json().then((body) => {
               console.log(body);
-              detailedPath = body.journeys[0].legs[0].path_coords;
+              const leg = body.journeys[0].legs[0];
+              console.log(leg);
+              detailedPath = leg.path_coords;
+              nodes = leg.node_coords
               updateMap();
             });
           });

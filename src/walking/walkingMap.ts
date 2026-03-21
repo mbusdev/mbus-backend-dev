@@ -15,6 +15,8 @@ export interface WalkingResponse {
     distance: number;
     /** Ordered list of coordinates representing the walking path geometry. */
     path_coords: { lat: number, lon: number }[];
+    /** Ordered list of coordinates representing where the actual nodes are. */
+    node_coords: { lat: number, lon: number }[];
 }
 
 /**
@@ -328,6 +330,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
     const result = await aStar(nearestStart.id, nearestGoal.id);
 
     let pathCoords: { lat: number, lon: number }[] = [];
+    let nodeCoords: { lat: number, lon: number }[] = [];
     let meters: number;
     let seconds: number;
 
@@ -352,6 +355,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
             // Add start node
             const startNode = graphNodes.get(result.pathIds[0])!;
             pathCoords.push({ lat: startNode.lat, lon: startNode.lon });
+            nodeCoords.push(startNode);
 
             for (let i = 0; i < result.pathIds.length - 1; i++) {
                 const currId = result.pathIds[i];
@@ -368,6 +372,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
                     // draw line to next node
                     const nextNode = graphNodes.get(nextId)!;
                     pathCoords.push({ lat: nextNode.lat, lon: nextNode.lon });
+                    nodeCoords.push(nextNode);
                 }
             }
         }
@@ -379,6 +384,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
         distance: meters,
         duration: seconds,
         path_coords: pathCoords,
+        node_coords: nodeCoords,
     };
 }
 
