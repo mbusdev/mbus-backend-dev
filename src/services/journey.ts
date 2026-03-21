@@ -1,6 +1,7 @@
 import * as state from '../state/transitState';
 import * as walking from '../walking/walkingMap';
 import { McRaptorAlgorithm, Journey, JourneyLeg } from "../raptor/McRaptorAlgorithm";
+import { StopTime, Trip } from '@/raptor/types';
 
 /**
  * Plans a journey between two coordinates using the McRaptor algorithm.
@@ -75,12 +76,31 @@ export async function planJourney(
     return processJourneys(journeys, oLat, oLon, dLat, dLon);
 }
 
+type FormattedLeg = {
+    origin_id: string,
+    origin: string,
+    destination_id: string,
+    destination: string,
+    destinationName: string,
+    startTime: number,
+    endTime: number,
+    duration: number,
+    mode: 'walk' | 'bus',
+    originID: string,
+    destinationID: string,
+    stopTimes?: StopTime[],
+    trip?: Trip,
+    rt?: string,
+    tripId?: string,
+    vid?: string | null,
+} & Partial<walking.WalkingResponse>;
+
 async function processJourneys(journeys: Journey[], oLat: number, oLon: number, dLat: number, dLon: number) {
 
     const processLeg = async (leg: JourneyLeg) => {
         const isWalk = !leg.trip;
 
-        const formattedLeg: any = {
+        const formattedLeg: FormattedLeg = {
             origin_id: leg.origin,
             origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (state.stopIdToName[leg.origin] || leg.origin)),
             destination_id: leg.destination,
