@@ -442,6 +442,14 @@
       "rooms": ["1401", "1405"]
     },
     {
+      "id": "dc_f1_1405_se_door",
+      "name": "Room 1405 SE door",
+      "floor": 1,
+      "type": "door",
+      "x": 5.95,
+      "y": 6.80
+    },
+    {
       "id": "dc_f1_1S45_stair",
       "name": "Building 1S45 stair",
       "floor": 1,
@@ -464,6 +472,78 @@
       "type": "door",
       "x": -4.53 ,
       "y": -4.5
+    },
+    {
+      "id": "dc_f1_1E37_elevator",
+      "name": "Building 1E37 elevator",
+      "floor": 1,
+      "type": "elevator",
+      "x": 5.95,
+      "y": 5
+    },
+    {
+      "id": "dc_f1_1404_door",
+      "name": "Room 1404 door",
+      "floor": 1,
+      "type": "door",
+      "x": 6.92,
+      "y": 6.3
+    },
+    {
+      "id": "dc_f1_1408_door",
+      "name": "Room 1408 door",
+      "floor": 1,
+      "type": "door",
+      "x": 7.82,
+      "y": 7.2
+    },
+    {
+      "id": "dc_f1_1F41_door",
+      "name": "Building 1F41 door",
+      "floor": 1,
+      "type": "door",
+      "x": 9.1,
+      "y": 9.3
+    },
+    {
+      "id": "dc_f1_1412_door",
+      "name": "Room 1412 door",
+      "floor": 1,
+      "type": "door",
+      "x": 9.89,
+      "y": 7.9
+    },
+    {
+      "id": "dc_f1_1414W_door",
+      "name": "Room 1414W door",
+      "floor": 1,
+      "type": "door",
+      "x": 10.65,
+      "y": 7.15
+    },
+    {
+      "id": "dc_f1_1416J_door",
+      "name": "Room 1416J door",
+      "floor": 1,
+      "type": "door",
+      "x": 11,
+      "y": 6.8
+    },
+    {
+      "id": "dc_f1_1418M_door",
+      "name": "Room 1418M door",
+      "floor": 1,
+      "type": "door",
+      "x": 11.58,
+      "y": 6.2
+    },
+    {
+      "id": "dc_f1_1F49_door",
+      "name": "Room 1F49 door",
+      "floor": 1,
+      "type": "door",
+      "x": 12.7,
+      "y": 5.7
     },
     {
       "id": "dc_f1_1317_sw_door",
