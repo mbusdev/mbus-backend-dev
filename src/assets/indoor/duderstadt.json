@@ -539,11 +539,80 @@
     },
     {
       "id": "dc_f1_1F49_door",
-      "name": "Room 1F49 door",
+      "name": "Building 1F49 door",
       "floor": 1,
       "type": "door",
       "x": 12.7,
       "y": 5.7
+    },
+    {
+      "id": "dc_f1_1S36_stair",
+      "name": "Building 1S436 stair",
+      "floor": 1,
+      "type": "stair",
+      "x": 12.2,
+      "y": 4.9
+    },
+    {
+      "id": "dc_f1_1E36_elevator",
+      "name": "Building 1E36 elevator",
+      "floor": 1,
+      "type": "elevator",
+      "x": 9.65,
+      "y": 1.65
+    },
+    {
+      "id": "dc_f1_1384_door",
+      "name": "Room 1384 door",
+      "floor": 1,
+      "type": "door",
+      "x": 9.75,
+      "y": 0.7,
+      "rooms": ["1384", "1384A", "1384B"]
+    },
+    {
+      "id": "dc_f1_shared_door_1384_1356",
+      "name": "Shared Door for 1384 and 1356",
+      "floor": 1,
+      "type": "door",
+      "x": 12.2,
+      "y": -2.1,
+      "rooms": ["1384", "1384A", "1384B", "1356", "1356A", "1356B"]
+    },
+    {
+      "id": "dc_f1_1356_w_door",
+      "name": "Room 1356 W door",
+      "floor": 1,
+      "type": "door",
+      "x": 6.45,
+      "y": -12.2,
+      "rooms": ["1356", "1356A", "1356B"]
+    },
+    {
+      "id": "dc_f1_1356_nw_door",
+      "name": "Room 1356 NW door",
+      "floor": 1,
+      "type": "door",
+      "x": 6.8,
+      "y": -6.85,
+      "rooms": ["1356", "1356A", "1356B"]
+    },
+    {
+      "id": "dc_f1_1376_door",
+      "name": "Room 1376 door",
+      "floor": 1,
+      "type": "door",
+      "x": 10.8,
+      "y": -0.6,
+      "rooms": ["1376", "1376A", "1376B", "1376C"]
+    },
+    {
+      "id": "dc_f1_1358_door",
+      "name": "Room 1358 door",
+      "floor": 1,
+      "type": "door",
+      "x": 5.85,
+      "y": -4.7
     },
     {
       "id": "dc_f1_1317_sw_door",
