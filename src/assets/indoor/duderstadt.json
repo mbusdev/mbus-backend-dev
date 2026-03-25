@@ -25,7 +25,7 @@
       "type": "corridor",
       "x": -31.45,
       "y": 2.55
-    }
+    },
     {
       "id": "dc_f1_1L01_door",
       "name": "Room 1L01 door",
@@ -49,7 +49,7 @@
       "type": "corridor",
       "x": -26.38,
       "y": 2.55
-    }
+    },
     {
       "id": "dc_f1_1019_nw_door",
       "name": "Room 1019 NW door",
@@ -218,6 +218,14 @@
       "y": -9.2
     },
     {
+      "id": "dc_f1_corridor_12",
+      "name": "Corridor node 12",
+      "floor": 1,
+      "type": "corridor",
+      "x": -11.9,
+      "y": -6
+    },
+    {
       "id": "dc_f1_1315_ne_door",
       "name": "Room 1315 NE door",
       "floor": 1,
@@ -294,13 +302,21 @@
       "rooms":["1306", "1306A", "1306B"]
     },
     {
-      "id": "dc_f1_1306_se_door",
-      "name": "Room 1306 SE door",
+      "id": "dc_f1_1306_ne_door",
+      "name": "Room 1306 NE door",
       "floor": 1,
       "type": "door",
       "x": -0.68,
       "y": -5.8,
       "rooms":["1306", "1306A", "1306B"]
+    },
+    {
+      "id": "dc_f1_corridor_10",
+      "name": "Corridor node 10",
+      "floor": 1,
+      "type": "corridor",
+      "x": 0,
+      "y": -5.3
     },
     {
       "id": "dc_f1_1229_door",
@@ -627,6 +643,15 @@
       "rooms": ["1384", "1384A", "1384B"]
     },
     {
+      "id": "dc_f1_1384_B_door",
+      "name": "Building 1384 door",
+      "floor": 1,
+      "type": "door",
+      "x": 13.6,
+      "y": -1,
+      "rooms": ["1384", "1384A", "1384B"]
+    },
+    {
       "id": "dc_f1_shared_door_1384_1356",
       "name": "Shared Door for 1384 and 1356",
       "floor": 1,
@@ -642,6 +667,15 @@
       "type": "door",
       "x": 6.45,
       "y": -12.2,
+      "rooms": ["1356", "1356A", "1356B"]
+    },
+    {
+      "id": "dc_f1_1356_B_door",
+      "name": "Building 1356 door",
+      "floor": 1,
+      "type": "door",
+      "x": 12.2,
+      "y": -5.5,
       "rooms": ["1356", "1356A", "1356B"]
     },
     {
@@ -687,12 +721,28 @@
       "y": -4
     },
     {
+      "id": "dc_f1_corridor_11",
+      "name": "Corridor node 11",
+      "floor": 1,
+      "type": "corridor",
+      "x": -4.52,
+      "y": -4.5
+    },
+    {
       "id": "dc_f1_1317_se_door",
       "name": "Room 1317 SE door",
       "floor": 1,
       "type": "door",
       "x": 4.02,
       "y": -4
+    },
+    {
+      "id": "dc_f1_corridor_9",
+      "name": "Corridor node 9",
+      "floor": 1,
+      "type": "corridor",
+      "x": 4.52,
+      "y":-4.5
     },
     {
       "id": "dc_f1_1317_ne_door",
