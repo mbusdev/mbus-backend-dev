@@ -70,6 +70,7 @@
         polylines.map((p) => {p.setMap(null);})
         polylines = [];
 
+        // graph nodes
         if (nodes.length > 0) {
           const locations = nodes.map((x) => {return {lat: x.lat, lng: x.lon, ...x}});
           let prevLoc = null;
@@ -101,7 +102,7 @@
               if (color.length > 1) {
                 console.log(color);
               }
-              polylines.push(new Polyline({
+              const line = new Polyline({
                 map,
                 zIndex: 0 ,
                 path: [prevLoc, l],
@@ -112,12 +113,16 @@
                     icon: {path: SymbolPath.CIRCLE, fillColor: c, strokeColor: c, fillOpacity: 1},
                     repeat: `${10 * color.length}px`,
                     offset: `${10 * i}px`
-                  }
+                  };
                 })
+              });
+              line.addListener("click", (e) => {
+                window.alert(JSON.stringify(l));
+              });
+              polylines.push(line);
                 <!-- icons: [{icon: {path: SymbolPath.CIRCLE}, repeat: '10px', }] -->
                 <!-- strokeColor: color, -->
                 <!-- strokeWeight: 10 -->
-              }));
             }
             prevLoc = l;
           }
@@ -133,7 +138,7 @@
               content: new PinElement({ scale: 0.1, glyphColor: "orange", borderColor: "orange", background: "orange" }),
             }));
           }
-          polylines.push(new Polyline({map, zIndex: 1, path: locations, strokeColor: "orange"}));
+          polylines.push(new Polyline({map, zIndex: 1, path: locations, strokeColor: "orange", clickable: false}));
         }
 
         if (start) {

@@ -19,9 +19,10 @@ export type GraphMLEdge = {
     /** Length of the edge in meters. */
     dist: number; 
     /** Detailed geometry points (WKT) for rendering curved paths. */
-    geometry?: { lat: number, lon: number }[] 
+    geometry?: { lat: number, lon: number }[];
     /** Types of path */
-    types: string[]
+    types: string[];
+    names: string[];
 };
 
 /**

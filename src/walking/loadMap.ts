@@ -139,6 +139,7 @@ export function loadMap() {
 
             let length: number | undefined = undefined;
             let highway: string = '';
+            let namesStr: string = '';
             let wktString: string | null = null;
 
             if (edge.data) {
@@ -155,6 +156,9 @@ export function loadMap() {
                     if (attr === 'highway') {
                         highway = String(value);
                     }
+                    if (attr == 'name') {
+                        namesStr = String(value);
+                    }
 
                     if (attr === 'geometry' || attr === 'wkt' || (typeof value === 'string' && value.startsWith('LINESTRING'))) {
                         wktString = String(value);
@@ -164,6 +168,8 @@ export function loadMap() {
 
             const rawTypes = highway.replace(/[\[\]'"]/g, '').split(',');
             const isWalkable = rawTypes.some(t => WALKABLE_TYPES.has(t.trim()));
+
+            const names = namesStr.replace(/[\[\]'"]/g, '').split(',');
 
             if (!isWalkable) {
                 skippedEdges++;
@@ -195,6 +201,7 @@ export function loadMap() {
                     dist: length,
                     geometry: forwardGeo,
                     types: rawTypes,
+                    names: names
                 });
                 // Add Target -> Source
                 graph.get(target)!.push({
@@ -202,6 +209,7 @@ export function loadMap() {
                     dist: length,
                     geometry: reverseGeo,
                     types: rawTypes,
+                    names: names
                 });
                 totalEdges += 2;
             }

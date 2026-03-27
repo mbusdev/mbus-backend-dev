@@ -16,7 +16,7 @@ export interface WalkingResponse {
     /** Ordered list of coordinates representing the walking path geometry. */
     path_coords: { lat: number, lon: number }[];
     /** Ordered list of coordinates representing where the actual nodes are. */
-    node_coords: { lat: number, lon: number, prevEdgeTypes: string[] | null }[];
+    node_coords: { lat: number, lon: number, prevEdgeTypes: string[] | null, prevEdgeNames: string[] | null }[];
 }
 
 /**
@@ -355,7 +355,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
             // Add start node
             const startNode = graphNodes.get(result.pathIds[0])!;
             pathCoords.push({ lat: startNode.lat, lon: startNode.lon });
-            nodeCoords.push({ prevEdgeTypes: null, ...startNode});
+            nodeCoords.push({ prevEdgeTypes: null, prevEdgeName: null, ...startNode});
 
             for (let i = 0; i < result.pathIds.length - 1; i++) {
                 const currId = result.pathIds[i];
@@ -369,12 +369,12 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
                         pathCoords.push(edge.geometry[k]);
                     }
                     const nextNode = graphNodes.get(nextId)!;
-                    nodeCoords.push({ prevEdgeTypes: edge.types, ...nextNode});
+                    nodeCoords.push({ prevEdgeTypes: edge.types, prevEdgeName: edge.names,  ...nextNode});
                 } else {
                     // draw line to next node
                     const nextNode = graphNodes.get(nextId)!;
                     pathCoords.push({ lat: nextNode.lat, lon: nextNode.lon });
-                    nodeCoords.push({ prevEdgeTypes: edge?.types ?? null, ...nextNode});
+                    nodeCoords.push({ prevEdgeTypes: edge?.types ?? null, prevEdgeName: edge?.names ?? null,  ...nextNode});
                 }
             }
         }
