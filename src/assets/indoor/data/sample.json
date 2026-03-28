@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "buildingId": "dc",
+  "floor": 1,
+  "nodes": [
+    { "id": "A", "type": "corridor", "name": "Corridor A", "x": 0, "y": 0 },
+    { "id": "B", "type": "corridor", "name": "Corridor B", "x": 5, "y": 0 },
+    { "id": "C", "type": "corridor", "name": "Corridor C", "x": 10, "y": 0 },
+    { "id": "D", "type": "door", "name": "Room 1317", "x": 5, "y": 2 },
+    { "id": "E", "type": "door", "name": "Room 1318", "x": 10, "y": 2 }
+  ],
+  "edges": [
+    { "id": "e1", "from": "A", "to": "B", "distance": 5, "type": "walk", "cost": 5 },
+    { "id": "e2", "from": "B", "to": "C", "distance": 5, "type": "walk", "cost": 5 },
+    { "id": "e3", "from": "B", "to": "D", "distance": 2, "type": "walk", "cost": 2 },
+    { "id": "e4", "from": "C", "to": "E", "distance": 2, "type": "walk", "cost": 2 },
+    { "id": "e5", "from": "A", "to": "C", "distance": 12, "type": "walk", "cost": 3 }
+  ]
+}
