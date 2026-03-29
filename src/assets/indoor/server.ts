@@ -4,8 +4,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { GraphLoader } from "./GraphLoader";
 import { Pathfinder } from "./pathfinder";
+import { MongoClient } from "mongodb";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const MONGO_URI = "mongodb://127.0.0.1:27017";
+const DB_NAME = "indoor_navigation";
+
+const client = new MongoClient(MONGO_URI);
+let floorGraphsCollection: any;
 
 const app = express();
 app.use(express.json());
@@ -14,26 +21,30 @@ app.get("/", (_req, res) => {
   res.send("Indoor navigation server is running");
 });
 
-app.post("/route", (req, res) => {
+app.post("/route", async (req, res) => {
   const { buildingId, floor, startNodeId, endNodeId } = req.body;
 
-  // 1. 读本地 graph json（先写死路径，后面再优化）
-    const graphPath = path.join(__dirname, "data", "sample.json");
+  // read graph .json
+    const data = await floorGraphsCollection.findOne({   
+    buildingId,  
+    floor
+    });
+ 
+    if (!data) {
+      return res.status(404)
+    }
 
-    const raw = fs.readFileSync(graphPath, "utf-8");
-    const data = JSON.parse(raw);
-
-    // 2. 加载图
+    // load graph
     const loadedGraph = GraphLoader.loadFloorGraph(data);
 
-    // 3. 跑路径
+    // run route
     const result = Pathfinder.shortestPath(
         loadedGraph.adjacencyList,
         startNodeId,
         endNodeId
     );
 
-    // 4. 返回结果
+    // return result
     res.json({
     buildingId,
     floor,
@@ -46,6 +57,17 @@ app.post("/route", (req, res) => {
 });
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+
+async function startServer() {
+  await client.connect();
+  console.log("Connected to MongoDB");
+
+  const db = client.db(DB_NAME);
+  floorGraphsCollection = db.collection("floorGraphs");
+
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();
