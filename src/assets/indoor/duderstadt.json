@@ -285,6 +285,22 @@
       "y": -7.1
     },
     {
+      "id": "dc_f1_1300_corridor1",
+      "name": "1300s corridor 1",
+      "floor": 1,
+      "type": "corridor",
+      "x": -7.6,
+      "y": -7.8
+    },
+    {
+      "id": "dc_f1_1230_corridor1",
+      "name": "1230 corridor 1",
+      "floor": 1,
+      "type": "corridor",
+      "x": -7.89,
+      "y": -10.65
+    },
+    {
       "id": "dc_f1_1309_door",
       "name": "Room 1309 door",
       "floor": 1,
@@ -930,6 +946,131 @@
       "from": "dc_f1_corridor_4",
       "to": "dc_f1_1180_ne_door",
       "distance": 7.8
+    },
+    {
+      "from": "dc_f1_corridor_5",
+      "to": "dc_f1_1E41_elevator",
+      "distance": 3.22
+    },
+    {
+      "from": "dc_f1_corridor_5",
+      "to": "dc_f1_1S41_escalator",
+      "distance": 2.87
+    },
+    {
+      "from": "dc_f1_corridor_12",
+      "to": "dc_f1_1F21_door",
+      "distance": 4.19
+    },
+    {
+      "from": "dc_f1_corridor_12",
+      "to": "dc_f1_1300_corridor1",
+      "distance": 4.10
+    },
+    {
+      "from": "dc_f1_corridor_12",
+      "to": "dc_f1_1230_corridor1",
+      "distance": 4.66
+    },
+    {
+      "from": "dc_f1_1300_corridor1",
+      "to": "dc_f1_1303_door",
+      "distance": 0.51
+    },
+    {
+      "from": "dc_f1_1300_corridor1",
+      "to": "dc_f1_1305_door",
+      "distance": 0.70
+    },
+    {
+      "from": "dc_f1_1300_corridor1",
+      "to": "dc_f1_1309_door",
+      "distance": 1.91
+    },
+    {
+      "from": "dc_f1_1300_corridor1",
+      "to": "dc_f1_1311_door",
+      "distance": 2.37
+    },
+    {
+      "from": "dc_f1_1300_corridor1",
+      "to": "dc_f1_1306_nw_door",
+      "distance": 1.63
+    },
+    {
+      "from": "dc_f1_1300_corridor1",
+      "to": "dc_f1_1304_door",
+      "distance": 0.47
+    },
+    {
+      "from": "dc_f1_1230_corridor1",
+      "to": "dc_f1_1229_door",
+      "distance": 0.80
+    },
+    {
+      "from": "dc_f1_1230_corridor1",
+      "to": "dc_f1_1233W_door",
+      "distance": 0.74
+    },
+    {
+      "from": "dc_f1_1230_corridor1",
+      "to": "dc_f1_1235J_door",
+      "distance": 1.17
+    },
+    {
+      "from": "dc_f1_1230_corridor1",
+      "to": "dc_f1_1237M_door",
+      "distance": 2.01
+    },
+    {
+      "from": "dc_f1_1230_corridor1",
+      "to": "dc_f1_1S21_door",
+      "distance": 3.41
+    },
+    {
+      "from": "dc_f1_1S21_stair",
+      "to": "dc_f1_1S21_door",
+      "distance": 0.40
+    },
+    {
+      "from": "dc_f1_corridor_10",
+      "to": "dc_f1_1321_sw_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_corridor_10",
+      "to": "dc_f1_1321_se_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_corridor_10",
+      "to": "dc_f1_1306_ne_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_corridor_10",
+      "to": "dc_f1_1332_ne_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_corridor_10",
+      "to": "dc_f1_1315_s_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_shared_door_1332_1334",
+      "to": "dc_f1_1332_ne_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_shared_door_1332_1334",
+      "to": "dc_f1_1334_door",
+      "distance": 
+    },
+    {
+      "from": "dc_f1_1306_nw_door",
+      "to": "dc_f1_1315_s_door",
+      "distance": 
     }
   ]
 }
