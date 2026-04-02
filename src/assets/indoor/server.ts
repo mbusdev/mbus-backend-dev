@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GraphLoader } from "./GraphLoader";
-import { Pathfinder } from "./pathfinder";
+import { Pathfinder } from "./pathfinderAstar";
 import { MongoClient } from "mongodb";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,8 +38,9 @@ app.post("/route", async (req, res) => {
     const loadedGraph = GraphLoader.loadFloorGraph(data);
 
     // run route
-    const result = Pathfinder.shortestPath(
+    const result = Pathfinder.shortestPathAStarHeap(
         loadedGraph.adjacencyList,
+        loadedGraph.nodesById,
         startNodeId,
         endNodeId
     );
