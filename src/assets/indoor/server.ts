@@ -57,6 +57,34 @@ app.post("/route", async (req, res) => {
     });
 });
 
+app.get("/graph", async (req, res) => {
+  const { buildingId, floor } = req.query;
+
+  if (!buildingId || !floor) {
+    return res.status(400).json({
+      error: "buildingId and floor are required"
+    });
+  }
+
+  const data = await floorGraphsCollection.findOne({
+    buildingId: String(buildingId),
+    floor: Number(floor)
+  });
+
+  if (!data) {
+    return res.status(404).json({
+      error: "graph not found"
+    });
+  }
+
+  res.json({
+    buildingId: data.buildingId,
+    floor: data.floor,
+    nodes: data.nodes,
+    edges: data.edges
+  });
+});
+
 const PORT = 3000;
 
 async function startServer() {
