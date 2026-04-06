@@ -76,6 +76,15 @@ export async function planJourney(
     return processJourneys(journeys, oLat, oLon, dLat, dLon);
 }
 
+type WalkingLeg = walking.WalkingResponse;
+type BusLeg = {
+    stopTimes: StopTime[],
+    trip: Trip,
+    rt: string,
+    tripId: string,
+    vid: string | null
+}
+
 type FormattedLeg = {
     origin_id: string,
     origin: string,
@@ -85,15 +94,10 @@ type FormattedLeg = {
     startTime: number,
     endTime: number,
     duration: number,
-    mode: 'walk' | 'bus',
+    // mode: 'walk' | 'bus',
     originID: string,
     destinationID: string,
-    stopTimes?: StopTime[],
-    trip?: Trip,
-    rt?: string,
-    tripId?: string,
-    vid?: string | null,
-} & Partial<walking.WalkingResponse>;
+} & (({ mode: 'walk'} & WalkingLeg) | ({ mode: 'bus'} & BusLeg));//Partial<WalkingLeg> & Partial<BusLeg>;
 
 async function processJourneys(journeys: Journey[], oLat: number, oLon: number, dLat: number, dLon: number) {
 

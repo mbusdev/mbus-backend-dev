@@ -13,9 +13,19 @@ if (mapsKey == undefined) {
 }
 
 router.get('/', (req, res) => {
+    if (!req.originalUrl.endsWith('/')) {
+        res.redirect('/');
+        return;
+    }
     let contents = fs.readFileSync('src/ui/index.html').toString();
     contents = contents.replace("@@@KEY@@@", mapsKey);
     res.send(contents);
+});
+
+router.get('/script.js', (req, res) => {
+    let contents = fs.readFileSync('src/ui/script.js').toString();
+    res.type('application/javascript');
+    res.send(contents); 
 });
 
 export default router;

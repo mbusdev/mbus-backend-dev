@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "types": ["google.maps"],
+    "typeRoots": ["../../node_modules/@types"],
+    "noEmit": true
+  },
+  "include": ["*.js"]
+}
