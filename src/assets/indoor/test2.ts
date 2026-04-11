@@ -4,7 +4,7 @@ import { Pathfinder } from "./pathfinderAstar";
 
 // testing a star  w/ simple test
 
-const raw = fs.readFileSync("./data/sample.json", "utf-8");
+const raw = fs.readFileSync("./sample.json", "utf-8");
 const data = JSON.parse(raw);
 
 const graph = GraphLoader.loadFloorGraph(data);
