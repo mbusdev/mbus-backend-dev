@@ -13,9 +13,8 @@ export interface RawEdge {
   id: string;
   from: string;
   to: string;
-  distance: number;
-  type: "walk";
   cost: number;
+  type: "walk";
 }
 
 export interface RawVerticalConnection {

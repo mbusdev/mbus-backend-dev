@@ -1,8 +1,10 @@
 import fs from "fs";
 import { GraphLoader } from "./GraphLoader";
-import { Pathfinder } from "./pathfinder";
+import { Pathfinder } from "./pathfinderAstar";
 
-const raw = fs.readFileSync("./data/sample.json", "utf-8");
+// testing a star  w/ actual nodes
+
+const raw = fs.readFileSync("./duderstadt.json", "utf-8");
 const data = JSON.parse(raw);
 
 const graph = GraphLoader.loadFloorGraph(data);
@@ -10,10 +12,10 @@ const graph = GraphLoader.loadFloorGraph(data);
 console.log("=== Graph ===");
 console.log(JSON.stringify(graph, null, 2));
 
-const start = "A";
-const end = "E";
+const start = "dc_f1_1F41_door";
+const end = "dc_f1_1401_sw_door";
 
-const result = Pathfinder.shortestPath(graph.adjacencyList, start, end);
+const result = Pathfinder.shortestPathAStarHeap(graph.adjacencyList, graph.nodesById, start, end);
 
 console.log("\n=== Shortest Path Result ===");
 console.log(`Start: ${start}`);

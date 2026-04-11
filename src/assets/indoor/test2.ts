@@ -1,6 +1,8 @@
 import fs from "fs";
 import { GraphLoader } from "./GraphLoader";
-import { Pathfinder } from "./pathfinder";
+import { Pathfinder } from "./pathfinderAstar";
+
+// testing a star  w/ simple test
 
 const raw = fs.readFileSync("./data/sample.json", "utf-8");
 const data = JSON.parse(raw);
@@ -13,7 +15,7 @@ console.log(JSON.stringify(graph, null, 2));
 const start = "A";
 const end = "E";
 
-const result = Pathfinder.shortestPath(graph.adjacencyList, start, end);
+const result = Pathfinder.shortestPathAStarHeap(graph.adjacencyList, graph.nodesById, start, end);
 
 console.log("\n=== Shortest Path Result ===");
 console.log(`Start: ${start}`);
