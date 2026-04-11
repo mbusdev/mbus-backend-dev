@@ -76,3 +76,19 @@ export interface LoadedGraph {
   edgesById: Record<string, GraphEdge>;
   adjacencyList: Record<string, AdjacencyEdge[]>;
 }
+
+export interface CombinedGraph {
+  nodesById: Record<string, GraphNode>;
+  edgesById: Record<string, GraphEdge>;
+  adjacencyList: Record<string, AdjacencyEdge[]>;
+}
+
+export interface PortalEdge {
+  id: string;
+  from: string;
+  to: string;
+  type: "walk" | "stairs" | "elevator";
+  cost: number;
+  distance?: number;
+  accessibility?: boolean;
+}
