@@ -8,6 +8,7 @@ import * as meta from '../services/metadata';
 import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
+import * as indoorNav from '../services/indoorNav';
 import { startBackgroundJobs } from '../jobs';
 
 /**
@@ -651,6 +652,56 @@ export function modifyReminders(req: express.Request, res: express.Response) {
     }
 }
 router.post('/modifyReminders', modifyReminders);
+
+//indoor nav
+/**
+ * Returns indoor floor graph for a building + floor
+ */
+export async function getIndoorGraph(req: express.Request, res: express.Response) {
+    try {
+        const { buildingId, floor } = req.query;
+
+        if (!buildingId || !floor) {
+            res.status(400).json({ error: "buildingId and floor are required" });
+            return;
+        }
+
+        const graph = await indoorNav.getFloorGraph(
+            String(buildingId),
+            Number(floor)
+        );
+
+        res.json(graph);
+    } catch (error: any) {
+        console.error("Indoor graph error:", error);
+        res.status(404).json({ error: error.message });
+    }
+}
+router.get('/indoor/graph', getIndoorGraph);
+
+/**
+ * Computes an indoor route between two node IDs
+ */
+export async function getIndoorRoute(req: express.Request, res: express.Response) {
+    try {
+        const { startNodeId, endNodeId } = req.body;
+
+        if (!startNodeId || !endNodeId) {
+            res.status(400).json({
+                error: "startNodeId and endNodeId are required"
+            });
+            return;
+        }
+
+        const result = await indoorNav.computeIndoorRoute(startNodeId, endNodeId);
+        res.json(result);
+
+    } catch (error: any) {
+        console.error("Indoor route error:", error);
+        res.status(500).json({ error: error.message });
+    }
+}
+router.post('/indoor/route', getIndoorRoute);
 
 // testing purposes
 export function notifyMeLater(req: express.Request, res: express.Response) {

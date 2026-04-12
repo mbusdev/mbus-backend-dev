@@ -20,7 +20,9 @@
         "fast-json-stable-stringify": "^2.1.0",
         "fast-xml-parser": "^5.3.2",
         "firebase-admin": "^13.6.0",
+        "heap-js": "^2.7.1",
         "lru-cache": "^11.2.5",
+        "mongodb": "^7.1.1",
         "ts-array-utils": "^0.5.0",
         "tsx": "^4.11.0",
         "zod": "^4.3.6"
