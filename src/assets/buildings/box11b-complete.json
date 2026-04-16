@@ -1,0 +1,274 @@
+[
+  {
+    "ID": "2178342459",
+    "lat": "42.2955538",
+    "long": "-83.7802272",
+    "buildingName": "The Hair Spot",
+    "address": "1512 North Maple Road"
+  },
+  {
+    "ID": "2912189330",
+    "lat": "42.2955554",
+    "long": "-83.7801205",
+    "buildingName": "El Harissa Market Cafe",
+    "address": "1516 North Maple Road"
+  },
+  {
+    "ID": "3049880445",
+    "lat": "42.2895061",
+    "long": "-83.7812202",
+    "buildingName": "Washtenaw Alano Club",
+    "address": "995 North Maple Road"
+  },
+  {
+    "ID": "3129635302",
+    "lat": "42.2955727",
+    "long": "-83.7803868",
+    "buildingName": "Juicy Kitchen",
+    "address": "1506 North Maple Road"
+  },
+  {
+    "ID": "3129643013",
+    "lat": "42.2946792",
+    "long": "-83.7813137",
+    "buildingName": "Subway",
+    "address": "1251 North Maple"
+  },
+  {
+    "ID": "3462220404",
+    "lat": "42.2840879",
+    "long": "-83.7815432",
+    "buildingName": "Advance America",
+    "address": "243 North Maple Road"
+  },
+  {
+    "ID": "3462220405",
+    "lat": "42.2842505",
+    "long": "-83.7815096",
+    "buildingName": "Frames Unlimited",
+    "address": "251 North Maple Road"
+  },
+  {
+    "ID": "3462220406",
+    "lat": "42.2840722",
+    "long": "-83.7816691",
+    "buildingName": "GNC",
+    "address": "245 North Maple Road"
+  },
+  {
+    "ID": "3462220407",
+    "lat": "42.2841875",
+    "long": "-83.7813961",
+    "buildingName": "Great Clips",
+    "address": "247 North Maple Road"
+  },
+  {
+    "ID": "3462220408",
+    "lat": "42.2842518",
+    "long": "-83.7817080",
+    "buildingName": "Miracle-Ear",
+    "address": "255 North Maple Road"
+  },
+  {
+    "ID": "3462220409",
+    "lat": "42.2840879",
+    "long": "-83.7813678",
+    "buildingName": "Village Kitchen",
+    "address": "241 North Maple Road"
+  },
+  {
+    "ID": "3462266105",
+    "lat": "42.2847054",
+    "long": "-83.7832924",
+    "buildingName": "Anytime Fitness",
+    "address": "301 North Maple Road"
+  },
+  {
+    "ID": "3462266106",
+    "lat": "42.2847041",
+    "long": "-83.7837336",
+    "buildingName": "Michigan Secretary of State Branch Office",
+    "address": "295 North Maple Road"
+  },
+  {
+    "ID": "3465693323",
+    "lat": "42.2842455",
+    "long": "-83.7833367",
+    "buildingName": "Bikram Yoga",
+    "address": "221 North Maple Road"
+  },
+  {
+    "ID": "3465693325",
+    "lat": "42.2835438",
+    "long": "-83.7817028",
+    "buildingName": "Edward Jones",
+    "address": "213 North Maple Road"
+  },
+  {
+    "ID": "3465693326",
+    "lat": "42.2835421",
+    "long": "-83.7815224",
+    "buildingName": "Farmers Insurance Group",
+    "address": "207 North Maple Road"
+  },
+  {
+    "ID": "3465693327",
+    "lat": "42.2835658",
+    "long": "-83.7816138",
+    "buildingName": "Green Pawz",
+    "address": "211 North Maple Road"
+  },
+  {
+    "ID": "3465693328",
+    "lat": "42.2844670",
+    "long": "-83.7833408",
+    "buildingName": "Panda House",
+    "address": "229 North Maple Road"
+  },
+  {
+    "ID": "3465693329",
+    "lat": "42.2836790",
+    "long": "-83.7814745",
+    "buildingName": "Sophia's Tailoring",
+    "address": "209 North Maple Road"
+  },
+  {
+    "ID": "3470641248",
+    "lat": "42.2812068",
+    "long": "-83.7815538",
+    "buildingName": "D&D Bicycles",
+    "address": "2570 Jackson Avenue"
+  },
+  {
+    "ID": "3470641249",
+    "lat": "42.2811670",
+    "long": "-83.7813470",
+    "buildingName": "Verizon",
+    "address": "2570 Jackson Avenue"
+  },
+  {
+    "ID": "4632545426",
+    "lat": "42.2983340",
+    "long": "-83.7908505",
+    "buildingName": "Perficient",
+    "address": "3027 Miller Road"
+  },
+  {
+    "ID": "5802554767",
+    "lat": "42.2847186",
+    "long": "-83.7829121",
+    "buildingName": "Kirkland's",
+    "address": "341 North Maple Road"
+  },
+  {
+    "ID": "5802554768",
+    "lat": "42.2847305",
+    "long": "-83.7821476",
+    "buildingName": "Diva Nial Spa",
+    "address": "353 North Maple Road"
+  },
+  {
+    "ID": "5802554769",
+    "lat": "42.2847275",
+    "long": "-83.7826894",
+    "address": "343 North Maple Road"
+  },
+  {
+    "ID": "5802554770",
+    "lat": "42.2847325",
+    "long": "-83.7824011",
+    "buildingName": "Five Below",
+    "address": "345 North Maple Road"
+  },
+  {
+    "ID": "5884219888",
+    "lat": "42.2855004",
+    "long": "-83.7816903",
+    "buildingName": "Tmaz Taqueria Dexter",
+    "address": "2529 Dexter Avenue"
+  },
+  {
+    "ID": "6348570749",
+    "lat": "42.2820143",
+    "long": "-83.7664901",
+    "buildingName": "Marathon",
+    "address": "1500 Jackson Road"
+  },
+  {
+    "ID": "8415444369",
+    "lat": "42.2823050",
+    "long": "-83.7851357",
+    "buildingName": "Curaleaf",
+    "address": "2730 Jackson Avenue"
+  },
+  {
+    "ID": "8441897391",
+    "lat": "42.2948776",
+    "long": "-83.7801008",
+    "buildingName": "Speedway",
+    "address": "1300 North Maple Road"
+  },
+  {
+    "ID": "8441897392",
+    "lat": "42.2950482",
+    "long": "-83.7804548",
+    "buildingName": "Speedway",
+    "address": "1300 North Maple Road"
+  },
+  {
+    "ID": "8441897393",
+    "lat": "42.2820398",
+    "long": "-83.7667072",
+    "buildingName": "Mallek Service",
+    "address": "1500 Jackson Road"
+  },
+  {
+    "ID": "8441897394",
+    "lat": "42.2819743",
+    "long": "-83.7671296",
+    "buildingName": "The Party Center",
+    "address": "1612 Jackson Avenue"
+  },
+  {
+    "ID": "8441975817",
+    "lat": "42.2811686",
+    "long": "-83.7809242",
+    "buildingName": "Shell",
+    "address": "2500 Jackson Avenue"
+  },
+  {
+    "ID": "8441975818",
+    "lat": "42.2810248",
+    "long": "-83.7807553",
+    "buildingName": "Shell",
+    "address": "2500 Jackson Avenue"
+  },
+  {
+    "ID": "12769399401",
+    "lat": "42.2840012",
+    "long": "-83.7804378",
+    "buildingName": "L.A. Fitness",
+    "address": "155 North Maple Road"
+  },
+  {
+    "ID": "13298659983",
+    "lat": "42.2820877",
+    "long": "-83.7671267",
+    "buildingName": "Westside Salon",
+    "address": "1610 Jackson Avenue"
+  },
+  {
+    "ID": "13298659984",
+    "lat": "42.2821413",
+    "long": "-83.7671214",
+    "buildingName": "Q Bakehouse & Market",
+    "address": "1608 Jackson Avenue"
+  },
+  {
+    "ID": "13347148131",
+    "lat": "42.2843844",
+    "long": "-83.7833370",
+    "buildingName": "Couth Grooming",
+    "address": "227 North Maple Road"
+  }
+]

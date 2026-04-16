@@ -1,0 +1,584 @@
+[
+  {
+    "ID": "693272554",
+    "lat": "42.2898259",
+    "long": "-83.7387242",
+    "buildingName": "Sic Transit Cycles Service Center",
+    "address": "1033 Broadway Street"
+  },
+  {
+    "ID": "4964930186",
+    "lat": "42.2898144",
+    "long": "-83.7387065",
+    "buildingName": "Lowertown Bar & Cafe",
+    "address": "1031 Broadway Street"
+  },
+  {
+    "ID": "5173655312",
+    "lat": "42.2907449",
+    "long": "-83.7370357",
+    "buildingName": "Miny's Mexican Restaurant",
+    "address": "1141 Broadway Street"
+  },
+  {
+    "ID": "5173655313",
+    "lat": "42.2907098",
+    "long": "-83.7371069",
+    "buildingName": "Broadway Cafe",
+    "address": "1139 Broadway Street"
+  },
+  {
+    "ID": "5173655314",
+    "lat": "42.2906615",
+    "long": "-83.7372077",
+    "buildingName": "Arbor Party Store",
+    "address": "1135 Broadway Street"
+  },
+  {
+    "ID": "5173655315",
+    "lat": "42.2905957",
+    "long": "-83.7373540",
+    "buildingName": "Plate Sushi & Chicken",
+    "address": "1133 Broadway Street"
+  },
+  {
+    "ID": "9984183742",
+    "lat": "42.2906316",
+    "long": "-83.7404539",
+    "address": "605 Howley Court"
+  },
+  {
+    "ID": "9984183743",
+    "lat": "42.2906152",
+    "long": "-83.7403765",
+    "address": "609 Howley Court"
+  },
+  {
+    "ID": "9984183744",
+    "lat": "42.2905880",
+    "long": "-83.7402482",
+    "address": "611 Howley Court"
+  },
+  {
+    "ID": "9984183745",
+    "lat": "42.2905721",
+    "long": "-83.7401728",
+    "address": "615 Howley Court"
+  },
+  {
+    "ID": "12544938829",
+    "lat": "42.2905394",
+    "long": "-83.7488438",
+    "address": "230 Brookridge Road"
+  },
+  {
+    "ID": "12544938830",
+    "lat": "42.2906489",
+    "long": "-83.7487340",
+    "address": "232 Brookridge Road"
+  },
+  {
+    "ID": "12544938831",
+    "lat": "42.2904628",
+    "long": "-83.7488547",
+    "address": "222 Brookridge Road"
+  },
+  {
+    "ID": "12544938832",
+    "lat": "42.2903659",
+    "long": "-83.7489188",
+    "address": "220 Brookridge Road"
+  },
+  {
+    "ID": "12544938833",
+    "lat": "42.2902963",
+    "long": "-83.7489581",
+    "address": "212 Brookridge Road"
+  },
+  {
+    "ID": "12544938834",
+    "lat": "42.2902119",
+    "long": "-83.7490454",
+    "address": "210 Brookridge Road"
+  },
+  {
+    "ID": "12981586067",
+    "lat": "42.2913522",
+    "long": "-83.7409215",
+    "address": "545 Long Shore Drive"
+  },
+  {
+    "ID": "12981586070",
+    "lat": "42.2913388",
+    "long": "-83.7408599",
+    "address": "545 Long Shore Drive"
+  },
+  {
+    "ID": "12981586071",
+    "lat": "42.2913469",
+    "long": "-83.7410763",
+    "address": "541 Long Shore Drive"
+  },
+  {
+    "ID": "12981586074",
+    "lat": "42.2913318",
+    "long": "-83.7410065",
+    "address": "541 Long Shore Drive"
+  },
+  {
+    "ID": "12981586077",
+    "lat": "42.2915083",
+    "long": "-83.7416405",
+    "address": "509 Long Shore Drive"
+  },
+  {
+    "ID": "12981586080",
+    "lat": "42.2914937",
+    "long": "-83.7415744",
+    "address": "509 Long Shore Drive"
+  },
+  {
+    "ID": "12981586081",
+    "lat": "42.2914412",
+    "long": "-83.7415166",
+    "address": "513 Long Shore Drive"
+  },
+  {
+    "ID": "12981586084",
+    "lat": "42.2914255",
+    "long": "-83.7414453",
+    "address": "513 Long Shore Drive"
+  },
+  {
+    "ID": "12981634501",
+    "lat": "42.2917190",
+    "long": "-83.7415788",
+    "address": "517 Long Shore Drive"
+  },
+  {
+    "ID": "12981634504",
+    "lat": "42.2917010",
+    "long": "-83.7414924",
+    "address": "517 Long Shore Drive"
+  },
+  {
+    "ID": "12981634505",
+    "lat": "42.2917235",
+    "long": "-83.7414209",
+    "address": "521 Long Shore Drive"
+  },
+  {
+    "ID": "12981634508",
+    "lat": "42.2917071",
+    "long": "-83.7413417",
+    "address": "521 Long Shore Drive"
+  },
+  {
+    "ID": "12981634510",
+    "lat": "42.2919782",
+    "long": "-83.7413779",
+    "address": "525 Long Shore Drive"
+  },
+  {
+    "ID": "12981634511",
+    "lat": "42.2918342",
+    "long": "-83.7413926",
+    "address": "523 Long Shore Drive"
+  },
+  {
+    "ID": "12981634514",
+    "lat": "42.2918147",
+    "long": "-83.7412985",
+    "address": "523 Long Shore Drive"
+  },
+  {
+    "ID": "12981634517",
+    "lat": "42.2918266",
+    "long": "-83.7415462",
+    "address": "519 Long Shore Drive"
+  },
+  {
+    "ID": "12981634520",
+    "lat": "42.2918110",
+    "long": "-83.7414709",
+    "address": "519 Long Shore Drive"
+  },
+  {
+    "ID": "12981634526",
+    "lat": "42.2919929",
+    "long": "-83.7414453",
+    "address": "525 Long Shore Drive"
+  },
+  {
+    "ID": "12981634527",
+    "lat": "42.2919293",
+    "long": "-83.7413333",
+    "address": "529 Long Shore Drive"
+  },
+  {
+    "ID": "12981634530",
+    "lat": "42.2919103",
+    "long": "-83.7412462",
+    "address": "529 Long Shore Drive"
+  },
+  {
+    "ID": "12981634533",
+    "lat": "42.2916281",
+    "long": "-83.7409795",
+    "address": "549 Long Shore Drive"
+  },
+  {
+    "ID": "12981634536",
+    "lat": "42.2916080",
+    "long": "-83.7408866",
+    "address": "549 Long Shore Drive"
+  },
+  {
+    "ID": "12981634539",
+    "lat": "42.2915614",
+    "long": "-83.7408494",
+    "address": "553 Long Shore Drive"
+  },
+  {
+    "ID": "12981634542",
+    "lat": "42.2915421",
+    "long": "-83.7407603",
+    "address": "553 Long Shore Drive"
+  },
+  {
+    "ID": "12981634544",
+    "lat": "42.2914591",
+    "long": "-83.7408823",
+    "address": "547 Long Shore Drive"
+  },
+  {
+    "ID": "12981634547",
+    "lat": "42.2914409",
+    "long": "-83.7407981",
+    "address": "547 Long Shore Drive"
+  },
+  {
+    "ID": "12981634548",
+    "lat": "42.2914559",
+    "long": "-83.7410316",
+    "address": "543 Long Shore Drive"
+  },
+  {
+    "ID": "12981634551",
+    "lat": "42.2914389",
+    "long": "-83.7409531",
+    "address": "543 Long Shore Drive"
+  },
+  {
+    "ID": "12981634556",
+    "lat": "42.2916154",
+    "long": "-83.7415985",
+    "address": "511 Long Shore Drive"
+  },
+  {
+    "ID": "12981634559",
+    "lat": "42.2916008",
+    "long": "-83.7415322",
+    "address": "511 Long Shore Drive"
+  },
+  {
+    "ID": "12981634562",
+    "lat": "42.2915506",
+    "long": "-83.7414771",
+    "address": "515 Long Shore Drive"
+  },
+  {
+    "ID": "12981634565",
+    "lat": "42.2915336",
+    "long": "-83.7413998",
+    "address": "515 Long Shore Drive"
+  },
+  {
+    "ID": "12981634566",
+    "lat": "42.2916657",
+    "long": "-83.7408063",
+    "address": "555 Long Shore Drive"
+  },
+  {
+    "ID": "12981634569",
+    "lat": "42.2916492",
+    "long": "-83.7407300",
+    "address": "555 Long Shore Drive"
+  },
+  {
+    "ID": "12981634571",
+    "lat": "42.2917331",
+    "long": "-83.7409324",
+    "address": "551 Long Shore Drive"
+  },
+  {
+    "ID": "12981634574",
+    "lat": "42.2917160",
+    "long": "-83.7408531",
+    "address": "551 Long Shore Drive"
+  },
+  {
+    "ID": "12981634582",
+    "lat": "42.2921947",
+    "long": "-83.7413395",
+    "address": "533 Long Shore Drive"
+  },
+  {
+    "ID": "12981634585",
+    "lat": "42.2921763",
+    "long": "-83.7412580",
+    "address": "533 Long Shore Drive"
+  },
+  {
+    "ID": "12981634586",
+    "lat": "42.2920928",
+    "long": "-83.7413972",
+    "address": "527 Long Shore Drive"
+  },
+  {
+    "ID": "12981634589",
+    "lat": "42.2920328",
+    "long": "-83.7412860",
+    "address": "531 Long Shore Drive"
+  },
+  {
+    "ID": "12981634592",
+    "lat": "42.2920130",
+    "long": "-83.7411952",
+    "address": "531 Long Shore Drive"
+  },
+  {
+    "ID": "12981634595",
+    "lat": "42.2921941",
+    "long": "-83.7411695",
+    "address": "537 Long Shore Drive"
+  },
+  {
+    "ID": "12981634599",
+    "lat": "42.2920754",
+    "long": "-83.7413174",
+    "address": "527 Long Shore Drive"
+  },
+  {
+    "ID": "12981634600",
+    "lat": "42.2924385",
+    "long": "-83.7409857",
+    "address": "564 Kellogg Street"
+  },
+  {
+    "ID": "12981634603",
+    "lat": "42.2924207",
+    "long": "-83.7409043",
+    "address": "564 Kellogg Street"
+  },
+  {
+    "ID": "12981634606",
+    "lat": "42.2922965",
+    "long": "-83.7411245",
+    "address": "539 Long Shore Drive"
+  },
+  {
+    "ID": "12981634608",
+    "lat": "42.2924133",
+    "long": "-83.7410575",
+    "address": "560 Kellogg Street"
+  },
+  {
+    "ID": "12981634612",
+    "lat": "42.2922955",
+    "long": "-83.7412952",
+    "address": "535 Long Shore Drive"
+  },
+  {
+    "ID": "12981634615",
+    "lat": "42.2922776",
+    "long": "-83.7412155",
+    "address": "535 Long Shore Drive"
+  },
+  {
+    "ID": "12981634622",
+    "lat": "42.2925214",
+    "long": "-83.7410237",
+    "address": "562 Kellogg Street"
+  },
+  {
+    "ID": "12981634627",
+    "lat": "42.2926597",
+    "long": "-83.7407973",
+    "address": "572 Kellogg Street"
+  },
+  {
+    "ID": "12981634628",
+    "lat": "42.2926563",
+    "long": "-83.7409677",
+    "address": "568 Kellogg Street"
+  },
+  {
+    "ID": "12981634631",
+    "lat": "42.2926350",
+    "long": "-83.7408725",
+    "address": "568 Kellogg Street"
+  },
+  {
+    "ID": "12981634634",
+    "lat": "42.2925436",
+    "long": "-83.7409429",
+    "address": "566 Kellogg Street"
+  },
+  {
+    "ID": "12981634637",
+    "lat": "42.2925262",
+    "long": "-83.7408633",
+    "address": "566 Kellogg Street"
+  },
+  {
+    "ID": "12981634644",
+    "lat": "42.2929744",
+    "long": "-83.7406766",
+    "address": "582 Kellogg Street"
+  },
+  {
+    "ID": "12981634646",
+    "lat": "42.2929966",
+    "long": "-83.7407758",
+    "address": "582 Kellogg Street"
+  },
+  {
+    "ID": "12981634647",
+    "lat": "42.2927645",
+    "long": "-83.7407541",
+    "address": "574 Kellogg Street"
+  },
+  {
+    "ID": "12981634650",
+    "lat": "42.2928929",
+    "long": "-83.7408094",
+    "address": "580 Kellogg Street"
+  },
+  {
+    "ID": "12981634653",
+    "lat": "42.2928723",
+    "long": "-83.7407174",
+    "address": "580 Kellogg Street"
+  },
+  {
+    "ID": "12981634656",
+    "lat": "42.2927602",
+    "long": "-83.7409172",
+    "address": "570 Kellogg Street"
+  },
+  {
+    "ID": "12981634659",
+    "lat": "42.2927413",
+    "long": "-83.7408326",
+    "address": "570 Kellogg Street"
+  },
+  {
+    "ID": "12981634662",
+    "lat": "42.2929391",
+    "long": "-83.7408601",
+    "address": "576 Kellogg Street"
+  },
+  {
+    "ID": "12981634665",
+    "lat": "42.2930453",
+    "long": "-83.7408198",
+    "address": "578 Kellogg Street"
+  },
+  {
+    "ID": "12983585541",
+    "lat": "42.2931562",
+    "long": "-83.7416917",
+    "address": "420 Kellogg Street"
+  },
+  {
+    "ID": "12983585589",
+    "lat": "42.2930279",
+    "long": "-83.7419355",
+    "address": "422 Kellogg Street"
+  },
+  {
+    "ID": "12983585590",
+    "lat": "42.2928646",
+    "long": "-83.7419971",
+    "address": "424 Kellogg Street"
+  },
+  {
+    "ID": "12983585591",
+    "lat": "42.2927251",
+    "long": "-83.7420505",
+    "address": "426 Kellogg Street"
+  },
+  {
+    "ID": "12983585592",
+    "lat": "42.2929347",
+    "long": "-83.7413393",
+    "address": "430 Kellogg Street"
+  },
+  {
+    "ID": "12983585593",
+    "lat": "42.2927958",
+    "long": "-83.7413881",
+    "address": "432 Kellogg Street"
+  },
+  {
+    "ID": "12983585594",
+    "lat": "42.2926380",
+    "long": "-83.7414470",
+    "address": "434 Kellogg Street"
+  },
+  {
+    "ID": "12983585595",
+    "lat": "42.2925032",
+    "long": "-83.7416908",
+    "address": "436 Kellogg Street"
+  },
+  {
+    "ID": "12983585596",
+    "lat": "42.2931838",
+    "long": "-83.7425059",
+    "address": "410 Kellogg Street"
+  },
+  {
+    "ID": "12983585597",
+    "lat": "42.2930442",
+    "long": "-83.7425602",
+    "address": "412 Kellogg Street"
+  },
+  {
+    "ID": "12983585598",
+    "lat": "42.2928870",
+    "long": "-83.7426191",
+    "address": "414 Kellogg Street"
+  },
+  {
+    "ID": "12983585599",
+    "lat": "42.2927496",
+    "long": "-83.7428573",
+    "address": "416 Kellogg Street"
+  },
+  {
+    "ID": "12983585600",
+    "lat": "42.2934029",
+    "long": "-83.7428573",
+    "address": "400 Kellogg Street"
+  },
+  {
+    "ID": "12983585601",
+    "lat": "42.2932647",
+    "long": "-83.7430975",
+    "address": "402 Kellogg Street"
+  },
+  {
+    "ID": "12983585602",
+    "lat": "42.2931048",
+    "long": "-83.7431609",
+    "address": "404 Kellogg Street"
+  },
+  {
+    "ID": "12983585603",
+    "lat": "42.2929687",
+    "long": "-83.7432125",
+    "address": "406 Kellogg Street"
+  }
+]

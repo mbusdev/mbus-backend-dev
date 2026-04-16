@@ -1,0 +1,1367 @@
+[
+  {
+    "ID": "748964467",
+    "lat": "42.2779705",
+    "long": "-83.7411190",
+    "buildingName": "Pita Kabob Grill",
+    "address": "619 East William Street"
+  },
+  {
+    "ID": "748967871",
+    "lat": "42.2779681",
+    "long": "-83.7415522",
+    "address": "609 East William Street"
+  },
+  {
+    "ID": "749007070",
+    "lat": "42.2780977",
+    "long": "-83.7409495",
+    "buildingName": "Ashley's Ann Arbor",
+    "address": "338 South State Street"
+  },
+  {
+    "ID": "749007099",
+    "lat": "42.2786287",
+    "long": "-83.7409386",
+    "buildingName": "Noodles & Company",
+    "address": "320 South State Street"
+  },
+  {
+    "ID": "1023694336",
+    "lat": "42.2795299",
+    "long": "-83.7433811",
+    "buildingName": "Tios Mexican Cafe",
+    "address": "401 East Liberty Street"
+  },
+  {
+    "ID": "2333048482",
+    "lat": "42.2794205",
+    "long": "-83.7406249",
+    "buildingName": "State Theater",
+    "address": "233 South State Street"
+  },
+  {
+    "ID": "2344584606",
+    "lat": "42.2787899",
+    "long": "-83.7400489",
+    "buildingName": "Nolas Underground Salon",
+    "address": "715 North University Avenue"
+  },
+  {
+    "ID": "2344584614",
+    "lat": "42.2796789",
+    "long": "-83.7406640",
+    "buildingName": "Taste of India Suvai",
+    "address": "217 South State Street"
+  },
+  {
+    "ID": "2344584615",
+    "lat": "42.2797676",
+    "long": "-83.7406633",
+    "buildingName": "Totoro Sushi",
+    "address": "215 South State Street"
+  },
+  {
+    "ID": "2344584616",
+    "lat": "42.2791996",
+    "long": "-83.7397427",
+    "buildingName": "Mercy's at the Bell Tower",
+    "address": "300 South Thayer Street"
+  },
+  {
+    "ID": "2742714762",
+    "lat": "42.2801081",
+    "long": "-83.7406625",
+    "buildingName": "Buffalo Wild Wings",
+    "address": "205 South State Street"
+  },
+  {
+    "ID": "2742714767",
+    "lat": "42.2793198",
+    "long": "-83.7406775",
+    "buildingName": "Chipotle",
+    "address": "235 South State Street"
+  },
+  {
+    "ID": "2742714779",
+    "lat": "42.2794747",
+    "long": "-83.7409739",
+    "buildingName": "Starbucks",
+    "address": "222 South State"
+  },
+  {
+    "ID": "2742714786",
+    "lat": "42.2796696",
+    "long": "-83.7410006",
+    "buildingName": "Sava's",
+    "address": "216 South State Street"
+  },
+  {
+    "ID": "2742714791",
+    "lat": "42.2792544",
+    "long": "-83.7406722",
+    "buildingName": "La Marsa",
+    "address": "301 South State Street"
+  },
+  {
+    "ID": "2742714802",
+    "lat": "42.2795276",
+    "long": "-83.7427536",
+    "buildingName": "Tomukun Korean BBQ / Noodle Bar",
+    "address": "505 East Liberty Street"
+  },
+  {
+    "ID": "2742714805",
+    "lat": "42.2804787",
+    "long": "-83.7434586",
+    "buildingName": "Fat Daddy's",
+    "address": "411 East Washington Street"
+  },
+  {
+    "ID": "2742714806",
+    "lat": "42.2789335",
+    "long": "-83.7406535",
+    "buildingName": "Sweetgreen",
+    "address": "311 South State Street"
+  },
+  {
+    "ID": "2742771145",
+    "lat": "42.2792452",
+    "long": "-83.7409521",
+    "buildingName": "Potbelly's Sandwich Shop",
+    "address": "300 South State Street"
+  },
+  {
+    "ID": "2742771151",
+    "lat": "42.2787413",
+    "long": "-83.7397654",
+    "buildingName": "Panera Bread",
+    "address": "777 North University Avenue"
+  },
+  {
+    "ID": "2760098980",
+    "lat": "42.2785328",
+    "long": "-83.7409273",
+    "buildingName": "The Ann Arbor Coffee Roasting Company",
+    "address": "324 South State Street"
+  },
+  {
+    "ID": "2760098981",
+    "lat": "42.2784432",
+    "long": "-83.7412937",
+    "buildingName": "Comet Coffee",
+    "address": "16 Nickels Arcade"
+  },
+  {
+    "ID": "2760098986",
+    "lat": "42.2790854",
+    "long": "-83.7397637",
+    "buildingName": "Jamaican Jerk Pit",
+    "address": "314 South Thayer Street"
+  },
+  {
+    "ID": "2874403358",
+    "lat": "42.2791199",
+    "long": "-83.7409496",
+    "buildingName": "Ben & Jerry's",
+    "address": "304 South State Street"
+  },
+  {
+    "ID": "2874423246",
+    "lat": "42.2791794",
+    "long": "-83.7409504",
+    "buildingName": "Michigan Creamery",
+    "address": "302 South State Street"
+  },
+  {
+    "ID": "2874423247",
+    "lat": "42.2795033",
+    "long": "-83.7406599",
+    "buildingName": "Target",
+    "address": "231 South State Street"
+  },
+  {
+    "ID": "2874423248",
+    "lat": "42.2797191",
+    "long": "-83.7406585",
+    "buildingName": "The Getup Vintage Apparel",
+    "address": "215 South State Street"
+  },
+  {
+    "ID": "2874423479",
+    "lat": "42.2788924",
+    "long": "-83.7406527",
+    "buildingName": "Pitaya",
+    "address": "315 South State Street"
+  },
+  {
+    "ID": "2874423482",
+    "lat": "42.2788057",
+    "long": "-83.7409478",
+    "buildingName": "Yogurt Rush",
+    "address": "314 South State Street"
+  },
+  {
+    "ID": "2874423483",
+    "lat": "42.2789608",
+    "long": "-83.7409578",
+    "buildingName": "Sharetea",
+    "address": "310 South State Street"
+  },
+  {
+    "ID": "2874423484",
+    "lat": "42.2790028",
+    "long": "-83.7409563",
+    "buildingName": "See",
+    "address": "308 South State Street"
+  },
+  {
+    "ID": "2874452533",
+    "lat": "42.2792798",
+    "long": "-83.7418419",
+    "buildingName": "Knight's Downtown Steakhouse",
+    "address": "600 East Liberty Street"
+  },
+  {
+    "ID": "2874452534",
+    "lat": "42.2792719",
+    "long": "-83.7416011",
+    "buildingName": "Slurping Turtle",
+    "address": "608 East Liberty Street"
+  },
+  {
+    "ID": "2874452535",
+    "lat": "42.2795434",
+    "long": "-83.7438170",
+    "buildingName": "Condado Tacos",
+    "address": "401 East Liberty Street"
+  },
+  {
+    "ID": "2887264864",
+    "lat": "42.2779834",
+    "long": "-83.7412936",
+    "buildingName": "Tianchu Restaurant",
+    "address": "613 East William Street"
+  },
+  {
+    "ID": "2887264866",
+    "lat": "42.2791617",
+    "long": "-83.7406380",
+    "buildingName": "Rally House",
+    "address": "303 South State Street"
+  },
+  {
+    "ID": "2887795512",
+    "lat": "42.2794783",
+    "long": "-83.7412405",
+    "address": "619 East Liberty Street"
+  },
+  {
+    "ID": "2887795514",
+    "lat": "42.2789156",
+    "long": "-83.7421646",
+    "buildingName": "Scorekeepers",
+    "address": "310 Maynard Street"
+  },
+  {
+    "ID": "2887795516",
+    "lat": "42.2777262",
+    "long": "-83.7422559",
+    "buildingName": "UniTea",
+    "address": "522 East William Street"
+  },
+  {
+    "ID": "3033183135",
+    "lat": "42.2791161",
+    "long": "-83.7459393",
+    "buildingName": "Earthen Jar",
+    "address": "311 South 5th Avenue"
+  },
+  {
+    "ID": "3033183136",
+    "lat": "42.2793229",
+    "long": "-83.7454359",
+    "buildingName": "Jerusalem Garden",
+    "address": "314 East Liberty Street"
+  },
+  {
+    "ID": "3040021263",
+    "lat": "42.2796154",
+    "long": "-83.7462797",
+    "buildingName": "Afternoon Delight",
+    "address": "251 East Liberty Street"
+  },
+  {
+    "ID": "3074036038",
+    "lat": "42.2752257",
+    "long": "-83.7416111",
+    "buildingName": "Panda Express",
+    "address": "530 South State Street"
+  },
+  {
+    "ID": "3123196131",
+    "lat": "42.2786712",
+    "long": "-83.7418742",
+    "address": "317 Maynard Street"
+  },
+  {
+    "ID": "3196300835",
+    "lat": "42.2787903",
+    "long": "-83.7399793",
+    "buildingName": "NOW Studios",
+    "address": "715 North University Avenue"
+  },
+  {
+    "ID": "3196332145",
+    "lat": "42.2796426",
+    "long": "-83.7462557",
+    "buildingName": "SDI Structures",
+    "address": "275 East Liberty Street"
+  },
+  {
+    "ID": "4176670447",
+    "lat": "42.2803530",
+    "long": "-83.7475495",
+    "buildingName": "Amadeus",
+    "address": "122 East Washington Street"
+  },
+  {
+    "ID": "4176670448",
+    "lat": "42.2803570",
+    "long": "-83.7474664",
+    "buildingName": "Literati Bookstore",
+    "address": "124 East Washington Street"
+  },
+  {
+    "ID": "4184549021",
+    "lat": "42.2782126",
+    "long": "-83.7418216",
+    "buildingName": "Douglas J Aveda Institute",
+    "address": "333 Maynard Street"
+  },
+  {
+    "ID": "4444923061",
+    "lat": "42.2777252",
+    "long": "-83.7421544",
+    "buildingName": "Campus Barber & Beauty Salon",
+    "address": "524 East William Street"
+  },
+  {
+    "ID": "4802256326",
+    "lat": "42.2792915",
+    "long": "-83.7430563",
+    "buildingName": "Pinball Pete's",
+    "address": "500 East Liberty Street"
+  },
+  {
+    "ID": "4837097556",
+    "lat": "42.2794256",
+    "long": "-83.7475453",
+    "buildingName": "Turkish Village Cafe",
+    "address": "120 East Liberty Street"
+  },
+  {
+    "ID": "4837097557",
+    "lat": "42.2796701",
+    "long": "-83.7475293",
+    "buildingName": "Running Fit",
+    "address": "123 East Liberty Street"
+  },
+  {
+    "ID": "4837097558",
+    "lat": "42.2794335",
+    "long": "-83.7477813",
+    "buildingName": "Cupcake Station",
+    "address": "116 East Liberty Street"
+  },
+  {
+    "ID": "4837688325",
+    "lat": "42.2796639",
+    "long": "-83.7471936",
+    "buildingName": "Dunkin'",
+    "address": "201 East Liberty Street"
+  },
+  {
+    "ID": "4837688326",
+    "lat": "42.2796694",
+    "long": "-83.7475832",
+    "buildingName": "ATI Physical Therapy",
+    "address": "121 East Liberty Street"
+  },
+  {
+    "ID": "4842861417",
+    "lat": "42.2804922",
+    "long": "-83.7437366",
+    "buildingName": "Stray Hen Cafe",
+    "address": "403 East Washington Street"
+  },
+  {
+    "ID": "4842861418",
+    "lat": "42.2787459",
+    "long": "-83.7399654",
+    "buildingName": "Hola Seoul",
+    "address": "715 North University Avenue"
+  },
+  {
+    "ID": "4848486387",
+    "lat": "42.2796800",
+    "long": "-83.7476515",
+    "buildingName": "Bongz & Thongz",
+    "address": "119 East Liberty Street"
+  },
+  {
+    "ID": "4848486388",
+    "lat": "42.2796815",
+    "long": "-83.7477287",
+    "buildingName": "RoosRoast Coffee",
+    "address": "117 East Liberty Street"
+  },
+  {
+    "ID": "4861935196",
+    "lat": "42.2777337",
+    "long": "-83.7465805",
+    "address": "220 East William Street"
+  },
+  {
+    "ID": "4861935197",
+    "lat": "42.2777337",
+    "long": "-83.7464799",
+    "address": "222 East William Street"
+  },
+  {
+    "ID": "4907802378",
+    "lat": "42.2725293",
+    "long": "-83.7426028",
+    "address": "522 Packard Street"
+  },
+  {
+    "ID": "4907802379",
+    "lat": "42.2724955",
+    "long": "-83.7425605",
+    "address": "524 Packard Street"
+  },
+  {
+    "ID": "4909268195",
+    "lat": "42.2781845",
+    "long": "-83.7421793",
+    "buildingName": "Campus Student Bike Shop",
+    "address": "336 Maynard Street"
+  },
+  {
+    "ID": "4909268196",
+    "lat": "42.2782560",
+    "long": "-83.7421765",
+    "buildingName": "Frank's Restaurant",
+    "address": "334 Maynard Street"
+  },
+  {
+    "ID": "4914961313",
+    "lat": "42.2760744",
+    "long": "-83.7459324",
+    "address": "304 East Jefferson Street"
+  },
+  {
+    "ID": "4935570662",
+    "lat": "42.2799159",
+    "long": "-83.7471649",
+    "buildingName": "Today Clothing",
+    "address": "215 South Fourth Avenue"
+  },
+  {
+    "ID": "4935570664",
+    "lat": "42.2800141",
+    "long": "-83.7471602",
+    "buildingName": "Dear Golden",
+    "address": "211 South Fourth Avenue"
+  },
+  {
+    "ID": "4935570665",
+    "lat": "42.2801972",
+    "long": "-83.7471495",
+    "buildingName": "Pure Vida",
+    "address": "207 South Fourth Avenue"
+  },
+  {
+    "ID": "4935570666",
+    "lat": "42.2802384",
+    "long": "-83.7471515",
+    "buildingName": "Sottini's Sub Shop",
+    "address": "205 South Fourth Avenue"
+  },
+  {
+    "ID": "4935570667",
+    "lat": "42.2803351",
+    "long": "-83.7471488",
+    "buildingName": "T-Mobile",
+    "address": "200 East Washington Street"
+  },
+  {
+    "ID": "4935570668",
+    "lat": "42.2803336",
+    "long": "-83.7470288",
+    "buildingName": "Ann Arbor Hair Studio",
+    "address": "202 East Washington Street"
+  },
+  {
+    "ID": "4935570670",
+    "lat": "42.2803301",
+    "long": "-83.7467733",
+    "buildingName": "Roya Beauty",
+    "address": "208 East Washington Street"
+  },
+  {
+    "ID": "4935570671",
+    "lat": "42.2803336",
+    "long": "-83.7468108",
+    "buildingName": "Swisher",
+    "address": "208 East Washington Street"
+  },
+  {
+    "ID": "4935570672",
+    "lat": "42.2803277",
+    "long": "-83.7465775",
+    "buildingName": "Aventura",
+    "address": "216 East Washington Street"
+  },
+  {
+    "ID": "4935570675",
+    "lat": "42.2800736",
+    "long": "-83.7462570",
+    "address": "210 South Fifth Avenue"
+  },
+  {
+    "ID": "4935570676",
+    "lat": "42.2800215",
+    "long": "-83.7462576",
+    "address": "212 South Fifth Avenue"
+  },
+  {
+    "ID": "4935570686",
+    "lat": "42.2796485",
+    "long": "-83.7466546",
+    "buildingName": "Kanbu Sushi Downtown",
+    "address": "241 East Liberty Street"
+  },
+  {
+    "ID": "4935570687",
+    "lat": "42.2796529",
+    "long": "-83.7467941",
+    "buildingName": "Pangea",
+    "address": "211 East Liberty Street"
+  },
+  {
+    "ID": "4935570688",
+    "lat": "42.2796564",
+    "long": "-83.7468739",
+    "buildingName": "Wilde Side Smoke Shop",
+    "address": "209 East Liberty Street"
+  },
+  {
+    "ID": "4935570689",
+    "lat": "42.2796579",
+    "long": "-83.7469550",
+    "buildingName": "Sam's Clothing",
+    "address": "207 East Liberty Street"
+  },
+  {
+    "ID": "4935570690",
+    "lat": "42.2796549",
+    "long": "-83.7470321",
+    "buildingName": "Abracadabra",
+    "address": "205 East Liberty Street"
+  },
+  {
+    "ID": "4945806627",
+    "lat": "42.2789296",
+    "long": "-83.7418442",
+    "buildingName": "HopCat",
+    "address": "311 Maynard Street"
+  },
+  {
+    "ID": "4945806628",
+    "lat": "42.2790546",
+    "long": "-83.7418415",
+    "buildingName": "School of Information",
+    "address": "309 Maynard Street"
+  },
+  {
+    "ID": "4945806629",
+    "lat": "42.2782638",
+    "long": "-83.7409496",
+    "buildingName": "Bivouac",
+    "address": "336 South State Street"
+  },
+  {
+    "ID": "4945806630",
+    "lat": "42.2787073",
+    "long": "-83.7409322",
+    "buildingName": "7-Eleven",
+    "address": "317 South State Street"
+  },
+  {
+    "ID": "4945806631",
+    "lat": "42.2787669",
+    "long": "-83.7409497",
+    "buildingName": "Red Hawk Bar and Grill",
+    "address": "316 South State Street"
+  },
+  {
+    "ID": "4945806632",
+    "lat": "42.2784607",
+    "long": "-83.7409359",
+    "buildingName": "Van Boven Inc.",
+    "address": "326 South State Street"
+  },
+  {
+    "ID": "4945806633",
+    "lat": "42.2783740",
+    "long": "-83.7411556",
+    "buildingName": "Van Boven Shoes",
+    "address": "17 Nickels Arcade"
+  },
+  {
+    "ID": "4945806634",
+    "lat": "42.2783757",
+    "long": "-83.7412930",
+    "buildingName": "Arcadian Antiques",
+    "address": "13-15 Nickels Arcade"
+  },
+  {
+    "ID": "4945806636",
+    "lat": "42.2783715",
+    "long": "-83.7415250",
+    "buildingName": "Parrish Fine Framing & Art",
+    "address": "9 Nickels Arcade"
+  },
+  {
+    "ID": "4945806637",
+    "lat": "42.2784404",
+    "long": "-83.7415169",
+    "buildingName": "Ten Fine Jewelry",
+    "address": "10 Nickels Arcade"
+  },
+  {
+    "ID": "4945806638",
+    "lat": "42.2783702",
+    "long": "-83.7415962",
+    "buildingName": "University Flower Shop",
+    "address": "7 Nickels Arcade"
+  },
+  {
+    "ID": "4945806639",
+    "lat": "42.2783664",
+    "long": "-83.7418092",
+    "buildingName": "The Caravan Shop",
+    "address": "1-3 Nickels Arcade"
+  },
+  {
+    "ID": "4945806640",
+    "lat": "42.2784395",
+    "long": "-83.7415907",
+    "buildingName": "Apples & Oranges",
+    "address": "8 Nickels Arcade"
+  },
+  {
+    "ID": "4945806641",
+    "lat": "42.2784388",
+    "long": "-83.7416457",
+    "buildingName": "Arcade Barbers",
+    "address": "6 Nickels Arcade"
+  },
+  {
+    "ID": "4945806642",
+    "lat": "42.2784367",
+    "long": "-83.7418133",
+    "buildingName": "Mix",
+    "address": "2-4 Nickels Arcade"
+  },
+  {
+    "ID": "4956906258",
+    "lat": "42.2771106",
+    "long": "-83.7450701",
+    "address": "423 Hamilton Place"
+  },
+  {
+    "ID": "4956906259",
+    "lat": "42.2770654",
+    "long": "-83.7450655",
+    "address": "425 Hamilton Place"
+  },
+  {
+    "ID": "4958401108",
+    "lat": "42.2777243",
+    "long": "-83.7423500",
+    "buildingName": "400 Maynard Apartments Leasing Office",
+    "address": "518 East William Street"
+  },
+  {
+    "ID": "4958401109",
+    "lat": "42.2777316",
+    "long": "-83.7424327",
+    "buildingName": "Asian Legend",
+    "address": "516 East William Street"
+  },
+  {
+    "ID": "4958401112",
+    "lat": "42.2779573",
+    "long": "-83.7418479",
+    "buildingName": "New York Pizza Depot",
+    "address": "605 East William Street"
+  },
+  {
+    "ID": "4958401113",
+    "lat": "42.2779692",
+    "long": "-83.7416554",
+    "buildingName": "Ding Tea",
+    "address": "607 East William Street"
+  },
+  {
+    "ID": "4958401114",
+    "lat": "42.2779583",
+    "long": "-83.7417514",
+    "buildingName": "Vibe Ann Arbor",
+    "address": "603 East William Street"
+  },
+  {
+    "ID": "4958401115",
+    "lat": "42.2779682",
+    "long": "-83.7411740",
+    "buildingName": "42 Degrees",
+    "address": "613 East William Street"
+  },
+  {
+    "ID": "4992709779",
+    "lat": "42.2796227",
+    "long": "-83.7455893",
+    "buildingName": "The Bead Gallery",
+    "address": "311 East Liberty Street"
+  },
+  {
+    "ID": "4995373012",
+    "lat": "42.2798054",
+    "long": "-83.7406705",
+    "buildingName": "ama bistro",
+    "address": "215 South State Street"
+  },
+  {
+    "ID": "4995373019",
+    "lat": "42.2797870",
+    "long": "-83.7406651",
+    "buildingName": "Tiny Buddha Boutique",
+    "address": "213 South State Street"
+  },
+  {
+    "ID": "5002273841",
+    "lat": "42.2802910",
+    "long": "-83.7474556",
+    "buildingName": "Literati Coffee",
+    "address": "204 South Fourth Avenue"
+  },
+  {
+    "ID": "5007708558",
+    "lat": "42.2794909",
+    "long": "-83.7413714",
+    "buildingName": "Gamma Piercing",
+    "address": "613 East Liberty Street"
+  },
+  {
+    "ID": "5009753000",
+    "lat": "42.2781520",
+    "long": "-83.7409303",
+    "buildingName": "Wazoo Records",
+    "address": "336 1/2 South State Street"
+  },
+  {
+    "ID": "5009753001",
+    "lat": "42.2787534",
+    "long": "-83.7402081",
+    "buildingName": "Bruegger's Bagels",
+    "address": "709 North University Avenue"
+  },
+  {
+    "ID": "5015387355",
+    "lat": "42.2787523",
+    "long": "-83.7401369",
+    "address": "711 North University Avenue"
+  },
+  {
+    "ID": "5024950003",
+    "lat": "42.2793143",
+    "long": "-83.7438495",
+    "buildingName": "Ginger Deli",
+    "address": "303 South Division Street"
+  },
+  {
+    "ID": "5024950004",
+    "lat": "42.2793108",
+    "long": "-83.7437686",
+    "buildingName": "Elmo's Liberty Street T-Shirts",
+    "address": "404 East Liberty Street"
+  },
+  {
+    "ID": "5024950005",
+    "lat": "42.2777185",
+    "long": "-83.7428790",
+    "buildingName": "Neopapalis",
+    "address": "500 East William Street"
+  },
+  {
+    "ID": "5024950006",
+    "lat": "42.2777257",
+    "long": "-83.7426570",
+    "buildingName": "The Original Cottage Inn Pizza",
+    "address": "512 East William Street"
+  },
+  {
+    "ID": "5446624863",
+    "lat": "42.2794821",
+    "long": "-83.7411721",
+    "buildingName": "Graham Sustainability Institute",
+    "address": "625 East Liberty Street"
+  },
+  {
+    "ID": "5446624865",
+    "lat": "42.2792756",
+    "long": "-83.7417531",
+    "buildingName": "Sweetwaters",
+    "address": "604 East Liberty Street"
+  },
+  {
+    "ID": "5446624866",
+    "lat": "42.2777161",
+    "long": "-83.7414140",
+    "address": "620 East Liberty Street"
+  },
+  {
+    "ID": "5446624867",
+    "lat": "42.2794822",
+    "long": "-83.7416079",
+    "buildingName": "The Yard",
+    "address": "609 East Liberty Street"
+  },
+  {
+    "ID": "5446624868",
+    "lat": "42.2794860",
+    "long": "-83.7416548",
+    "buildingName": "Tropical Smoothie Cafe",
+    "address": "607 East Liberty Street"
+  },
+  {
+    "ID": "5446624869",
+    "lat": "42.2794937",
+    "long": "-83.7418502",
+    "buildingName": "Taylor and Colt",
+    "address": "601 East Liberty Street"
+  },
+  {
+    "ID": "5446624870",
+    "lat": "42.2795000",
+    "long": "-83.7419513",
+    "buildingName": "Pure Barre",
+    "address": "539 East Liberty Street"
+  },
+  {
+    "ID": "5446624871",
+    "lat": "42.2795033",
+    "long": "-83.7420265",
+    "buildingName": "Tea Ninja",
+    "address": "535 East Liberty Street"
+  },
+  {
+    "ID": "5781828509",
+    "lat": "42.2792700",
+    "long": "-83.7376737",
+    "buildingName": "The Program on Intergroup Relations",
+    "address": "911 North University Avenue"
+  },
+  {
+    "ID": "6190446523",
+    "lat": "42.2803737",
+    "long": "-83.7478108",
+    "buildingName": "Footprints",
+    "address": "114 East Washington Street"
+  },
+  {
+    "ID": "6190446524",
+    "lat": "42.2805547",
+    "long": "-83.7471660",
+    "buildingName": "Haymaker Public House",
+    "address": "203 East Washington Street"
+  },
+  {
+    "ID": "6190446525",
+    "lat": "42.2805464",
+    "long": "-83.7469340",
+    "buildingName": "Blue Tractor",
+    "address": "207 East Washington Street"
+  },
+  {
+    "ID": "6190446526",
+    "lat": "42.2805470",
+    "long": "-83.7467314",
+    "buildingName": "mash",
+    "address": "211 East Washington Street"
+  },
+  {
+    "ID": "6203591950",
+    "lat": "42.2780319",
+    "long": "-83.7418566",
+    "buildingName": "New Age Salon",
+    "address": "347 Maynard Street"
+  },
+  {
+    "ID": "6208479077",
+    "lat": "42.2793319",
+    "long": "-83.7447852",
+    "buildingName": "Arbor Interactive",
+    "address": "330 East Liberty Street"
+  },
+  {
+    "ID": "6221144286",
+    "lat": "42.2792898",
+    "long": "-83.7425138",
+    "buildingName": "Dawn Treader Book Shop",
+    "address": "514 East Liberty Street"
+  },
+  {
+    "ID": "6221144287",
+    "lat": "42.2792907",
+    "long": "-83.7425803",
+    "buildingName": "TK WU",
+    "address": "510 East Liberty Street"
+  },
+  {
+    "ID": "6354641297",
+    "lat": "42.2799468",
+    "long": "-83.7474630",
+    "buildingName": "Ann Arbor Comedy Showcase",
+    "address": "212 South Fourth Avenue"
+  },
+  {
+    "ID": "6868620784",
+    "lat": "42.2796526",
+    "long": "-83.7465653",
+    "buildingName": "All Hands Active",
+    "address": "255 East Liberty Street"
+  },
+  {
+    "ID": "7177222555",
+    "lat": "42.2745690",
+    "long": "-83.7451351",
+    "buildingName": "ISR-Perry",
+    "address": "330 Packard Street"
+  },
+  {
+    "ID": "7560861824",
+    "lat": "42.2800846",
+    "long": "-83.7471571",
+    "buildingName": "Le Bon Macaron",
+    "address": "209 South Fourth Avenue"
+  },
+  {
+    "ID": "8662362852",
+    "lat": "42.2783229",
+    "long": "-83.7421816",
+    "buildingName": "Axe Ventura",
+    "address": "332 Maynard Street"
+  },
+  {
+    "ID": "8777869786",
+    "lat": "42.2798470",
+    "long": "-83.7471674",
+    "buildingName": "Ferne Boutique",
+    "address": "217 South Fourth Avenue"
+  },
+  {
+    "ID": "9092417188",
+    "lat": "42.2794753",
+    "long": "-83.7414803",
+    "buildingName": "Iggy's Eggies",
+    "address": "611 East Liberty Street"
+  },
+  {
+    "ID": "9092903026",
+    "lat": "42.2795079",
+    "long": "-83.7421234",
+    "buildingName": "Jeffrey Michael Powers Salon",
+    "address": "527 East Liberty Street"
+  },
+  {
+    "ID": "9094921615",
+    "lat": "42.2794895",
+    "long": "-83.7417499",
+    "buildingName": "Michigan Theater",
+    "address": "603 East Liberty Street"
+  },
+  {
+    "ID": "9099007295",
+    "lat": "42.2787451",
+    "long": "-83.7400547",
+    "buildingName": "Mama Satto",
+    "address": "715 North University Avenue"
+  },
+  {
+    "ID": "9099124099",
+    "lat": "42.2790854",
+    "long": "-83.7409546",
+    "buildingName": "Dascola Barbers",
+    "address": "304 ½ South State Street"
+  },
+  {
+    "ID": "9099124100",
+    "lat": "42.2788835",
+    "long": "-83.7409466",
+    "buildingName": "Poke Poke",
+    "address": "312 S State St"
+  },
+  {
+    "ID": "9099203041",
+    "lat": "42.2794784",
+    "long": "-83.7412765",
+    "address": "617 East Liberty Street"
+  },
+  {
+    "ID": "9099549379",
+    "lat": "42.2792859",
+    "long": "-83.7422049",
+    "buildingName": "LSA Finance",
+    "address": "530 East Liberty Street"
+  },
+  {
+    "ID": "9099549381",
+    "lat": "42.2792849",
+    "long": "-83.7423594",
+    "buildingName": "Michigan Sea Grant",
+    "address": "520 East Liberty Street"
+  },
+  {
+    "ID": "9099549382",
+    "lat": "42.2792908",
+    "long": "-83.7424292",
+    "buildingName": "Necto",
+    "address": "516 East Liberty Street"
+  },
+  {
+    "ID": "9099549386",
+    "lat": "42.2801695",
+    "long": "-83.7426572",
+    "buildingName": "Mary A. Rackham Institute",
+    "address": "500 S State St"
+  },
+  {
+    "ID": "9099621206",
+    "lat": "42.2777295",
+    "long": "-83.7424754",
+    "buildingName": "Weegee Hair Studio",
+    "address": "514 East William Street"
+  },
+  {
+    "ID": "9099621209",
+    "lat": "42.2782365",
+    "long": "-83.7418190",
+    "buildingName": "University of Michigan School of Information",
+    "address": "333 Maynard Street"
+  },
+  {
+    "ID": "9099621213",
+    "lat": "42.2792740",
+    "long": "-83.7421707",
+    "buildingName": "School of Dentistry Development and Alumni Relations",
+    "address": "540 East Liberty Street"
+  },
+  {
+    "ID": "9099621214",
+    "lat": "42.2792833",
+    "long": "-83.7421702",
+    "buildingName": "Advanced Research Computing - Technology Services",
+    "address": "540 East Liberty Street"
+  },
+  {
+    "ID": "9111965899",
+    "lat": "42.2783684",
+    "long": "-83.7416953",
+    "buildingName": "Bon Bon Bon",
+    "address": "5 Nickels Arcade"
+  },
+  {
+    "ID": "9111965900",
+    "lat": "42.2784418",
+    "long": "-83.7414022",
+    "buildingName": "911 iPhone Repair",
+    "address": "12 Nickels Arcade"
+  },
+  {
+    "ID": "9282163871",
+    "lat": "42.2796918",
+    "long": "-83.7451705",
+    "buildingName": "Arbors Wellness",
+    "address": "321 East Liberty Street"
+  },
+  {
+    "ID": "9282163874",
+    "lat": "42.2789294",
+    "long": "-83.7434117",
+    "buildingName": "Chang Jung Mi Hair Collection",
+    "address": "312 Thompson Street"
+  },
+  {
+    "ID": "9282163875",
+    "lat": "42.2784150",
+    "long": "-83.7434700",
+    "buildingName": "Thompson St. Professional building",
+    "address": "328 Thompson Street"
+  },
+  {
+    "ID": "9416872904",
+    "lat": "42.2784424",
+    "long": "-83.7413537",
+    "buildingName": "A-1 Alterations",
+    "address": "14 Nickels Arcade"
+  },
+  {
+    "ID": "9866077213",
+    "lat": "42.2792407",
+    "long": "-83.7465481",
+    "buildingName": "Liberty Station Post Office",
+    "address": "200 East Liberty Street"
+  },
+  {
+    "ID": "9905975063",
+    "lat": "42.2805508",
+    "long": "-83.7463492",
+    "buildingName": "Blue Nile Ethiopian",
+    "address": "221 East Washington Street"
+  },
+  {
+    "ID": "10542046197",
+    "lat": "42.2802988",
+    "long": "-83.7459367",
+    "buildingName": "Garris, Garris, Garris & Garris, P.C.",
+    "address": "300 East Washington Street"
+  },
+  {
+    "ID": "10542046199",
+    "lat": "42.2796505",
+    "long": "-83.7470879",
+    "buildingName": "Ginger Deli",
+    "address": "203 East Liberty Street"
+  },
+  {
+    "ID": "10542046201",
+    "lat": "42.2796204",
+    "long": "-83.7463543",
+    "buildingName": "Kanbu Asian Mart",
+    "address": "249 East Liberty Street"
+  },
+  {
+    "ID": "10542046206",
+    "lat": "42.2783762",
+    "long": "-83.7410120",
+    "buildingName": "The Greenway Collaborative, Inc.",
+    "address": "102 Nickels Arcade"
+  },
+  {
+    "ID": "11076651951",
+    "lat": "42.2783658",
+    "long": "-83.7465074",
+    "buildingName": "Blake Transit Center",
+    "address": "328 South Fifth Avenue"
+  },
+  {
+    "ID": "11675925551",
+    "lat": "42.2803014",
+    "long": "-83.7471289",
+    "buildingName": "Grabel & Associates",
+    "address": "202 East Washington Street"
+  },
+  {
+    "ID": "11902026931",
+    "lat": "42.2792048",
+    "long": "-83.7459716",
+    "buildingName": "Spiedo",
+    "address": "307 South Fifth Avenue"
+  },
+  {
+    "ID": "11982473187",
+    "lat": "42.2788391",
+    "long": "-83.7400136",
+    "buildingName": "Bodega Bros",
+    "address": "715 North University Avenue"
+  },
+  {
+    "ID": "11982473188",
+    "lat": "42.2788048",
+    "long": "-83.7403889",
+    "buildingName": "Walgreens",
+    "address": "317 South State Street"
+  },
+  {
+    "ID": "11982486335",
+    "lat": "42.2805531",
+    "long": "-83.7399009",
+    "buildingName": "North Quad Dining Hall",
+    "address": "105 South State Street"
+  },
+  {
+    "ID": "11982505591",
+    "lat": "42.2738410",
+    "long": "-83.7422636",
+    "buildingName": "South Quad Dining Hall",
+    "address": "600 East Madison Street"
+  },
+  {
+    "ID": "12431407515",
+    "lat": "42.2796555",
+    "long": "-83.7374818",
+    "buildingName": "Lydia Mendelssohn Theatre",
+    "address": "911 North University Avenue"
+  },
+  {
+    "ID": "12487490952",
+    "lat": "42.2752319",
+    "long": "-83.7461055",
+    "address": "306 Packard Street"
+  },
+  {
+    "ID": "12487490953",
+    "lat": "42.2752046",
+    "long": "-83.7460478",
+    "address": "308 Packard Street"
+  },
+  {
+    "ID": "12545051768",
+    "lat": "42.2796871",
+    "long": "-83.7478877",
+    "buildingName": "Spencer",
+    "address": "113 East Liberty Street"
+  },
+  {
+    "ID": "12545051769",
+    "lat": "42.2796834",
+    "long": "-83.7478157",
+    "address": "115 East Liberty Street"
+  },
+  {
+    "ID": "12545051770",
+    "lat": "42.2796809",
+    "long": "-83.7477714",
+    "buildingName": "A3C Collaborative Architecture",
+    "address": "115 1/2 East Liberty Street"
+  },
+  {
+    "ID": "12552394002",
+    "lat": "42.2800180",
+    "long": "-83.7474524",
+    "buildingName": "The Get Up Vintage",
+    "address": "210 South Fourth Avenue"
+  },
+  {
+    "ID": "12552394003",
+    "lat": "42.2798353",
+    "long": "-83.7474598",
+    "buildingName": "Cupsnchai",
+    "address": "214 South Fourth Avenue"
+  },
+  {
+    "ID": "12552399845",
+    "lat": "42.2800968",
+    "long": "-83.7474540",
+    "buildingName": "Asian Martial Arts",
+    "address": "208 South Fourth Avenue"
+  },
+  {
+    "ID": "12552399846",
+    "lat": "42.2801194",
+    "long": "-83.7474561",
+    "buildingName": "Whitney Johnson Pilates",
+    "address": "208 ½ South Fourth Avenue"
+  },
+  {
+    "ID": "12552450060",
+    "lat": "42.2797644",
+    "long": "-83.7474705",
+    "buildingName": "House of Chimney Cakes",
+    "address": "216 South Fourth Avenue"
+  },
+  {
+    "ID": "12558249734",
+    "lat": "42.2755109",
+    "long": "-83.7477344",
+    "address": "516 South Fourth Avenue"
+  },
+  {
+    "ID": "12558249735",
+    "lat": "42.2754849",
+    "long": "-83.7477372",
+    "address": "518 South Fourth Avenue"
+  },
+  {
+    "ID": "12610583218",
+    "lat": "42.2784370",
+    "long": "-83.7414591",
+    "buildingName": "ONE DNA",
+    "address": "12 Nickels Arcade"
+  },
+  {
+    "ID": "12610616706",
+    "lat": "42.2783785",
+    "long": "-83.7410114",
+    "address": "17 Nickels Arcade"
+  },
+  {
+    "ID": "12967195102",
+    "lat": "42.2796707",
+    "long": "-83.7476032",
+    "buildingName": "Cinnaholic",
+    "address": "121 East Liberty Street"
+  },
+  {
+    "ID": "13123598952",
+    "lat": "42.2779779",
+    "long": "-83.7409608",
+    "buildingName": "Dunkin'",
+    "address": "342 South State Street"
+  },
+  {
+    "ID": "13287878030",
+    "lat": "42.2758485",
+    "long": "-83.7395153",
+    "buildingName": "UMMA Cafe",
+    "address": "525 South State Street"
+  },
+  {
+    "ID": "13298659861",
+    "lat": "42.2795176",
+    "long": "-83.7404542",
+    "buildingName": "Target Grocery",
+    "address": "231 South State Street"
+  },
+  {
+    "ID": "13298690714",
+    "lat": "42.2795433",
+    "long": "-83.7413205",
+    "buildingName": "HELLOMED",
+    "address": "625 East Liberty Street"
+  },
+  {
+    "ID": "13550898177",
+    "lat": "42.2803337",
+    "long": "-83.7478039",
+    "buildingName": "Sandy's Boutique",
+    "address": "116 East Washington Street"
+  },
+  {
+    "ID": "13550902232",
+    "lat": "42.2803532",
+    "long": "-83.7476250",
+    "buildingName": "Underground Sounds",
+    "address": "120 East Washington Street"
+  },
+  {
+    "ID": "13550903016",
+    "lat": "42.2803577",
+    "long": "-83.7476982",
+    "buildingName": "Third Mind Books",
+    "address": "118 East Washington Street"
+  }
+]

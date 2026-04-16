@@ -14,7 +14,7 @@ export type Prediction = {
     /** route id */
     rt: string,
     /** vehicle id */
-    vid: string,
+    vid: string,                                                                                                                                      
     /** stop id */
     stpid: string,
     /** timestamp of predicted arrival time, epoch milliseconds */
