@@ -5,25 +5,15 @@ import { buildGraphLoadPlan } from "../indoor/buildGraphLoadPlan";
 import { GraphMerger } from "../indoor/GraphMerger";
 import { GraphRepository } from "../indoor/GraphRepository";
 import { FloorGraphJson } from "../indoor/types";
+import { getDb } from "../indoor/mongo";
 
 const MONGO_URI = process.env.INDOOR_MONGO_URI ?? "mongodb://127.0.0.1:27017";
 const DB_NAME = "indoor_navigation";
 const COLLECTION_NAME = "floorGraphs";
 
-let client: MongoClient | null = null;
-let floorGraphsCollection: Collection<FloorGraphJson> | null = null;
-
-async function getCollection(): Promise<Collection<FloorGraphJson>> {
-    if (floorGraphsCollection) return floorGraphsCollection;
-
-    client = new MongoClient(MONGO_URI);
-    await client.connect();
-
-    const db = client.db(DB_NAME);
-    floorGraphsCollection = db.collection<FloorGraphJson>(COLLECTION_NAME);
-
-    console.log("[IndoorNav] Mongo connected");
-    return floorGraphsCollection;
+async function getCollection() {
+  const db = await getDb();
+  return db.collection<FloorGraphJson>("floorGraphs");
 }
 
 /**
