@@ -6,6 +6,7 @@ import { GraphMerger } from "../indoor/GraphMerger";
 import { GraphRepository } from "../indoor/GraphRepository";
 import { FloorGraphJson } from "../indoor/types";
 import { getDb } from "../indoor/mongo";
+import { getRedis } from "../indoor/redis";
 
 const MONGO_URI = process.env.INDOOR_MONGO_URI ?? "mongodb://127.0.0.1:27017";
 const DB_NAME = "indoor_navigation";
@@ -20,6 +21,14 @@ async function getCollection() {
  * Fetch a single floor graph
  */
 export async function getFloorGraph(buildingId: string, floor: number) {
+    const redis = await getRedis();
+    const cacheKey = `indoor:graph:${buildingId}:${floor}`;
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+        return JSON.parse(cached);
+    }
+
     const collection = await getCollection();
 
     const data = await collection.findOne({
@@ -31,12 +40,18 @@ export async function getFloorGraph(buildingId: string, floor: number) {
         throw new Error("graph not found");
     }
 
-    return {
+    const result = {
         buildingId: data.buildingId,
         floor: data.floor,
         nodes: data.nodes,
         edges: data.edges
     };
+
+    await redis.set(cacheKey, JSON.stringify(result), {
+        EX: 3600
+    });
+
+    return result;
 }
 
 /**
