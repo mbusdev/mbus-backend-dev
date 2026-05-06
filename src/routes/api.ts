@@ -429,9 +429,9 @@ router.get('/save-graph', saveGraph);
  */
 export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
-        min_supported_version: "2.0.0",
-        why_update_message: { title: "New Update Available", subtitle: "Please update to the latest version." },
-        persistant_message: { title: "MaizeBus down for this weekend", subtitle: "We've found a bug in our code making bus data hidden. We're waiting for the app store to approve the fix. It will come out in an update soon. Thanks for your patience!" },
+        min_supported_version: "2.0.1",
+        why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
+        persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
         bus_image_version: "1",
     });
