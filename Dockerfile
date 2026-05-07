@@ -1,20 +1,20 @@
-# 使用官方 Node 镜像
+# use Node imas
 FROM node:20
 
-# 设置工作目录
+# setup work dir
 WORKDIR /app
 
-# 复制 package.json 和 lock 文件
+# cp package.json and lock file
 COPY package*.json ./
 
-# 安装依赖
+# install
 RUN npm install
 
-# 复制项目代码
+# copy code
 COPY . .
 
-# 暴露端口
+# expose import
 EXPOSE 3000
 
-# 启动服务
+# start service
 CMD ["npm", "start"]
