@@ -1,1 +1,12 @@
-node_modules/
+node_modules
+.git
+.gitignore
+.env
+.env.*
+npm-debug.log
+yarn-error.log
+dist
+coverage
+.DS_Store
+.vscode
+README.md

@@ -18,7 +18,7 @@ import { startBackgroundJobs } from '../jobs';
 const router = express.Router();
 const API_KEY = process.env.MBUS_API_KEY;
 
-startBackgroundJobs();
+    startBackgroundJobs();
 
 /**
  * Returns static route metadata including names, images, and colors.
