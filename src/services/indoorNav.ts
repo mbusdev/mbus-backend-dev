@@ -1,4 +1,3 @@
-import { MongoClient, Collection } from "mongodb";
 import { GraphLoader } from "../indoor/GraphLoader";
 import { Pathfinder } from "../indoor/pathfinderAstar";
 import { buildGraphLoadPlan } from "../indoor/buildGraphLoadPlan";
@@ -7,10 +6,6 @@ import { GraphRepository } from "../indoor/GraphRepository";
 import { FloorGraphJson } from "../indoor/types";
 import { getDb } from "../indoor/mongo";
 import { getRedis } from "../indoor/redis";
-
-const MONGO_URI = process.env.INDOOR_MONGO_URI ?? "mongodb://127.0.0.1:27017";
-const DB_NAME = "indoor_navigation";
-const COLLECTION_NAME = "floorGraphs";
 
 async function getCollection() {
   const db = await getDb();
@@ -26,8 +21,10 @@ export async function getFloorGraph(buildingId: string, floor: number) {
 
     const cached = await redis.get(cacheKey);
     if (cached) {
+        console.log(`[Redis] HIT ${cacheKey}`);
         return JSON.parse(cached);
     }
+    console.log(`[Redis] MISS ${cacheKey}`);
 
     const collection = await getCollection();
 
@@ -62,7 +59,11 @@ export async function computeIndoorRoute(startNodeId: string, endNodeId: string)
     const graphRepo = new GraphRepository(collection);
 
     const plan = buildGraphLoadPlan(startNodeId, endNodeId);
-    const floorDocs = await graphRepo.getFloorGraphs(plan.targets);
+    const floorDocs = await Promise.all(
+        plan.targets.map(target =>
+            getFloorGraph(target.buildingId, target.floor)
+        )
+    );
 
     if (floorDocs.length === 0) {
         throw new Error("No graph documents found for requested route scope");
