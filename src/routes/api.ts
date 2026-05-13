@@ -429,7 +429,7 @@ router.get('/save-graph', saveGraph);
  */
 export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
-        min_supported_version: "2.0.1",
+        min_supported_version: "2.0.2",
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
         persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
