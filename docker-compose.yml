@@ -11,8 +11,18 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       INDOOR_MONGO_URI: mongodb://172.31.96.1:27017
-      REDIS_URL: redis://host.docker.internal:6379
+      REDIS_URL: redis:6379
     volumes:
       - .:/app
       - /app/node_modules
     command: npx tsx src/app.ts
+    depends_on:
+      - redis
+    
+  redis:
+    image: redis:7
+    container_name: mbus-redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
