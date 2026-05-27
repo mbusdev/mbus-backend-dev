@@ -1,6 +1,7 @@
 import { updateBusPositions, initializeRoutes, rebuildGraph } from './services/graphBuilder';
 import { processRideReminders, processUniversityReminders } from './services/reminder';
 import { updateBuildings } from './services/building_checker';
+import { mergeBuildings } from './services/merge_buildings';
 import cron from 'node-cron';
 /**
  * Starts background jobs for updating bus positions, initializing routes, and rebuilding the graph.
@@ -22,6 +23,7 @@ export function startBackgroundJobs() {
     cron.schedule('0 3 * * 0', () => {
         console.log("Running Sunday 3 AM maintenance task...");
         updateBuildings();
+        mergeBuildings();
     }, {
         timezone: "America/New_York" // Critical: Set your local timezone
     });
