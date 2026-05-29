@@ -5,7 +5,7 @@ const metadata = metadataRaw as any;
 const ROUTE_CONFIG: Record<string, { color: string, image: string }> = {
     "BB": { color: "#2F773F", image: "bus_BB.png" },
     "CN": { color: "#643076", image: "bus_CN.png" },
-    "CS": { color: "#3559B8", image: "bus_CS.png" },
+    "CS": { color: "#0099FF", image: "bus_CS.png" },
     "CSX": { color: "#9B70FF", image: "bus_CSX.png" },
     "DD": { color: "#A9C534", image: "bus_DD.png" },
     "MX": { color: "#5EC7DE", image: "bus_MX.png" },
