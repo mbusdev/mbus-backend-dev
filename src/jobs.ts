@@ -22,8 +22,11 @@ export function startBackgroundJobs() {
     // Schedule: 0 mins, 3 hours (3 AM), any day of month, any month, 0 (Sunday)
     cron.schedule('0 3 * * 0', () => {
         console.log("Running Sunday 3 AM maintenance task...");
-        updateBuildings();
-        mergeBuildings();
+        updateBuildings().then(() => {
+            console.log("Buildings extracted. Ready to prepare file.");
+            mergeBuildings();
+        });
+        
     }, {
         timezone: "America/New_York" // Critical: Set your local timezone
     });
