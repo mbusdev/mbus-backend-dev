@@ -1,2 +1,2 @@
-/Users/ryanlu/Downloads/Projects/mbus-backend-dev/src/assets/walkingCache.json filter=lfs diff=lfs merge=lfs -text
-src/assets/walkingCache.json filter=lfs diff=lfs merge=lfs -text
+src/assets/ann_arbor.ch.json filter=lfs diff=lfs merge=lfs -text
+src/assets/walking-shortcuts.json filter=lfs diff=lfs merge=lfs -text

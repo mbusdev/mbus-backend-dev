@@ -1,4 +1,5 @@
 import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
+import { McRaptorIndex } from "../raptor/McRaptorAlgorithm";
 
 /** Current positions of all buses. */
 export const curBusPositions = { buses: [] as any[] };
@@ -46,6 +47,9 @@ export let cachedGraph: {
     interchange: Interchange;
 } = { trips: [], transfers: {}, interchange: {} };
 
+/** Pre-built McRAPTOR route indices; rebuilt when trips change. */
+export let mcRaptorIndex: McRaptorIndex | null = null;
+
 /** Cache of stop locations (lat/lon). */
 export let cachedStopLocations: Record<string, { name: string, lat: number, lon: number }> = {};
 export let cachedRideStopLocations: Record<string, { name: string, lat: number, lon: number }> = {};
@@ -72,6 +76,9 @@ export const validRideRoutes = new Set<string>();
 /** Updates the cached graph. */
 export function setCachedGraph(newGraph: typeof cachedGraph) {
     cachedGraph = newGraph;
+    mcRaptorIndex = newGraph.trips.length > 0
+        ? McRaptorIndex.build(newGraph.trips, newGraph.interchange)
+        : null;
 }
 /** Updates the cached stop locations. */
 export function setCachedStopLocations(newLocs: typeof cachedStopLocations) {

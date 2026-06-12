@@ -21,17 +21,3 @@ export type GraphMLEdge = {
     /** Detailed geometry points (WKT) for rendering curved paths. */
     geometry?: { lat: number, lon: number }[] 
 };
-
-/**
- * Definition for a navigation landmark used in the ALT heuristic algorithm.
- */
-export type LandmarkDef = { 
-    /** Display name of the landmark. */
-    name: string; 
-    /** Latitude coordinate. */
-    lat: number; 
-    /** Longitude coordinate. */
-    lon: number; 
-    /** The Graph Node ID nearest to this landmark (computed at runtime). */
-    nodeId?: string; 
-};

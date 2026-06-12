@@ -49,7 +49,7 @@ export async function initializeRoutes() {
 
         buildStopLocationMap();
         buildRideStops();
-        await buildWalkingTransfers();
+        buildWalkingTransfers();
 
     } catch (e) {
         console.error("Init Routes Failed", e);
@@ -211,30 +211,19 @@ function buildRideStops() {
 }
 
 /**
- * Generates walking transfers between all stops.
- * Uses the walking service to calculate durations.
+ * Generates sparse ULTRA-style walking transfers between stops.
+ * Reuses in-memory shortcuts; extends incrementally when new stops appear.
  */
-async function buildWalkingTransfers() {
+function buildWalkingTransfers() {
     const stops = Object.keys(state.cachedStopLocations);
     stops.forEach(s => {
-        state.cachedGraph.transfers[s] = [];
         state.cachedGraph.interchange[s] = 30;
     });
 
-    await walking.ensureCacheForStops(new Set(stops), state.cachedStopLocations);
+    if (stops.length === 0) return;
 
-    stops.forEach(origin => {
-        stops.forEach(dest => {
-            if (origin === dest) return;
-            const walk = walking.getCachedWalk(origin, dest);
-            if (walk) {
-                state.cachedGraph.transfers[origin].push({
-                    origin, destination: dest, duration: walk.duration,
-                    startTime: 0, endTime: Number.MAX_SAFE_INTEGER
-                });
-            }
-        });
-    });
+    const { transfers } = walking.buildSparseWalkingTransfers(stops);
+    state.cachedGraph.transfers = transfers;
 }
 
 /**

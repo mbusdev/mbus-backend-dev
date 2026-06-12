@@ -1,13 +1,23 @@
-import { Trip, Transfer, StopID, Time, Interchange, StopTime } from "./types";
+import { Trip, Transfer, StopID, Time, Interchange, StopTime, TransfersByOrigin } from "./types";
 import { Bag, Label } from "./McStructs";
+
+export const VIRTUAL_ORIGIN = 'VIRTUAL_ORIGIN';
+export const VIRTUAL_DESTINATION = 'VIRTUAL_DESTINATION';
+
+/**
+ * Per-query walking overlay — avoids cloning the full transfer graph.
+ * Origin walks replace VIRTUAL_ORIGIN transfers; destination walks append to each stop.
+ */
+export interface McRaptorQueryOverlay {
+    originWalks: Transfer[];
+    destinationWalks: Map<StopID, Transfer>;
+}
 
 /**
  * Represents a complete transit journey consisting of multiple legs.
  */
 export interface Journey {
-    /** The sequence of legs (trips or walking transfers) in the journey. */
     legs: JourneyLeg[];
-    /** The performance metrics for this journey. */
     criteria: {
         arrivalTime: number;
         walkingDistance: number;
@@ -33,81 +43,122 @@ export interface JourneyLeg {
     stopTimes?: StopTime[];
 }
 
+function buildRouteIndices(trips: Trip[]) {
+    const routes: Record<string, Trip[]> = {};
+    const routeStops: Record<string, StopID[]> = {};
+    const stopToRoutes: Record<StopID, string[]> = {};
+
+    for (const trip of trips) {
+        const stopSeq = trip.stopTimes.map(st => st.stop).join(',');
+        if (!routes[stopSeq]) {
+            routes[stopSeq] = [];
+            routeStops[stopSeq] = trip.stopTimes.map(st => st.stop);
+        }
+        routes[stopSeq].push(trip);
+    }
+
+    for (const routeId in routes) {
+        routes[routeId].sort((a, b) => a.stopTimes[0].departureTime - b.stopTimes[0].departureTime);
+        for (const stop of routeStops[routeId]) {
+            if (!stopToRoutes[stop]) stopToRoutes[stop] = [];
+            stopToRoutes[stop].push(routeId);
+        }
+    }
+
+    return { routes, routeStops, stopToRoutes };
+}
+
+/** Merge per-query walking overlay into base transfers once (avoids per-round .concat allocations). */
+function mergeTransfersWithOverlay(
+    baseTransfers: TransfersByOrigin,
+    overlay?: McRaptorQueryOverlay
+): TransfersByOrigin {
+    if (!overlay) return baseTransfers;
+
+    const merged: TransfersByOrigin = { ...baseTransfers };
+    merged[VIRTUAL_ORIGIN] = overlay.originWalks;
+
+    for (const [stop, extra] of overlay.destinationWalks) {
+        const base = baseTransfers[stop];
+        merged[stop] = base ? [...base, extra] : [extra];
+    }
+
+    return merged;
+}
+
+function resolveTransfers(
+    stop: StopID,
+    transfers: TransfersByOrigin
+): Transfer[] {
+    if (stop === VIRTUAL_DESTINATION) return [];
+    return transfers[stop] || [];
+}
+
+function findEarliestTrip(trips: Trip[], stopIndex: number, minTime: number): Trip | null {
+    let lo = 0;
+    let hi = trips.length - 1;
+    let result: Trip | null = null;
+
+    while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        const dep = trips[mid].stopTimes[stopIndex].departureTime;
+        if (dep >= minTime) {
+            result = trips[mid];
+            hi = mid - 1;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return result;
+}
+
 /**
- * Implementation of the McRAPTOR (Multi-Criteria Round-Based Public Transit Routing) algorithm.
- * Optimizes for arrival time, walking distance, and number of transfers.
+ * Pre-built route indices for McRAPTOR. Rebuilt when the transit graph trips change.
  */
-export class McRaptorAlgorithm {
-    private trips: Trip[];
-    private transfers: Record<StopID, Transfer[]>;
-    private interchange: Interchange;
-    private stops: StopID[];
-    private routes: Record<string, Trip[]>;
-    private routeStops: Record<string, StopID[]>;
+export class McRaptorIndex {
+    private readonly trips: Trip[];
+    private readonly interchange: Interchange;
+    private readonly routes: Record<string, Trip[]>;
+    private readonly routeStops: Record<string, StopID[]>;
+    private readonly stopToRoutes: Record<StopID, string[]>;
 
-    private walkingPenalty: number = 1;
-
-    /**
-     * Initializes the routing engine with transit data.
-     * @param trips - List of all transit trips.
-     * @param transfers - Graph of walking connections between stops.
-     * @param interchange - Minimum transfer times for each stop.
-     */
-    constructor(
+    private constructor(
         trips: Trip[],
-        transfers: Record<StopID, Transfer[]>,
-        interchange: Interchange
+        interchange: Interchange,
+        routes: Record<string, Trip[]>,
+        routeStops: Record<string, StopID[]>,
+        stopToRoutes: Record<StopID, string[]>
     ) {
         this.trips = trips;
-        this.transfers = transfers;
         this.interchange = interchange;
-        this.stops = Object.keys(interchange);
-
-        this.routes = {};
-        this.routeStops = {};
-
-        for (const trip of trips) {
-            const stopSeq = trip.stopTimes.map(st => st.stop).join(',');
-            if (!this.routes[stopSeq]) {
-                this.routes[stopSeq] = [];
-                this.routeStops[stopSeq] = trip.stopTimes.map(st => st.stop);
-            }
-            this.routes[stopSeq].push(trip);
-        }
-
-        for (const routeId in this.routes) {
-            this.routes[routeId].sort((a, b) => a.stopTimes[0].departureTime - b.stopTimes[0].departureTime);
-        }
+        this.routes = routes;
+        this.routeStops = routeStops;
+        this.stopToRoutes = stopToRoutes;
     }
 
-    /**
-     * Sets the penalty multiplier for walking (default is 1).
-     * @param penalty - The multiplier for walking duration cost.
-     */
-    public setWalkingPenalty(penalty: number) {
-        this.walkingPenalty = penalty;
+    static build(trips: Trip[], interchange: Interchange): McRaptorIndex {
+        const { routes, routeStops, stopToRoutes } = buildRouteIndices(trips);
+        return new McRaptorIndex(trips, interchange, routes, routeStops, stopToRoutes);
     }
 
-    /**
-     * Executes the McRAPTOR algorithm to find all non-dominated paths to the destination.
-     * @param origin - The starting Stop ID.
-     * @param destination - The destination Stop ID.
-     * @param departureTime - The time of departure.
-     * @returns A Bag containing Pareto-optimal labels for the destination.
-     */
-    public run(origin: StopID, destination: StopID, departureTime: Time): Bag {
+    run(
+        origin: StopID,
+        destination: StopID,
+        departureTime: Time,
+        baseTransfers: TransfersByOrigin,
+        overlay?: McRaptorQueryOverlay,
+        walkingPenalty = 1
+    ): Bag {
         const rounds = 8;
         const bags: Record<StopID, Bag>[] = [];
+        const transfers = mergeTransfersWithOverlay(baseTransfers, overlay);
+        const getTransfers = (stop: StopID) => resolveTransfers(stop, transfers);
 
         bags[0] = {};
-        for (const stop of this.stops) bags[0][stop] = new Bag();
-        if (!bags[0][destination]) bags[0][destination] = new Bag();
-
         if (!bags[0][origin]) bags[0][origin] = new Bag();
 
         const startLabel = new Label(departureTime, 0, 0, null, null, null, origin, departureTime, -1);
         bags[0][origin].add(startLabel);
-
 
         let markedStops = new Set<StopID>();
         markedStops.add(origin);
@@ -117,11 +168,10 @@ export class McRaptorAlgorithm {
             const stop = origin;
             const stopBag = bags[0][stop];
             if (stopBag && !stopBag.isEmpty()) {
-                const transfers = this.transfers[stop] || [];
-                for (const transfer of transfers) {
+                for (const transfer of getTransfers(stop)) {
                     const dest = transfer.destination;
                     const walkTime = transfer.duration;
-                    const walkCost = walkTime * this.walkingPenalty;
+                    const walkCost = walkTime * walkingPenalty;
 
                     if (!bags[0][dest]) bags[0][dest] = new Bag();
 
@@ -156,16 +206,14 @@ export class McRaptorAlgorithm {
 
             const routesToVisit = new Set<string>();
             for (const stop of markedStops) {
-                for (const [routeId, stops] of Object.entries(this.routeStops)) {
-                    if (stops.includes(stop)) {
-                        routesToVisit.add(routeId);
-                    }
+                const routeIds = this.stopToRoutes[stop];
+                if (!routeIds) continue;
+                for (const routeId of routeIds) {
+                    routesToVisit.add(routeId);
                 }
             }
 
             const newMarkedStops = new Set<StopID>();
-
-            if (!bags[k][destination]) bags[k][destination] = new Bag();
 
             for (const routeId of routesToVisit) {
                 const stops = this.routeStops[routeId];
@@ -203,21 +251,21 @@ export class McRaptorAlgorithm {
                     if (prevBag) {
                         for (const label of prevBag.labels) {
                             const buffer = this.interchange[stop] || 0;
-                            const catchTrip = this.findEarliestTrip(trips, i, label.arrivalTime + buffer);
+                            const catchTrip = findEarliestTrip(trips, i, label.arrivalTime + buffer);
 
                             if (catchTrip) {
                                 if (catchTrip.stopTimes[i].pickUp === false) continue;
 
-                                const departureTime = catchTrip.stopTimes[i].departureTime;
+                                const tripDepartureTime = catchTrip.stopTimes[i].departureTime;
                                 const onBoardLabel = new Label(
-                                    departureTime,
+                                    tripDepartureTime,
                                     label.walkingDistance,
                                     label.transferCount + 1,
                                     label,
                                     catchTrip,
                                     null,
                                     stop,
-                                    departureTime,
+                                    tripDepartureTime,
                                     i
                                 );
                                 routeBag.add(onBoardLabel);
@@ -233,12 +281,10 @@ export class McRaptorAlgorithm {
                 const stopBag = bags[k][stop];
                 if (!stopBag || stopBag.isEmpty()) continue;
 
-                const transfers = this.transfers[stop] || [];
-
-                for (const transfer of transfers) {
+                for (const transfer of getTransfers(stop)) {
                     const dest = transfer.destination;
                     const walkTime = transfer.duration;
-                    const walkCost = walkTime * this.walkingPenalty;
+                    const walkCost = walkTime * walkingPenalty;
 
                     if (!bags[k][dest]) bags[k][dest] = new Bag();
 
@@ -280,24 +326,15 @@ export class McRaptorAlgorithm {
         return resultBag;
     }
 
-    private findEarliestTrip(trips: Trip[], stopIndex: number, minTime: number): Trip | null {
-        for (const trip of trips) {
-            if (trip.stopTimes[stopIndex].departureTime >= minTime) {
-                return trip;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Calculates optimal journeys for a specific departure time.
-     * @param origin - The starting Stop ID.
-     * @param destination - The destination Stop ID.
-     * @param departureTime - The exact departure time.
-     * @returns A list of optimal Journey objects.
-     */
-    public getOptimizedJourneys(origin: StopID, destination: StopID, departureTime: Time): Journey[] {
-        const resultBag = this.run(origin, destination, departureTime);
+    getOptimizedJourneys(
+        origin: StopID,
+        destination: StopID,
+        departureTime: Time,
+        baseTransfers: TransfersByOrigin,
+        overlay?: McRaptorQueryOverlay,
+        walkingPenalty = 1
+    ): Journey[] {
+        const resultBag = this.run(origin, destination, departureTime, baseTransfers, overlay, walkingPenalty);
 
         const journeys: Journey[] = [];
 
@@ -315,32 +352,33 @@ export class McRaptorAlgorithm {
         return journeys;
     }
 
-    /**
-     * Finds the best journeys within a time window, filtering for Pareto optimality across all departures.
-     * @param origin - The starting Stop ID.
-     * @param destination - The destination Stop ID.
-     * @param startTime - The start of the departure window.
-     * @param range - The duration of the window to search (e.g. 3600s).
-     * @returns A deduplicated list of the best journeys found in the time range.
-     */
-    public getOptimizedJourneysInRange(origin: StopID, destination: StopID, startTime: Time, range: number): Journey[] {
+    getOptimizedJourneysInRange(
+        origin: StopID,
+        destination: StopID,
+        startTime: Time,
+        range: number,
+        baseTransfers: TransfersByOrigin,
+        overlay?: McRaptorQueryOverlay,
+        walkingPenalty = 1
+    ): Journey[] {
         const allJourneys: Journey[] = [];
         const endTime = startTime + range;
 
         const significantTimes = new Set<number>();
         significantTimes.add(startTime);
 
-        const startStops = [origin, ...(this.transfers[origin] || []).map(t => t.destination)];
+        const mergedTransfers = mergeTransfersWithOverlay(baseTransfers, overlay);
+        const startStops = [origin, ...(mergedTransfers[origin] || []).map(t => t.destination)];
 
         for (const stop of startStops) {
-            for (const routeId in this.routeStops) {
-                if (this.routeStops[routeId].includes(stop)) {
-                    const params = this.routes[routeId];
-                    for (const trip of params) {
-                        const stopTime = trip.stopTimes.find(st => st.stop === stop);
-                        if (stopTime && stopTime.departureTime >= startTime && stopTime.departureTime <= endTime) {
-                            significantTimes.add(stopTime.departureTime);
-                        }
+            const routeIds = this.stopToRoutes[stop];
+            if (!routeIds) continue;
+            for (const routeId of routeIds) {
+                const params = this.routes[routeId];
+                for (const trip of params) {
+                    const stopTime = trip.stopTimes.find(st => st.stop === stop);
+                    if (stopTime && stopTime.departureTime >= startTime && stopTime.departureTime <= endTime) {
+                        significantTimes.add(stopTime.departureTime);
                     }
                 }
             }
@@ -349,7 +387,9 @@ export class McRaptorAlgorithm {
         const sortedTimes = Array.from(significantTimes).sort((a, b) => b - a);
 
         for (const depTime of sortedTimes) {
-            const journeys = this.getOptimizedJourneys(origin, destination, depTime);
+            const journeys = this.getOptimizedJourneys(
+                origin, destination, depTime, baseTransfers, overlay, walkingPenalty
+            );
             for (const j of journeys) {
                 if (j.legs.length === 0) continue;
                 allJourneys.push(j);
@@ -417,7 +457,6 @@ export class McRaptorAlgorithm {
                 const trip = current.trip;
                 const boardStop = parent.stop!;
                 const alightStop = current.stop!;
-                
 
                 if (!parent.trip) {
                     current = parent;
@@ -464,4 +503,32 @@ export class McRaptorAlgorithm {
 
         return path;
     }
+}
+
+/** Build per-query transfer overlay from walking access results. */
+export function buildQueryOverlay(
+    walksFromOrigin: { stopId: string; duration: number }[],
+    walksToDest: { stopId: string; duration: number }[],
+    departureTime: Time
+): McRaptorQueryOverlay {
+    const originWalks: Transfer[] = walksFromOrigin.map(walk => ({
+        origin: VIRTUAL_ORIGIN,
+        destination: walk.stopId === 'DIRECT_WALK' ? VIRTUAL_DESTINATION : walk.stopId,
+        duration: walk.duration,
+        startTime: departureTime,
+        endTime: Number.MAX_SAFE_INTEGER,
+    }));
+
+    const destinationWalks = new Map<StopID, Transfer>();
+    for (const walk of walksToDest) {
+        destinationWalks.set(walk.stopId, {
+            origin: walk.stopId,
+            destination: VIRTUAL_DESTINATION,
+            duration: walk.duration,
+            startTime: departureTime,
+            endTime: Number.MAX_SAFE_INTEGER,
+        });
+    }
+
+    return { originWalks, destinationWalks };
 }

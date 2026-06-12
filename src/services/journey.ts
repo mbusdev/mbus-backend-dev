@@ -1,15 +1,48 @@
 import * as state from '../state/transitState';
 import * as walking from '../walking/walkingMap';
-import { McRaptorAlgorithm, Journey, JourneyLeg } from "../raptor/McRaptorAlgorithm";
+import {
+    McRaptorIndex,
+    Journey,
+    JourneyLeg,
+    VIRTUAL_ORIGIN,
+    VIRTUAL_DESTINATION,
+    buildQueryOverlay,
+} from "../raptor/McRaptorAlgorithm";
+
+const MAX_JOURNEYS_RETURNED = 5;
+
+function queryJourneys(
+    walksFromOrigin: { stopId: string; duration: number }[],
+    walksToDest: { stopId: string; duration: number }[],
+    time: number,
+    options: { walkingPenalty?: number; range?: number } = {}
+): Journey[] {
+    const overlay = buildQueryOverlay(walksFromOrigin, walksToDest, time);
+    const index = state.mcRaptorIndex
+        ?? McRaptorIndex.build(state.cachedGraph.trips, state.cachedGraph.interchange);
+    const penalty = options.walkingPenalty ?? 1;
+
+    const journeys = options.range === undefined
+        ? index.getOptimizedJourneys(
+            VIRTUAL_ORIGIN, VIRTUAL_DESTINATION, time,
+            state.cachedGraph.transfers, overlay, penalty
+        )
+        : index.getOptimizedJourneysInRange(
+            VIRTUAL_ORIGIN, VIRTUAL_DESTINATION, time, options.range,
+            state.cachedGraph.transfers, overlay, penalty
+        );
+
+    return [...journeys]
+        .sort((a, b) =>
+            a.criteria.arrivalTime - b.criteria.arrivalTime ||
+            a.criteria.walkingDistance - b.criteria.walkingDistance ||
+            a.criteria.transferCount - b.criteria.transferCount
+        )
+        .slice(0, MAX_JOURNEYS_RETURNED);
+}
 
 /**
  * Plans a journey between two coordinates using the McRaptor algorithm.
- * @param oLat Origin latitude
- * @param oLon Origin longitude
- * @param dLat Destination latitude
- * @param dLon Destination longitude
- * @param time Start time in seconds since midnight
- * @param options Optional parameters for walking penalty and search range
  */
 export async function planJourney(
     oLat: number, oLon: number,
@@ -17,61 +50,9 @@ export async function planJourney(
     time: number,
     options: { walkingPenalty?: number, range?: number }
 ) {
-    const V_ORIGIN = 'VIRTUAL_ORIGIN';
-    const V_DEST = 'VIRTUAL_DESTINATION';
-
     const walksFromOrigin = walking.getWalkingDistancesFrom(oLat, oLon, dLat, dLon);
     const walksToDest = walking.getWalkingDistancesFrom(dLat, dLon);
-
-    const transferData = { ...state.cachedGraph.transfers };
-    transferData[V_ORIGIN] = [];
-    transferData[V_DEST] = [];
-
-    walksFromOrigin.forEach(walk => {
-        const dest = walk.stopId === "DIRECT_WALK" ? V_DEST : walk.stopId;
-        transferData[V_ORIGIN].push({
-            origin: V_ORIGIN, destination: dest,
-            duration: walk.duration, startTime: time, endTime: Number.MAX_SAFE_INTEGER
-        });
-    });
-
-    walksToDest.forEach(walk => {
-        transferData[walk.stopId] = [...(transferData[walk.stopId] || [])];
-        transferData[walk.stopId].push({
-            origin: walk.stopId, destination: V_DEST,
-            duration: walk.duration, startTime: time, endTime: Number.MAX_SAFE_INTEGER
-        });
-    });
-
-    const requestTrips = state.cachedGraph.trips.map(trip => {
-        if (trip.tripId === 'VIRTUAL_ORIGIN_TRIP') {
-            return {
-                ...trip,
-                stopTimes: [{ stop: V_ORIGIN, arrivalTime: time, departureTime: time, pickUp: true, dropOff: true }]
-            };
-        }
-        if (trip.tripId === 'VIRTUAL_DESTINATION_TRIP') {
-            return {
-                ...trip,
-                stopTimes: [{ stop: V_DEST, arrivalTime: time, departureTime: time, pickUp: true, dropOff: true }]
-            };
-        }
-        return trip;
-    });
-
-    const mcRaptor = new McRaptorAlgorithm(requestTrips, transferData, state.cachedGraph.interchange);
-    mcRaptor.setWalkingPenalty(options.walkingPenalty || 1);
-
-    const range = options.range;
-    const journeys = range === undefined
-        ? mcRaptor.getOptimizedJourneys(V_ORIGIN, V_DEST, time)
-        : mcRaptor.getOptimizedJourneysInRange(
-            V_ORIGIN,
-            V_DEST,
-            time,
-            range ?? 45 * 60
-        );
-
+    const journeys = queryJourneys(walksFromOrigin, walksToDest, time, options);
     return processJourneys(journeys, oLat, oLon, dLat, dLon);
 }
 
@@ -112,7 +93,6 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
 
             if (l1 && l2) {
                 try {
-                    // Always compute A* on demand for final journeys to get the polyline
                     const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
                     data.duration = Math.round(data.duration);
                     Object.assign(formattedLeg, data);
