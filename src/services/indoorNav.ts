@@ -2,7 +2,6 @@ import { GraphLoader } from "../indoor/GraphLoader";
 import { Pathfinder } from "../indoor/pathfinderAstar";
 import { buildGraphLoadPlan } from "../indoor/buildGraphLoadPlan";
 import { GraphMerger } from "../indoor/GraphMerger";
-import { GraphRepository } from "../indoor/GraphRepository";
 import { FloorGraphJson } from "../indoor/types";
 import { getDb } from "../indoor/mongo";
 import { getRedis } from "../indoor/redis";
@@ -41,7 +40,8 @@ export async function getFloorGraph(buildingId: string, floor: number) {
         buildingId: data.buildingId,
         floor: data.floor,
         nodes: data.nodes,
-        edges: data.edges
+        edges: data.edges,
+        verticalConnections: data.verticalConnections ?? []
     };
 
     await redis.set(cacheKey, JSON.stringify(result), {
@@ -55,9 +55,6 @@ export async function getFloorGraph(buildingId: string, floor: number) {
  * Compute indoor route between two node IDs
  */
 export async function computeIndoorRoute(startNodeId: string, endNodeId: string) {
-    const collection = await getCollection();
-    const graphRepo = new GraphRepository(collection);
-
     const plan = buildGraphLoadPlan(startNodeId, endNodeId);
     const floorDocs = await Promise.all(
         plan.targets.map(target =>
@@ -70,7 +67,9 @@ export async function computeIndoorRoute(startNodeId: string, endNodeId: string)
     }
 
     const loadedGraphs = floorDocs.map(doc => GraphLoader.loadFloorGraph(doc));
-    const combinedGraph = GraphMerger.mergeGraphs(loadedGraphs);
+
+    const portalEdges = floorDocs.flatMap(doc => doc.verticalConnections ?? []);
+    const combinedGraph = GraphMerger.mergeGraphs(loadedGraphs, portalEdges);
 
     if (!combinedGraph.nodesById[startNodeId]) {
         throw new Error(`Start node not found: ${startNodeId}`);

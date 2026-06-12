@@ -2,10 +2,12 @@
     "name": "mbus-backend",
     "version": "1.0.0",
     "description": "",
-    "type": "module",
+    "type": "commonjs",
     "main": "src/app.ts",
     "scripts": {
         "start": "tsx src/app.ts",
+        "build": "tsc && tsc-alias",
+        "start:prod": "node dist/app.js",
         "test": "vitest run test",
         "stress-test": "vitest run test/search-stress.test.ts",
         "docs": "typedoc --entryPointStrategy expand ./src --exclude \"**/legacy/**\""
@@ -33,6 +35,7 @@
         "@types/node": "^20.12.12",
         "@vitest/coverage-v8": "^1.2.2",
         "autocannon": "^8.0.0",
+        "tsc-alias": "^1.8.17",
         "typedoc": "^0.28.15",
         "vitest": "^1.2.2"
     }

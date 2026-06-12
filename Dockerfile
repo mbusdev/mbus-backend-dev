@@ -13,8 +13,11 @@ RUN npm install
 # copy code
 COPY . .
 
-# expose import
+RUN npm run build
+
+RUN npm install -g pm2
+
 EXPOSE 3000
 
 # start service
-CMD ["npm", "start"]
+CMD ["pm2-runtime", "dist/app.js", "-i", "max"]
