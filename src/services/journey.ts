@@ -107,23 +107,21 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
         }
 
         if (isWalk) {
-            const cached = walking.getCachedWalk(leg.origin, leg.destination);
+            const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? { lat: oLat, lon: oLon } : state.cachedStopLocations[leg.origin];
+            const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? { lat: dLat, lon: dLon } : state.cachedStopLocations[leg.destination];
 
-            if (cached) {
-                Object.assign(formattedLeg, cached);
-            } else {
-                const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? { lat: oLat, lon: oLon } : state.cachedStopLocations[leg.origin];
-                const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? { lat: dLat, lon: dLon } : state.cachedStopLocations[leg.destination];
-
-                if (l1 && l2) {
-                    try {
-                        const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
-                        data.duration = Math.round(data.duration);
-                        Object.assign(formattedLeg, data);
-                    } catch (e) {
-                        formattedLeg.path_coords = [];
-                    }
+            if (l1 && l2) {
+                try {
+                    // Always compute A* on demand for final journeys to get the polyline
+                    const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
+                    data.duration = Math.round(data.duration);
+                    Object.assign(formattedLeg, data);
+                } catch (e) {
+                    console.error("Failed to generate walking path", e);
+                    formattedLeg.path_coords = [];
                 }
+            } else {
+                formattedLeg.path_coords = [];
             }
         }
 

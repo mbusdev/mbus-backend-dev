@@ -54,6 +54,10 @@ const networkDistanceCache = new LRUCache<string, Map<string, number>>({
     max: 5000,
 });
 
+const polylineCache = new LRUCache<string, WalkingResponse>({
+    max: 1000,
+});
+
 /**
  * Finds the nearest street graph node to a given lat/lon.
  * @param nodes - The map of all graph nodes.
@@ -313,6 +317,13 @@ export function buildStopNodeMap(locations: Record<string, { lat: number, lon: n
  * @param destLon - Longitude of destination.
  */
 export async function getWalkingResponse(originLat: number, originLon: number, destLat: number, destLon: number): Promise<WalkingResponse> {
+    const cacheKey = `${originLat},${originLon}_TO_${destLat},${destLon}`;
+    const cachedResponse = polylineCache.get(cacheKey);
+    
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+
     if (graphNodes.size === 0) {
         console.warn("Graph not loaded. Calling initializeGraph() now.");
         initializeGraph();
@@ -375,11 +386,15 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
         pathCoords.push({ lat: destLat, lon: destLon });
     }
 
-    return {
+    const finalResponse = {
         distance: meters,
         duration: seconds,
         path_coords: pathCoords,
     };
+
+    polylineCache.set(cacheKey, finalResponse);
+
+    return finalResponse;
 }
 
 /**
@@ -472,48 +487,99 @@ export function getWalkingDistancesFrom(
  * @param stopIds - Set of stop IDs to verify.
  * @param stopLocations - Map of Stop ID to coordinates.
  */
+let lastVerifiedStopCount = 0;
+
 export async function ensureCacheForStops(
     stopIds: Set<string>,
     stopLocations: Record<string, { lat: number, lon: number }>
 ): Promise<void> {
+    const totalStops = stopIds.size;
 
-    const fetchPromises: Promise<void>[] = [];
+    // 1. Runtime Fast-Path: If we already verified this exact number of stops this session, instantly exit.
+    if (totalStops === lastVerifiedStopCount) return;
+
+    // 2. Boot Fast-Path: If the JSON file already has all the required pairs, instantly exit.
+    // (Total stops * (Total stops - 1) gives us the exact number of expected A -> B pairs)
+    const expectedPairs = totalStops * (totalStops - 1);
+    const currentCacheSize = Object.keys(walkingCache).length;
+
+    if (currentCacheSize >= expectedPairs) {
+        lastVerifiedStopCount = totalStops;
+        return; 
+    }
+
+    // --- If we reach here, we actually need to do work ---
+
+    if (graphNodes.size === 0) initializeGraph();
+    buildStopNodeMap(stopLocations);
+
     let cacheWasUpdated = false;
+    const stopArray = Array.from(stopIds);
+    const totalPairs = totalStops * totalStops;
+    let processedPairs = 0;
 
-    console.log(`Verifying cache for ${stopIds.size} stops...`);
+    // Now this ONLY prints if it actually has to calculate missing stops
+    console.log(`Building cache for missing stops using Single-Source Dijkstra...`);
 
-    for (const id1 of stopIds) {
-        for (const id2 of stopIds) {
+    for (const id1 of stopArray) {
+        const startData = stopNodeMap[id1];
+        if (!startData) {
+            processedPairs += totalStops;
+            continue;
+        }
+
+        let missingCache = false;
+        for (const id2 of stopArray) {
+            if (id1 !== id2 && !walkingCache[`${id1}_TO_${id2}`]) {
+                missingCache = true;
+                break;
+            }
+        }
+
+        if (!missingCache) {
+            processedPairs += totalStops;
+            if (processedPairs === totalPairs) {
+                process.stdout.write(`\rBuilding cache keys: ${processedPairs} / ${totalPairs} (100.0%)`);
+            }
+            continue;
+        }
+
+        const distancesFromStart = computeDijkstraAll(startData.nodeId);
+
+        for (const id2 of stopArray) {
+            processedPairs++;
+            if (processedPairs % 1000 === 0 || processedPairs === totalPairs) {
+                const percent = ((processedPairs / totalPairs) * 100).toFixed(1);
+                process.stdout.write(`\rBuilding cache keys: ${processedPairs} / ${totalPairs} (${percent}%)`);
+            }
+
             if (id1 === id2) continue;
 
             const cacheKey = `${id1}_TO_${id2}`;
 
             if (!walkingCache[cacheKey]) {
-                const loc1 = stopLocations[id1];
-                const loc2 = stopLocations[id2];
+                const endData = stopNodeMap[id2];
 
-                if (loc1 && loc2) {
+                if (endData && distancesFromStart) {
                     cacheWasUpdated = true;
+                    const distOnStreet = distancesFromStart.get(endData.nodeId);
 
-                    const p = (async () => {
-                        try {
-                            const data = await getWalkingResponse(loc1.lat, loc1.lon, loc2.lat, loc2.lon);
-                            walkingCache[cacheKey] = data;
-                        } catch (err) {
-                            walkingCache[cacheKey] = { duration: 60000, distance: 0, path_coords: [] };
-                        }
-                    })();
-
-                    fetchPromises.push(p);
+                    if (distOnStreet !== undefined) {
+                        const totalDist = startData.distToNode + distOnStreet + endData.distToNode;
+                        walkingCache[cacheKey] = {
+                            distance: totalDist,
+                            duration: Math.ceil(totalDist / WALKING_SPEED_M_S),
+                            path_coords: []
+                        };
+                    } else {
+                        walkingCache[cacheKey] = { duration: 60000, distance: 0, path_coords: [] };
+                    }
                 }
             }
         }
     }
 
-    if (fetchPromises.length > 0) {
-        console.log(`Computing ${fetchPromises.length} new paths...`);
-        await Promise.all(fetchPromises);
-    }
+    process.stdout.write('\n');
 
     if (cacheWasUpdated) {
         try {
@@ -523,6 +589,8 @@ export async function ensureCacheForStops(
             console.error("WalkingManager: Failed to write cache to disk", err);
         }
     }
+
+    lastVerifiedStopCount = totalStops;
 }
 
 /**
@@ -533,6 +601,19 @@ export async function ensureCacheForStops(
  */
 export function getCachedWalk(originId: string, destId: string): WalkingResponse | undefined {
     return walkingCache[`${originId}_TO_${destId}`] ?? null;
+}
+
+/**
+ * Retrieves a cached polyline response directly from the LRU memory cache.
+ * @param originLat - Latitude of origin.
+ * @param originLon - Longitude of origin.
+ * @param destLat - Latitude of destination.
+ * @param destLon - Longitude of destination.
+ * @returns Cached walking data or undefined if not cached.
+ */
+export function getCachedPolyline(originLat: number, originLon: number, destLat: number, destLon: number): WalkingResponse | undefined {
+    const cacheKey = `${originLat},${originLon}_TO_${destLat},${destLon}`;
+    return polylineCache.get(cacheKey);
 }
 
 initializeGraph();

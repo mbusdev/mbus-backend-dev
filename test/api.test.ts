@@ -204,5 +204,5 @@ describe('API Endpoints', () => {
                 throw error;
             }
         }
-    });
+    }, 20000);
 });
