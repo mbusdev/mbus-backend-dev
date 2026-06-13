@@ -43,8 +43,9 @@ async function initMap() {
 	);
 
 	const updateMap = (
-		/** @type {Array<{lat: number, lon: number, prevEdgeTypes?: string[], [key: string]: any}>} */ nodes,
-		/** @type {Array<{lat: number, lon: number, [key: string]: any}>} */ detailedPath,
+		/** @type {WalkingResponse['node_coords']} */ nodes,
+		/** @type {WalkingResponse['path_coords']} */ detailedPath,
+		/** @type {WalkingResponse['extra_edges']} */ extraEdges,
 	) => {
 		// remove existing markers and polylines
 		markers.map((m) => {m.map = null;})
@@ -113,6 +114,17 @@ async function initMap() {
 			polylines.push(new Polyline({map, zIndex: 1, path: locations, strokeColor: "orange", clickable: false}));
 		}
 
+		// extra edges
+		for (const { lat1, lon1, lat2, lon2 } of extraEdges) {
+			polylines.push(new Polyline({
+				map,
+				zIndex: -1,
+				path: [{lat: lat1, lng: lon1}, {lat: lat2, lng: lon2}],
+				strokeColor: "purple",
+				clickable: false
+			}));
+		}
+
 		if (start) {
 			markers.push(new AdvancedMarkerElement({
 				map, position: start, title: "start"
@@ -139,13 +151,14 @@ async function initMap() {
 			fetch(req).then((res) => {
 				res.json().then((body) => {
 					console.log(body);
+					/** @type {WalkingResponse} */
 					const leg = body.journeys[0].legs[0];
 					console.log(leg);
-					updateMap(leg.node_coords, leg.path_coords);
+					updateMap(leg.node_coords, leg.path_coords, leg.extra_edges);
 				});
 			});
 		} else {
-			updateMap([], []);
+			updateMap([], [], []);
 		}
 	};
 

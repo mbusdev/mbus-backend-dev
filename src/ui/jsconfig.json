@@ -16,5 +16,5 @@
     "typeRoots": ["../../node_modules/@types"],
     "noEmit": true
   },
-  "include": ["*.js"]
+  "include": ["*.js", "*.d.ts", "../walking/types.ts"]
 }

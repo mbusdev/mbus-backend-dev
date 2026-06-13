@@ -76,7 +76,7 @@ export async function planJourney(
     return processJourneys(journeys, oLat, oLon, dLat, dLon);
 }
 
-type WalkingLeg = walking.WalkingResponse;
+type WalkingLeg = WalkingResponse;
 type BusLeg = {
     stopTimes: StopTime[],
     trip: Trip,

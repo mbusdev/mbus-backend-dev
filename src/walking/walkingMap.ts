@@ -1,23 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { writeFileSync, readFileSync, existsSync } from "fs";
-import { GraphMLNode, GraphMLEdge, LandmarkDef } from './types';
+import { GraphMLNode, GraphMLEdge, LandmarkDef, WalkingResponse } from './types';
 import { haversine, loadMap } from './loadMap';
 import { LRUCache } from 'lru-cache'; 
-
-/**
- * Standard response for a single point-to-point walking query.
- */
-export interface WalkingResponse {
-    /** Walking duration in seconds. */
-    duration: number;
-    /** Walking distance in meters. */
-    distance: number;
-    /** Ordered list of coordinates representing the walking path geometry. */
-    path_coords: { lat: number, lon: number }[];
-    /** Ordered list of coordinates representing where the actual nodes are. */
-    node_coords: { lat: number, lon: number, prevEdgeTypes: string[] | null, prevEdgeNames: string[] | null }[];
-}
 
 /**
  * Result of a batch query from a single origin node to multiple destinations.
@@ -331,6 +317,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
 
     let pathCoords: { lat: number, lon: number }[] = [];
     let nodeCoords/*: { lat: number, lon: number, nextEdgeTypes: string[] | null }[]*/ = [];
+    let extraEdges: WalkingResponse['extra_edges'] = [];
     let meters: number;
     let seconds: number;
 
@@ -352,14 +339,33 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
         pathCoords.push({ lat: originLat, lon: originLon });
 
         if (result.pathIds.length > 0) {
+            let updateExtraEdges = (id: string) => {
+                let originNode = graphNodes.get(id);
+                graphAdjacency.get(id)?.map((edge) => {
+                    let neighborId = edge.to;
+                    let neighborNode = graphNodes.get(neighborId);
+                    if (!neighborNode || !originNode) {
+                        return null;
+                    }
+                    return { lat1: originNode.lat, lon1: originNode.lon, lat2: neighborNode.lat, lon2: neighborNode.lon };
+                }).forEach((edge) => {
+                    if (edge) {
+                        extraEdges.push(edge);
+                    }
+                });
+            };
+            
             // Add start node
             const startNode = graphNodes.get(result.pathIds[0])!;
             pathCoords.push({ lat: startNode.lat, lon: startNode.lon });
-            nodeCoords.push({ prevEdgeTypes: null, prevEdgeName: null, ...startNode});
+            nodeCoords.push({ prevEdgeTypes: null, prevEdgeNames: null, ...startNode});
+            updateExtraEdges(result.pathIds[0])
 
             for (let i = 0; i < result.pathIds.length - 1; i++) {
                 const currId = result.pathIds[i];
                 const nextId = result.pathIds[i + 1];
+
+                updateExtraEdges(nextId);
 
                 // find edge used to get to nextId
                 const edge = graphAdjacency.get(currId)?.find(e => e.to === nextId);
@@ -369,12 +375,12 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
                         pathCoords.push(edge.geometry[k]);
                     }
                     const nextNode = graphNodes.get(nextId)!;
-                    nodeCoords.push({ prevEdgeTypes: edge.types, prevEdgeName: edge.names,  ...nextNode});
+                    nodeCoords.push({ prevEdgeTypes: edge.types, prevEdgeNames: edge.names,  ...nextNode});
                 } else {
                     // draw line to next node
                     const nextNode = graphNodes.get(nextId)!;
                     pathCoords.push({ lat: nextNode.lat, lon: nextNode.lon });
-                    nodeCoords.push({ prevEdgeTypes: edge?.types ?? null, prevEdgeName: edge?.names ?? null,  ...nextNode});
+                    nodeCoords.push({ prevEdgeTypes: edge?.types ?? null, prevEdgeNames: edge?.names ?? null,  ...nextNode});
                 }
             }
         }
@@ -387,6 +393,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
         duration: seconds,
         path_coords: pathCoords,
         node_coords: nodeCoords,
+        extra_edges: extraEdges,
     };
 }
 

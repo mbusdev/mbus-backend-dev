@@ -26,9 +26,25 @@ export type GraphMLEdge = {
 };
 
 /**
+ * Standard response for a single point-to-point walking query.
+ */
+export interface WalkingResponse {
+    /** Walking duration in seconds. */
+    duration: number;
+    /** Walking distance in meters. */
+    distance: number;
+    /** Ordered list of coordinates representing the walking path geometry. */
+    path_coords: { lat: number, lon: number }[];
+    /** Ordered list of coordinates representing where the actual nodes are. */
+    node_coords: { lat: number, lon: number, prevEdgeTypes: string[] | null, prevEdgeNames: string[] | null }[];
+    /** List of pairs of coordinates representing additional edges to show. */
+    extra_edges: { lat1: number, lon1: number, lat2: number, lon2: number }[];
+}
+
+/**
  * Definition for a navigation landmark used in the ALT heuristic algorithm.
  */
-export type LandmarkDef = { 
+export type LandmarkDef = {
     /** Display name of the landmark. */
     name: string; 
     /** Latitude coordinate. */
