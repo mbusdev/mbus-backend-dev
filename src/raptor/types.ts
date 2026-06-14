@@ -86,3 +86,68 @@ export type TransfersByOrigin = Record<StopID, Transfer[]>;
  * Map defining the minimum time required to switch vehicles at each stop.
  */
 export type Interchange = Record<StopID, Time>;
+
+/**
+ * Classification of a user's relationship to nearby buses.
+ */
+export type OnBusStatus = 'on_bus' | 'near_bus' | 'waiting_at_stop' | 'not_near_bus';
+
+/**
+ * A single user location sample provided by the frontend for motion validation.
+ */
+export interface LocationSample {
+  lat: number;
+  lon: number;
+  /** Epoch milliseconds. */
+  timestamp: number;
+  /** Speed in m/s from the device, if available. */
+  speed?: number;
+  /** Heading in degrees from the device, if available. */
+  heading?: number;
+}
+
+/**
+ * Result of classifying whether a user is on a bus, near one, or waiting at a stop.
+ */
+export interface OnBusClassification {
+  status: OnBusStatus;
+  /** Vehicle ID of the matched bus, when applicable. */
+  vid?: string;
+  /** Motion-correlation confidence score from 0 to 1. */
+  confidence: number;
+  /** Human-readable explanation of the classification. */
+  reason: string;
+}
+
+/**
+ * Context describing a stop the user is physically standing at.
+ */
+export interface AtStopContext {
+  stopId: StopID;
+  stopName: string;
+  distanceMeters: number;
+  /** 0 when the user is considered to be at the stop. */
+  walkTimeSeconds: number;
+}
+
+/**
+ * Routing context for a user confirmed to be aboard a specific bus.
+ */
+export interface OnBusContext {
+  vid: string;
+  tripId: TripID;
+  rt: string;
+  /** Virtual stop ID injected into the graph, e.g. "ON_BUS_341". */
+  virtualStopId: StopID;
+  /** Index in the original trip's stopTimes where the user can next alight. */
+  boardStopIndex: number;
+  busLat: number;
+  busLon: number;
+  /** Trip copy starting from the virtual on-bus stop. */
+  trimmedTrip: Trip;
+  classification: OnBusClassification;
+  /** Physical stop the bus is currently at/servicing, if stopped at one. */
+  currentStopId?: StopID;
+  currentStopName?: string;
+  isStoppedAtStop: boolean;
+}
