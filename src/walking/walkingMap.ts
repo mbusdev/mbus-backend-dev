@@ -1,94 +1,120 @@
-import fs from 'fs';
-import path from 'path';
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { GraphMLNode, GraphMLEdge, LandmarkDef } from './types';
+import crypto from 'crypto';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { GraphMLNode, GraphMLEdge } from './types';
+import { TransfersByOrigin } from '../raptor/types';
 import { haversine, loadMap } from './loadMap';
-import { LRUCache } from 'lru-cache'; 
+import { LRUCache } from 'lru-cache';
+import * as chRouter from './contractionHierarchy';
+import {
+    StopWalkMeters,
+    transitiveReductionShortcuts,
+    shortcutsToTransfers,
+    countStopWalkEdges,
+} from './walkingShortcuts';
 
 /**
  * Standard response for a single point-to-point walking query.
  */
 export interface WalkingResponse {
-    /** Walking duration in seconds. */
     duration: number;
-    /** Walking distance in meters. */
     distance: number;
-    /** Ordered list of coordinates representing the walking path geometry. */
     path_coords: { lat: number, lon: number }[];
 }
 
-/**
- * Result of a batch query from a single origin node to multiple destinations.
- */
-export interface BatchWalkingResult {
-    /** The ID of the street node closest to the origin coordinates. */
-    nearestNodeId: string;
-    /** The straight-line distance from the origin coordinates to the street node. */
-    distanceToNode: number;
-    /** A map of NodeID -> Distance (in meters) for all reachable nodes. */
-    nodeDistances: Map<string, number>;
-}
-
-const CACHE_FILE = path.resolve(process.cwd(), 'src/assets/landmark_dist.json');
 const WALKING_SPEED_M_S = 5000 / 3600;
-const WALKING_CACHE_PATH = "src/assets/walkingCache.json";
-const DEBUG = false;
-const LANDMARK_DISTANCES = new Map<string, Map<string, number>>();
-const LANDMARKS: LandmarkDef[] = [
-    { name: "Hayward/Hubbard", lat: 42.295877, lon: -83.707688999999 },
-    { name: "Crisler Center", lat: 42.264356, lon: -83.744353999999 },
-    { name: "Dominos Farms", lat: 42.321140000001, lon: -83.682196000001 },
-    { name: "Wall St Structure", lat: 42.288482999999, lon: -83.735965 },
-    { name: "Plymouth Park-and-Ride", lat: 42.30597, lon: -83.68852 },
-    { name: "Oxford Housing", lat: 42.274684999999, lon: -83.726024999999 }
-];
+const SHORTCUTS_CACHE_PATH = "src/assets/walking-shortcuts.json";
+/** Placeholder duration for stop pairs with no street route (legacy walkingCache behavior). */
+const UNREACHABLE_WALK_SECONDS = 60000;
+const USE_DIJKSTRA = process.env.WALKING_USE_DIJKSTRA === 'true';
 
 let graphNodes: Map<string, GraphMLNode> = new Map();
 let graphAdjacency: Map<string, GraphMLEdge[]> = new Map();
 let stopNodeMap: Record<string, { nodeId: string, distToNode: number }> = {};
 let relevantStopNodes = new Set<string>();
-
-let walkingCache: { [key: string]: WalkingResponse } = {};
+let useChRouting = false;
 
 const networkDistanceCache = new LRUCache<string, Map<string, number>>({
     max: 5000,
 });
 
-/**
- * Finds the nearest street graph node to a given lat/lon.
- * @param nodes - The map of all graph nodes.
- * @param lat - Query latitude.
- * @param lon - Query longitude.
- * @returns Object containing the best Node ID and the distance to it.
- */
-function nearestNode(nodes: Map<string, GraphMLNode>, lat: number, lon: number) {
-    let bestId: string | null = null;
-    let bestDist = Infinity;
-    for (const [id, n] of nodes) {
-        const d = haversine(lat, lon, n.lat, n.lon);
-        if (d < bestDist) {
-            bestDist = d;
-            bestId = id;
+/** Cached street path between two graph nodes (snap coords applied per request). */
+interface NodePolylineCacheEntry {
+    streetMeters: number;
+    nodeIds: string[];
+    /** No street route between these nodes — use haversine on request coordinates. */
+    unreachable?: boolean;
+}
+
+const polylineCache = new LRUCache<string, NodePolylineCacheEntry>({
+    max: 5000,
+});
+
+function nodePolylineCacheKey(startId: string, goalId: string): string {
+    return `${startId}::${goalId}`;
+}
+
+function buildWalkingResponseFromNodePath(
+    entry: NodePolylineCacheEntry,
+    nearestStart: { id: string; dist: number },
+    nearestGoal: { id: string; dist: number },
+    originLat: number,
+    originLon: number,
+    destLat: number,
+    destLon: number
+): WalkingResponse {
+    if (entry.unreachable) {
+        const meters = haversine(originLat, originLon, destLat, destLon);
+        return {
+            distance: meters,
+            duration: meters / WALKING_SPEED_M_S,
+            path_coords: [{ lat: originLat, lon: originLon }, { lat: destLat, lon: destLon }],
+        };
+    }
+
+    const meters = entry.streetMeters + nearestStart.dist + nearestGoal.dist;
+    const pathCoords = chRouter.stitchPathCoords(
+        entry.nodeIds, graphNodes, graphAdjacency,
+        originLat, originLon, destLat, destLon
+    );
+    return {
+        distance: meters,
+        duration: meters / WALKING_SPEED_M_S,
+        path_coords: pathCoords,
+    };
+}
+
+function resolveNodePolylinePath(
+    startId: string,
+    goalId: string
+): NodePolylineCacheEntry {
+    const cacheKey = nodePolylineCacheKey(startId, goalId);
+    const cached = polylineCache.get(cacheKey);
+    if (cached) return cached;
+
+    let entry: NodePolylineCacheEntry;
+
+    const chPath = useChRouting ? chRouter.queryPath(startId, goalId) : null;
+    if (chPath) {
+        entry = { streetMeters: chPath.distance, nodeIds: chPath.nodeIds };
+    } else {
+        const distOnStreet = queryNetworkDistance(startId, goalId);
+        if (distOnStreet === undefined) {
+            entry = { streetMeters: 0, nodeIds: [], unreachable: true };
+        } else if (startId === goalId) {
+            entry = { streetMeters: 0, nodeIds: [startId] };
+        } else {
+            entry = { streetMeters: distOnStreet, nodeIds: [startId, goalId] };
         }
     }
-    return { id: bestId, dist: bestDist };
+
+    polylineCache.set(cacheKey, entry);
+    return entry;
 }
 
-/**
- * Reconstructs the path from the A* 'cameFrom' map.
- */
-function reconstructPath(cameFrom: Map<string, string>, current: string) {
-    const total = [current];
-    while (cameFrom.has(current)) {
-        current = cameFrom.get(current)!;
-        total.push(current);
-    }
-    return total.reverse();
+function nearestNode(nodes: Map<string, GraphMLNode>, lat: number, lon: number) {
+    return chRouter.nearestGraphNode(nodes, lat, lon) ?? { id: null as unknown as string, dist: Infinity };
 }
 
-/**
- * Minimal MinHeap implementation for priority queueing in A* and Dijkstra.
- */
 class MinHeap {
     private arr: { id: string; f: number }[] = [];
     push(item: { id: string; f: number }) { this.arr.push(item); this._siftUp(); }
@@ -98,17 +124,10 @@ class MinHeap {
     private _siftDown() { let i = 0; const n = this.arr.length; while (true) { const l = 2 * i + 1; const r = 2 * i + 2; let smallest = i; if (l < n && this.arr[l].f < this.arr[smallest].f) smallest = l; if (r < n && this.arr[r].f < this.arr[smallest].f) smallest = r; if (smallest === i) break;[this.arr[i], this.arr[smallest]] = [this.arr[smallest], this.arr[i]]; i = smallest; } }
 }
 
-/**
- * Runs Dijkstra's algorithm from a start node to finding a specific set of targets.
- * Optimized to early-exit once all targets in the optional set are found.
- * @param startId - The starting Node ID.
- * @param targets - (Optional) Set of Node IDs to stop searching after finding.
- * @returns Map of Node ID to walking distance in meters.
- */
+/** Legacy full-graph Dijkstra (WALKING_USE_DIJKSTRA=true or CH missing). */
 function computeDijkstraAll(startId: string, targets?: Set<string>): Map<string, number> {
     const distances = new Map<string, number>();
     const minHeap = new MinHeap();
-
     let targetsFound = 0;
     const totalTargets = targets ? targets.size : 0;
 
@@ -116,16 +135,14 @@ function computeDijkstraAll(startId: string, targets?: Set<string>): Map<string,
     minHeap.push({ id: startId, f: 0 });
 
     while (minHeap.size() > 0) {
-        const { id: u, f: d } = minHeap.pop()!;
+        const popped = minHeap.pop()!;
+        const { id: u, f: d } = popped;
         if (d > (distances.get(u) ?? Infinity)) continue;
         if (targets && targets.has(u)) {
             targetsFound++;
-            if (targetsFound >= totalTargets) {
-                break;
-            }
+            if (targetsFound >= totalTargets) break;
         }
-        const neighbors = graphAdjacency.get(u) ?? [];
-        for (const edge of neighbors) {
+        for (const edge of graphAdjacency.get(u) ?? []) {
             const newDist = d + edge.dist;
             if (newDist < (distances.get(edge.to) ?? Infinity)) {
                 distances.set(edge.to, newDist);
@@ -136,187 +153,66 @@ function computeDijkstraAll(startId: string, targets?: Set<string>): Map<string,
     return distances;
 }
 
-/**
- * Performs A* search between two nodes using ALT (A*, Landmarks, Triangle Inequality) heuristic.
- * @param startId - Starting graph node ID.
- * @param goalId - Target graph node ID.
- * @returns Path details or null if no path exists.
- */
-async function aStar(startId: string, goalId: string) {
-    const openHeap = new MinHeap();
-    const gScore = new Map<string, number>();
-    const fScore = new Map<string, number>();
-    const inOpen = new Set<string>();
-    const cameFrom = new Map<string, string>();
-    let explored = 0;
-
-    gScore.set(startId, 0);
-    const goalNode = graphNodes.get(goalId)!;
-
-    const getHeuristic = (currId: string): number => {
-        const hHaversine = haversine(
-            graphNodes.get(currId)!.lat, graphNodes.get(currId)!.lon,
-            goalNode.lat, goalNode.lon
-        );
-        let maxLandmarkDiff = 0;
-        for (const [landmarkId, distMap] of LANDMARK_DISTANCES) {
-            const dToNode = distMap.get(currId);
-            const dToGoal = distMap.get(goalId);
-            if (dToNode !== undefined && dToGoal !== undefined) {
-                const diff = Math.abs(dToNode - dToGoal);
-                if (diff > maxLandmarkDiff) maxLandmarkDiff = diff;
-            }
-        }
-        return Math.max(hHaversine, maxLandmarkDiff);
-    };
-
-    const initialH = getHeuristic(startId);
-    fScore.set(startId, initialH);
-    openHeap.push({ id: startId, f: initialH });
-    inOpen.add(startId);
-
-    while (openHeap.size() > 0) {
-        explored++;
-        const cur = openHeap.pop()!;
-        const current = cur.id;
-
-        if (current === goalId) {
-            const pathIds = reconstructPath(cameFrom, current);
-            let totalDist = 0;
-            for (let i = 1; i < pathIds.length; i++) {
-                const from = pathIds[i - 1];
-                const to = pathIds[i];
-                const e = graphAdjacency.get(from)!.find(ed => ed.to === to);
-                if (e) totalDist += e.dist;
-            }
-            return { pathIds, totalDist, explored };
-        }
-
-        inOpen.delete(current);
-        const neighbors = graphAdjacency.get(current) ?? [];
-        for (const edge of neighbors) {
-            const tentative_g = (gScore.get(current) ?? Infinity) + edge.dist;
-            if (tentative_g < (gScore.get(edge.to) ?? Infinity)) {
-                cameFrom.set(edge.to, current);
-                gScore.set(edge.to, tentative_g);
-
-                const h = getHeuristic(edge.to);
-                const f = tentative_g + h;
-
-                fScore.set(edge.to, f);
-                if (!inOpen.has(edge.to)) {
-                    openHeap.push({ id: edge.to, f });
-                    inOpen.add(edge.to);
-                }
-            }
-        }
+function queryNetworkDistance(startId: string, endId: string): number | undefined {
+    if (useChRouting && chRouter.isChLoaded()) {
+        return chRouter.queryDistance(startId, endId) ?? undefined;
     }
-    return null;
+    const dists = computeDijkstraAll(startId, new Set([endId]));
+    return dists.get(endId);
 }
 
-/**
- * Saves precomputed landmark distances to a JSON cache file.
- */
-function saveLandmarkDistances(data: Map<string, Map<string, number>>) {
-    const output: Record<string, Record<string, number>> = {};
-    for (const [landmarkId, distances] of data) {
-        const distObj: Record<string, number> = {};
-        for (const [targetNode, dist] of distances) {
-            distObj[targetNode] = Number(dist.toFixed(2));
-        }
-        output[landmarkId] = distObj;
+function batchDistancesFromOrigin(originId: string, targetNodeIds: Iterable<string>): Map<string, number> {
+    const targets = new Set(targetNodeIds);
+    if (useChRouting && chRouter.isChLoaded()) {
+        const phast = chRouter.queryDistancesFromOrigin(originId, targets);
+        if (phast && phast.size > 0) return phast;
     }
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(output));
-    console.log(`Saved cache to ${CACHE_FILE}`);
+    return computeDijkstraAll(originId, targets);
 }
 
-/**
- * Loads precomputed landmark distances from the JSON cache file.
- */
-function loadLandmarkDistances() {
-    const raw = fs.readFileSync(CACHE_FILE, 'utf8');
-    const json = JSON.parse(raw);
-    for (const landmarkId in json) {
-        const distObj = json[landmarkId];
-        const distMap = new Map<string, number>();
-        for (const targetNode in distObj) {
-            distMap.set(targetNode, distObj[targetNode]);
-        }
-        LANDMARK_DISTANCES.set(landmarkId, distMap);
-    }
-    console.log(`Loaded distances for ${LANDMARK_DISTANCES.size} landmarks from cache`);
-}
-
-/**
- * Initializes the graph nodes and adjacency list.
- * Computes landmark distances if cache is missing.
- */
 function initializeGraph() {
     const { nodes, graph } = loadMap();
     graphNodes = nodes;
     graphAdjacency = graph;
+    chRouter.buildNearestNodeIndex(nodes);
     console.log(`Graph initialized with ${graphNodes.size} nodes.`);
 
-    if (fs.existsSync(CACHE_FILE)) {
-        console.log('--- Cache Found: Loading Precomputed Distances ---');
-        loadLandmarkDistances();
-    } else {
-        console.log('--- No Cache Found: Starting Computation ---');
-        const t0 = performance.now();
-
-        for (const lm of LANDMARKS) {
-            const nearest = nearestNode(graphNodes, lm.lat, lm.lon);
-            if (!nearest.id) continue;
-
-            lm.nodeId = nearest.id;
-            console.log(`Computing Dijkstra for landmark: ${lm.name} (${lm.nodeId})`);
-
-            const distMap = computeDijkstraAll(lm.nodeId);
-            LANDMARK_DISTANCES.set(lm.nodeId, distMap);
+    useChRouting = false;
+    if (!USE_DIJKSTRA && existsSync(chRouter.getChFilePath())) {
+        try {
+            chRouter.loadContractionHierarchy();
+            useChRouting = true;
+            console.log('Walking routing: contraction hierarchy');
+        } catch (e) {
+            console.warn('CH load failed, falling back to Dijkstra:', e);
         }
-        const t1 = performance.now();
-        console.log(`Computation finished in ${(t1 - t0).toFixed(0)}ms`);
-        saveLandmarkDistances(LANDMARK_DISTANCES);
+    } else if (USE_DIJKSTRA) {
+        console.log('Walking routing: Dijkstra (WALKING_USE_DIJKSTRA=true)');
+    } else {
+        console.warn(
+            'Walking routing: Dijkstra (no CH file). Run npm run build:walking-ch to generate src/assets/ann_arbor.ch.json'
+        );
     }
 }
 
-/**
- * Maps a list of bus stops to their nearest nodes on the street graph.
- * This optimizes future lookups by caching the StopID -> NodeID relationship.
- * @param locations - A map of StopID to {lat, lon}.
- */
 export function buildStopNodeMap(locations: Record<string, { lat: number, lon: number }>) {
     if (graphNodes.size === 0) initializeGraph();
 
     stopNodeMap = {};
     relevantStopNodes.clear();
-    let mappedCount = 0;
     Object.entries(locations).forEach(([stopId, loc]) => {
         const nearest = nearestNode(graphNodes, loc.lat, loc.lon);
-        if (nearest && nearest.id) {
-            stopNodeMap[stopId] = {
-                nodeId: nearest.id,
-                distToNode: nearest.dist
-            };
+        if (nearest?.id) {
+            stopNodeMap[stopId] = { nodeId: nearest.id, distToNode: nearest.dist };
             relevantStopNodes.add(nearest.id);
-            mappedCount++;
         }
     });
 }
 
-/**
- * Calculates a detailed walking path between two coordinates using A*.
- * Includes path geometry for rendering.
- * @param originLat - Latitude of origin.
- * @param originLon - Longitude of origin.
- * @param destLat - Latitude of destination.
- * @param destLon - Longitude of destination.
- */
-export async function getWalkingResponse(originLat: number, originLon: number, destLat: number, destLon: number): Promise<WalkingResponse> {
-    if (graphNodes.size === 0) {
-        console.warn("Graph not loaded. Calling initializeGraph() now.");
-        initializeGraph();
-    }
+export async function getWalkingResponse(
+    originLat: number, originLon: number, destLat: number, destLon: number
+): Promise<WalkingResponse> {
+    if (graphNodes.size === 0) initializeGraph();
 
     const nearestStart = nearestNode(graphNodes, originLat, originLon);
     const nearestGoal = nearestNode(graphNodes, destLat, destLon);
@@ -325,72 +221,13 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
         throw new Error('No nearest graph nodes found for one or both coordinates.');
     }
 
-    const result = await aStar(nearestStart.id, nearestGoal.id);
-
-    let pathCoords: { lat: number, lon: number }[] = [];
-    let meters: number;
-    let seconds: number;
-
-    if (!result) {
-        // Fallback if no path found
-        const directDist = haversine(originLat, originLon, destLat, destLon);
-        meters = directDist;
-        seconds = meters / WALKING_SPEED_M_S;
-        console.warn(`A* failed for path. Falling back to direct Haversine distance.`);
-        pathCoords = [{ lat: originLat, lon: originLon }, { lat: destLat, lon: destLon }];
-    } else {
-        meters = result.totalDist + nearestStart.dist + nearestGoal.dist;
-        seconds = meters / WALKING_SPEED_M_S;
-
-        if (DEBUG) {
-            console.log(`Path found: ${meters.toFixed(2)}m. Explored ${result.explored} nodes.`);
-        }
-
-        pathCoords.push({ lat: originLat, lon: originLon });
-
-        if (result.pathIds.length > 0) {
-            // Add start node
-            const startNode = graphNodes.get(result.pathIds[0])!;
-            pathCoords.push({ lat: startNode.lat, lon: startNode.lon });
-
-            for (let i = 0; i < result.pathIds.length - 1; i++) {
-                const currId = result.pathIds[i];
-                const nextId = result.pathIds[i + 1];
-
-                // find edge used to get to nextId
-                const edge = graphAdjacency.get(currId)?.find(e => e.to === nextId);
-
-                if (edge && edge.geometry && edge.geometry.length > 0) {
-                    for (let k = 1; k < edge.geometry.length; k++) {
-                        pathCoords.push(edge.geometry[k]);
-                    }
-                } else {
-                    // draw line to next node
-                    const nextNode = graphNodes.get(nextId)!;
-                    pathCoords.push({ lat: nextNode.lat, lon: nextNode.lon });
-                }
-            }
-        }
-
-        pathCoords.push({ lat: destLat, lon: destLon });
-    }
-
-    return {
-        distance: meters,
-        duration: seconds,
-        path_coords: pathCoords,
-    };
+    const entry = resolveNodePolylinePath(nearestStart.id, nearestGoal.id);
+    return buildWalkingResponseFromNodePath(
+        entry, nearestStart, nearestGoal,
+        originLat, originLon, destLat, destLon
+    );
 }
 
-/**
- * Optimized method to get walking distances from an origin to ALL known bus stops.
- * Optionally includes a direct walk to a specific destination point.
- * Uses a single Dijkstra pass with early termination and LRU Cache.
- * @param lat - Origin latitude.
- * @param lon - Origin longitude.
- * @param destLat - (Optional) Destination latitude for direct walk.
- * @param destLon - (Optional) Destination longitude for direct walk.
- */
 export function getWalkingDistancesFrom(
     lat: number, lon: number,
     destLat?: number, destLon?: number
@@ -403,8 +240,7 @@ export function getWalkingDistancesFrom(
 
     let destNodeId: string | undefined;
     let destNodeDist = 0;
-    
-    // Resolve destination node if provided
+
     if (destLat !== undefined && destLon !== undefined) {
         const dNode = nearestNode(graphNodes, destLat, destLon);
         if (dNode.id) {
@@ -413,38 +249,21 @@ export function getWalkingDistancesFrom(
         }
     }
 
-    // 2. Create the Cache Key using IDs
-    const cacheKey = `${nearest.id}::${destNodeId || ''}`; 
-
-    let nodeDistances = networkDistanceCache.get(cacheKey); 
+    const cacheKey = `${nearest.id}::${destNodeId || ''}`;
+    let nodeDistances = networkDistanceCache.get(cacheKey);
 
     if (!nodeDistances) {
-        
-        let addedToSet = false;
-        if (destNodeId && !relevantStopNodes.has(destNodeId)) {
-            relevantStopNodes.add(destNodeId);
-            addedToSet = true;
-        }
-
-        // Run Dijkstra
-        nodeDistances = computeDijkstraAll(nearest.id, relevantStopNodes);
-
-        // Cleanup set
-        if (addedToSet && destNodeId) {
-            relevantStopNodes.delete(destNodeId);
-        }
-
+        const targetIds = new Set(relevantStopNodes);
+        if (destNodeId) targetIds.add(destNodeId);
+        nodeDistances = batchDistancesFromOrigin(nearest.id, targetIds);
         networkDistanceCache.set(cacheKey, nodeDistances);
     }
 
     const results: { stopId: string, duration: number }[] = [];
 
-    // Process Bus Stops
     for (const [stopId, mapData] of Object.entries(stopNodeMap)) {
         const distOnStreet = nodeDistances.get(mapData.nodeId);
-        
         if (distOnStreet !== undefined) {
-            // (User->StartNode) + (StartNode->EndNode [CACHED]) + (EndNode->BusStop)
             const totalDist = nearest.dist + distOnStreet + mapData.distToNode;
             results.push({
                 stopId,
@@ -466,80 +285,394 @@ export function getWalkingDistancesFrom(
     return results;
 }
 
-/**
- * Ensures walking paths between all provided stops are calculated and cached.
- * Fetches missing paths in parallel and updates the disk cache.
- * @param stopIds - Set of stop IDs to verify.
- * @param stopLocations - Map of Stop ID to coordinates.
- */
-export async function ensureCacheForStops(
-    stopIds: Set<string>,
-    stopLocations: Record<string, { lat: number, lon: number }>
-): Promise<void> {
+function buildStopToStopWalkMatrix(stopIds: string[]): StopWalkMeters {
+    if (graphNodes.size === 0) initializeGraph();
 
-    const fetchPromises: Promise<void>[] = [];
-    let cacheWasUpdated = false;
+    const targetNodeIds = new Set<string>();
+    for (const stopId of stopIds) {
+        const nodeId = stopNodeMap[stopId]?.nodeId;
+        if (nodeId) targetNodeIds.add(nodeId);
+    }
 
-    console.log(`Verifying cache for ${stopIds.size} stops...`);
+    const matrix: StopWalkMeters = new Map();
+    const total = stopIds.length;
 
-    for (const id1 of stopIds) {
-        for (const id2 of stopIds) {
-            if (id1 === id2) continue;
+    console.log(`Computing stop-to-stop walk matrix (${total} PHAST/Dijkstra origins)...`);
 
-            const cacheKey = `${id1}_TO_${id2}`;
+    for (let i = 0; i < stopIds.length; i++) {
+        const originId = stopIds[i];
+        const startData = stopNodeMap[originId];
+        if (!startData) continue;
 
-            if (!walkingCache[cacheKey]) {
-                const loc1 = stopLocations[id1];
-                const loc2 = stopLocations[id2];
+        if (i % 10 === 0 || i === total - 1) {
+            const pct = ((i + 1) / total * 100).toFixed(1);
+            process.stdout.write(`\r  Walk matrix: ${i + 1} / ${total} (${pct}%)`);
+        }
 
-                if (loc1 && loc2) {
-                    cacheWasUpdated = true;
+        const nodeDists = batchDistancesFromOrigin(startData.nodeId, targetNodeIds);
+        const outgoing = new Map<string, number>();
 
-                    const p = (async () => {
-                        try {
-                            const data = await getWalkingResponse(loc1.lat, loc1.lon, loc2.lat, loc2.lon);
-                            walkingCache[cacheKey] = data;
-                        } catch (err) {
-                            walkingCache[cacheKey] = { duration: 60000, distance: 0, path_coords: [] };
-                        }
-                    })();
+        for (const destId of stopIds) {
+            if (destId === originId) continue;
+            const endData = stopNodeMap[destId];
+            if (!endData) continue;
+            const distOnStreet = nodeDists.get(endData.nodeId);
+            if (distOnStreet === undefined) continue;
+            const totalMeters = startData.distToNode + distOnStreet + endData.distToNode;
+            outgoing.set(destId, totalMeters);
+        }
 
-                    fetchPromises.push(p);
-                }
-            }
+        if (outgoing.size > 0) matrix.set(originId, outgoing);
+    }
+
+    process.stdout.write('\n');
+    return matrix;
+}
+
+interface SparseWalkingTransferResult {
+    transfers: TransfersByOrigin;
+    fullEdgeCount: number;
+    shortcutEdgeCount: number;
+}
+
+/** Process-lifetime cache — avoids re-reading/parsing ~180MB JSON on every initializeRoutes tick. */
+let inMemoryShortcuts: { stopIds: string[]; result: SparseWalkingTransferResult } | null = null;
+
+function sortedStopIds(stopIds: string[]): string[] {
+    return [...stopIds].sort();
+}
+
+function stopSetHash(stopIds: string[]): string {
+    return crypto.createHash('sha256').update(sortedStopIds(stopIds).join(',')).digest('hex').slice(0, 16);
+}
+
+function stopSetsEqual(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
+
+function isStopSuperset(superset: string[], subset: string[]): boolean {
+    const set = new Set(superset);
+    return subset.every(s => set.has(s));
+}
+
+function addedStopIds(cached: string[], current: string[]): string[] {
+    const set = new Set(cached);
+    return current.filter(s => !set.has(s));
+}
+
+function inferStopIdsFromTransfers(transfers: TransfersByOrigin): string[] {
+    const ids = new Set<string>();
+    for (const [origin, list] of Object.entries(transfers)) {
+        ids.add(origin);
+        for (const t of list) ids.add(t.destination);
+    }
+    return sortedStopIds([...ids]);
+}
+
+function metersToWalkDuration(meters: number): number {
+    return Math.ceil(meters / WALKING_SPEED_M_S);
+}
+
+function countTransferEdges(transfers: TransfersByOrigin): number {
+    let n = 0;
+    for (const list of Object.values(transfers)) {
+        if (list) n += list.length;
+    }
+    return n;
+}
+
+function appendWalkTransfer(
+    transfers: TransfersByOrigin,
+    origin: string,
+    dest: string,
+    meters: number
+): void {
+    if (!transfers[origin]) transfers[origin] = [];
+    transfers[origin].push({
+        origin,
+        destination: dest,
+        duration: metersToWalkDuration(meters),
+        startTime: 0,
+        endTime: Number.MAX_SAFE_INTEGER,
+    });
+}
+
+function hasTransferTo(transfers: TransfersByOrigin, origin: string, dest: string): boolean {
+    return transfers[origin]?.some(t => t.destination === dest) ?? false;
+}
+
+function appendUnreachableTransfer(transfers: TransfersByOrigin, origin: string, dest: string): void {
+    if (!transfers[origin]) transfers[origin] = [];
+    transfers[origin].push({
+        origin,
+        destination: dest,
+        duration: UNREACHABLE_WALK_SECONDS,
+        startTime: 0,
+        endTime: Number.MAX_SAFE_INTEGER,
+    });
+}
+
+/** Add 60000s transfers for every stop pair lacking a street route (matches old walkingCache.json). */
+function fillUnreachableTransfers(transfers: TransfersByOrigin, stopIds: string[]): number {
+    let added = 0;
+    for (const originId of stopIds) {
+        const startData = stopNodeMap[originId];
+        if (!startData) continue;
+        if (!transfers[originId]) transfers[originId] = [];
+
+        for (const destId of stopIds) {
+            if (originId === destId) continue;
+            if (!stopNodeMap[destId]) continue;
+            if (hasTransferTo(transfers, originId, destId)) continue;
+            appendUnreachableTransfer(transfers, originId, destId);
+            added++;
         }
     }
+    return added;
+}
 
-    if (fetchPromises.length > 0) {
-        console.log(`Computing ${fetchPromises.length} new paths...`);
-        await Promise.all(fetchPromises);
+function finalizeTransferGraph(transfers: TransfersByOrigin, stopIds: string[]): number {
+    fillUnreachableTransfers(transfers, stopIds);
+    for (const stopId of stopIds) {
+        if (!transfers[stopId]) transfers[stopId] = [];
     }
-
-    if (cacheWasUpdated) {
-        try {
-            writeFileSync(WALKING_CACHE_PATH, JSON.stringify(walkingCache, null, 2));
-            console.log(`WalkingManager: Cache updated on disk. Total entries: ${Object.keys(walkingCache).length}`);
-        } catch (err) {
-            console.error("WalkingManager: Failed to write cache to disk", err);
-        }
-    }
+    return countTransferEdges(transfers);
 }
 
 /**
- * Retrieves a cached walking path between two stops.
- * @param originId - Origin Stop ID.
- * @param destId - Destination Stop ID.
- * @returns Cached walking data or undefined.
+ * Add walking edges for newly seen stops only (PHAST rows for new origins, CH pairs existing→new).
+ * Preserves all direct shortest walks — no quality loss vs a full matrix rebuild.
  */
-export function getCachedWalk(originId: string, destId: string): WalkingResponse | undefined {
-    return walkingCache[`${originId}_TO_${destId}`] ?? null;
+function extendWalkingTransfers(
+    transfers: TransfersByOrigin,
+    allStopIds: string[],
+    newStopIds: string[]
+): number {
+    if (graphNodes.size === 0) initializeGraph();
+
+    const newStopSet = new Set(newStopIds);
+    const targetNodeIds = new Set<string>();
+    for (const stopId of allStopIds) {
+        const nodeId = stopNodeMap[stopId]?.nodeId;
+        if (nodeId) targetNodeIds.add(nodeId);
+    }
+
+    let newEdges = 0;
+
+    for (const originId of newStopIds) {
+        if (!transfers[originId]) transfers[originId] = [];
+        const startData = stopNodeMap[originId];
+        if (!startData) continue;
+
+        const nodeDists = batchDistancesFromOrigin(startData.nodeId, targetNodeIds);
+        for (const destId of allStopIds) {
+            if (destId === originId) continue;
+            const endData = stopNodeMap[destId];
+            if (!endData) continue;
+            const distOnStreet = nodeDists.get(endData.nodeId);
+            if (distOnStreet === undefined) {
+                if (!hasTransferTo(transfers, originId, destId)) {
+                    appendUnreachableTransfer(transfers, originId, destId);
+                    newEdges++;
+                }
+                continue;
+            }
+            appendWalkTransfer(
+                transfers, originId, destId,
+                startData.distToNode + distOnStreet + endData.distToNode
+            );
+            newEdges++;
+        }
+    }
+
+    for (const originId of allStopIds) {
+        if (newStopSet.has(originId)) continue;
+        const startData = stopNodeMap[originId];
+        if (!startData) continue;
+        if (!transfers[originId]) transfers[originId] = [];
+
+        for (const destId of newStopIds) {
+            if (destId === originId) continue;
+            const endData = stopNodeMap[destId];
+            if (!endData) continue;
+            const distOnStreet = queryNetworkDistance(startData.nodeId, endData.nodeId);
+            if (distOnStreet === undefined) {
+                if (!hasTransferTo(transfers, originId, destId)) {
+                    appendUnreachableTransfer(transfers, originId, destId);
+                    newEdges++;
+                }
+                continue;
+            }
+            appendWalkTransfer(
+                transfers, originId, destId,
+                startData.distToNode + distOnStreet + endData.distToNode
+            );
+            newEdges++;
+        }
+    }
+
+    for (const stopId of allStopIds) {
+        if (!transfers[stopId]) transfers[stopId] = [];
+    }
+
+    return newEdges;
+}
+
+interface ShortcutsCacheFile {
+    stopIds?: string[];
+    stopHash?: string;
+    transfers: TransfersByOrigin;
+    fullEdgeCount?: number;
+    shortcutEdgeCount: number;
+    builtAt?: string;
+}
+
+function persistShortcutsCache(stopIds: string[], result: SparseWalkingTransferResult): void {
+    try {
+        writeFileSync(SHORTCUTS_CACHE_PATH, JSON.stringify({
+            stopIds,
+            stopHash: stopSetHash(stopIds),
+            transfers: result.transfers,
+            fullEdgeCount: result.fullEdgeCount,
+            shortcutEdgeCount: result.shortcutEdgeCount,
+            builtAt: new Date().toISOString(),
+        }, null, 2));
+        console.log(`Wrote ${SHORTCUTS_CACHE_PATH}`);
+    } catch (err) {
+        console.warn('Failed to write walking shortcuts cache:', err);
+    }
+}
+
+function loadShortcutsFromDisk(): { stopIds: string[]; result: SparseWalkingTransferResult } | null {
+    if (!existsSync(SHORTCUTS_CACHE_PATH)) return null;
+    try {
+        const cached = JSON.parse(readFileSync(SHORTCUTS_CACHE_PATH, 'utf8')) as ShortcutsCacheFile;
+        if (!cached.transfers) return null;
+        const stopIds = cached.stopIds?.length
+            ? sortedStopIds(cached.stopIds)
+            : inferStopIdsFromTransfers(cached.transfers);
+        const result: SparseWalkingTransferResult = {
+            transfers: cached.transfers,
+            fullEdgeCount: cached.fullEdgeCount ?? countTransferEdges(cached.transfers),
+            shortcutEdgeCount: cached.shortcutEdgeCount,
+        };
+        return { stopIds, result };
+    } catch {
+        return null;
+    }
+}
+
+function commitShortcuts(stopIds: string[], result: SparseWalkingTransferResult): SparseWalkingTransferResult {
+    inMemoryShortcuts = { stopIds, result };
+    return result;
+}
+
+/**
+ * ULTRA-style sparse walking transfers: full walk matrix + transitive reduction.
+ * Preserves optimal walking distances; McRAPTOR only relaxes non-redundant shortcut edges.
+ * Loaded shortcuts stay in memory; disk is cold-start only. New stops extend incrementally.
+ */
+export function buildSparseWalkingTransfers(stopIds: string[]): SparseWalkingTransferResult {
+    const sorted = sortedStopIds(stopIds);
+
+    if (inMemoryShortcuts && stopSetsEqual(inMemoryShortcuts.stopIds, sorted)) {
+        return inMemoryShortcuts.result;
+    }
+
+    let cachedStopIds = inMemoryShortcuts?.stopIds ?? null;
+    let cachedResult = inMemoryShortcuts?.result ?? null;
+
+    if (!cachedResult) {
+        const fromDisk = loadShortcutsFromDisk();
+        if (fromDisk) {
+            cachedStopIds = fromDisk.stopIds;
+            cachedResult = fromDisk.result;
+            console.log(
+                `Loaded walking shortcuts from disk into memory (${fromDisk.result.shortcutEdgeCount} edges, ${cachedStopIds.length} stops)`
+            );
+        }
+    }
+
+    if (cachedResult && cachedStopIds) {
+        const newStops = addedStopIds(cachedStopIds, sorted);
+
+        if (newStops.length === 0 && isStopSuperset(cachedStopIds, sorted)) {
+            const edgeCount = finalizeTransferGraph(cachedResult.transfers, sorted);
+            const result: SparseWalkingTransferResult = {
+                transfers: cachedResult.transfers,
+                fullEdgeCount: edgeCount,
+                shortcutEdgeCount: edgeCount,
+            };
+            return commitShortcuts(cachedStopIds, result);
+        }
+
+        if (newStops.length > 0) {
+            if (!isStopSuperset(sorted, cachedStopIds)) {
+                console.warn(
+                    `Walking shortcuts: extending ${newStops.length} new stop(s) on partial cache ` +
+                    `(${cachedStopIds.length} cached → ${sorted.length} current).`
+                );
+            } else {
+                console.log(
+                    `Extending walking shortcuts for ${newStops.length} new stop(s) ` +
+                    `(${cachedStopIds.length} → ${sorted.length})...`
+                );
+            }
+            const transfers = cachedResult.transfers;
+            const addedEdges = extendWalkingTransfers(transfers, sorted, newStops);
+            const edgeCount = finalizeTransferGraph(transfers, sorted);
+            const result: SparseWalkingTransferResult = {
+                transfers,
+                fullEdgeCount: edgeCount,
+                shortcutEdgeCount: edgeCount,
+            };
+            console.log(`Walking shortcuts extended: +${addedEdges} edges (${edgeCount} total)`);
+            persistShortcutsCache(sorted, result);
+            return commitShortcuts(sorted, result);
+        }
+    }
+
+    if (cachedResult && process.env.WALKING_REBUILD_SHORTCUTS !== 'true') {
+        console.warn(
+            'Walking shortcuts: cache present but stop set changed unexpectedly; ' +
+            'using cached graph. Set WALKING_REBUILD_SHORTCUTS=true to force full rebuild.'
+        );
+        const edgeCount = finalizeTransferGraph(cachedResult.transfers, sorted);
+        return commitShortcuts(sorted, {
+            transfers: cachedResult.transfers,
+            fullEdgeCount: edgeCount,
+            shortcutEdgeCount: edgeCount,
+        });
+    }
+
+    console.log(`Walking shortcuts: full rebuild for ${sorted.length} stops...`);
+    const full = buildStopToStopWalkMatrix(sorted);
+    const fullEdgeCount = countStopWalkEdges(full);
+
+    console.log(`Applying transitive reduction (${fullEdgeCount} directed walk edges)...`);
+    const shortcuts = transitiveReductionShortcuts(sorted, full);
+    const shortcutEdgeCount = countStopWalkEdges(shortcuts);
+
+    const transfers = shortcutsToTransfers(shortcuts, metersToWalkDuration);
+    const edgeCount = finalizeTransferGraph(transfers, sorted);
+
+    console.log(
+        `Walking shortcuts: ${fullEdgeCount} reachable → ${shortcutEdgeCount} after reduction, ` +
+        `${edgeCount} total with unreachable pairs`
+    );
+
+    const result: SparseWalkingTransferResult = { transfers, fullEdgeCount, shortcutEdgeCount: edgeCount };
+    persistShortcutsCache(sorted, result);
+    return commitShortcuts(sorted, result);
+}
+
+/** @internal Exposed for tests comparing CH vs Dijkstra. */
+export function __computeDijkstraAll(startId: string, targets?: Set<string>) {
+    return computeDijkstraAll(startId, targets);
 }
 
 initializeGraph();
-if (existsSync(WALKING_CACHE_PATH)) {
-    const file = readFileSync(WALKING_CACHE_PATH, "utf8");
-    Object.assign(walkingCache, JSON.parse(file));
-    console.log("Loaded walkingCache.json");
-} else {
-    console.log("walkingCache.json does not exist — using empty cache");
-}

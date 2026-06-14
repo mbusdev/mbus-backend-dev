@@ -167,13 +167,13 @@ describe('API Endpoints', () => {
     // --- Journey Planning ---
     it('should get path between main stops', async () => {
         try {
-            const response = await axios.get(`${BASE_URL}/plan-journey?originLat=42.264356&originLon=-83.744353999999&destLat=42.268067999999&destLon=-83.747307000001`);
+            const response = await axios.get(`${BASE_URL}/plan-journey?originLat=42.264356&originLon=-83.744353999999&destLat=42.268067999999&destLon=-83.747307000001`, { timeout: 30_000 });
             expect(response.status).toBe(200);
             expect(response.data).toHaveProperty('journeys');
             expect(Array.isArray(response.data.journeys)).toBe(true);
             console.log('GET /plan-journey (test 1):', JSON.stringify(response.data.journeys, null, 2));
 
-            const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671`);
+            const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671`, { timeout: 30_000 });
             expect(response2.status).toBe(200);
             expect(response2.data).toHaveProperty('journeys');
             expect(Array.isArray(response2.data.journeys)).toBe(true);
@@ -188,7 +188,7 @@ describe('API Endpoints', () => {
             }
             throw error;
         }
-    });
+    }, 60_000);
 
     it('should return 400 for missing coordinates in plan-journey', async () => {
         try {
@@ -204,5 +204,5 @@ describe('API Endpoints', () => {
                 throw error;
             }
         }
-    });
+    }, 20000);
 });

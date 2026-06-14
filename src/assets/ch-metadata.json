@@ -1,0 +1,7 @@
+{
+  "graphmlPath": "src/assets/ann_arbor.graphml",
+  "graphmlSha256": "e4488a8aece92b0c0a1a4c72dc2d4c90314ef68993b42ceea0f20c67404efac2",
+  "nodeCount": 51680,
+  "builtAt": "2026-06-12T19:09:21.061Z",
+  "chImplementation": "src/walking/ch (ported from contraction-hierarchy-js MIT)"
+}
