@@ -1,4 +1,3 @@
-
 import { Heap } from "heap-js";
 import { AdjacencyEdge } from "./types";
 
@@ -26,15 +25,14 @@ export class Pathfinder {
         adjacencyList: Record<string, AdjacencyEdge[]>,
         nodesById: Record<string, any>,
         start: string,
-        goal: string       
+        goal: string,
+        accessibleOnly: boolean = false
     ): PathResult {
         const distances: Record<string, number> = {};
         const visited = new Set<string>();
-        // previousNode[to] = from
         const previousNode: Record<string, string | null> = {};
         const previousEdge: Record<string, AdjacencyEdge | null> = {};
 
-        //initialize distances and previous nodes
         for (const node in adjacencyList) {
             distances[node] = Infinity;
             previousNode[node] = null;
@@ -42,11 +40,9 @@ export class Pathfinder {
         }
         distances[start] = 0;
 
-        //pq, smallest f(n) at top
         const minHeap = new Heap<HeapNode>((a,b) => a.f - b.f);
         minHeap.push({nodeId: start, f:0});
 
-        //heuristic: basic straight line euclidean
         function heuristic(nodeId:string): number {
             const a = nodesById[nodeId];
             const b = nodesById[goal];
@@ -60,16 +56,14 @@ export class Pathfinder {
             const currentNodeObj = minHeap.pop()!;
             const current = currentNodeObj.nodeId;
 
-            if(visited.has(current))
-                continue;
-        
-            if(current == goal)
-                break;
+            if(visited.has(current)) continue;
+            if(current == goal) break;
 
             visited.add(current);
 
             for(const neighbor of adjacencyList[current]){
                 if(visited.has(neighbor.to)) continue;
+                if(accessibleOnly && neighbor.accessibility === false) continue;
 
                 const newDist = distances[current] + neighbor.cost;
 
@@ -88,11 +82,11 @@ export class Pathfinder {
 
         if (distances[goal] === Infinity) {
             return { nodePath: [], steps: [], totalCost: Infinity };
-        }    
+        }
 
         const nodePath: string[] = [];
         const steps: PathStep[] = [];
-        let cur: string | null = goal;   
+        let cur: string | null = goal;
 
         while (cur !== null) {
             nodePath.push(cur);
@@ -100,11 +94,11 @@ export class Pathfinder {
             const edge = previousEdge[cur];
             if (prev && edge) {
                 steps.push({
-                from: prev,
-                to: cur,
-                edgeId: edge.edgeId,
-                cost: edge.cost,
-                type: edge.type
+                    from: prev,
+                    to: cur,
+                    edgeId: edge.edgeId,
+                    cost: edge.cost,
+                    type: edge.type
                 });
             }
             cur = prev;
@@ -113,10 +107,6 @@ export class Pathfinder {
         nodePath.reverse();
         steps.reverse();
 
-        return{
-            nodePath,
-            steps,
-            totalCost: distances[goal]
-        };
+        return { nodePath, steps, totalCost: distances[goal] };
     }
 }

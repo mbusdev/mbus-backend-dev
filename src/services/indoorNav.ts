@@ -11,9 +11,6 @@ async function getCollection() {
   return db.collection<FloorGraphJson>("floorGraphs");
 }
 
-/**
- * Fetch a single floor graph
- */
 export async function getFloorGraph(buildingId: string, floor: number) {
     const redis = await getRedis();
     const cacheKey = `indoor:graph:${buildingId}:${floor}`;
@@ -26,11 +23,7 @@ export async function getFloorGraph(buildingId: string, floor: number) {
     console.log(`[Redis] MISS ${cacheKey}`);
 
     const collection = await getCollection();
-
-    const data = await collection.findOne({
-        buildingId,
-        floor
-    });
+    const data = await collection.findOne({ buildingId, floor });
 
     if (!data) {
         throw new Error("graph not found");
@@ -44,22 +37,14 @@ export async function getFloorGraph(buildingId: string, floor: number) {
         verticalConnections: data.verticalConnections ?? []
     };
 
-    await redis.set(cacheKey, JSON.stringify(result), {
-        EX: 3600
-    });
-
+    await redis.set(cacheKey, JSON.stringify(result), { EX: 3600 });
     return result;
 }
 
-/**
- * Compute indoor route between two node IDs
- */
-export async function computeIndoorRoute(startNodeId: string, endNodeId: string) {
+export async function computeIndoorRoute(startNodeId: string, endNodeId: string, accessibleOnly: boolean = false) {
     const plan = buildGraphLoadPlan(startNodeId, endNodeId);
     const floorDocs = await Promise.all(
-        plan.targets.map(target =>
-            getFloorGraph(target.buildingId, target.floor)
-        )
+        plan.targets.map(target => getFloorGraph(target.buildingId, target.floor))
     );
 
     if (floorDocs.length === 0) {
@@ -67,7 +52,6 @@ export async function computeIndoorRoute(startNodeId: string, endNodeId: string)
     }
 
     const loadedGraphs = floorDocs.map(doc => GraphLoader.loadFloorGraph(doc));
-
     const portalEdges = floorDocs.flatMap(doc => doc.verticalConnections ?? []);
     const combinedGraph = GraphMerger.mergeGraphs(loadedGraphs, portalEdges);
 
@@ -82,7 +66,8 @@ export async function computeIndoorRoute(startNodeId: string, endNodeId: string)
         combinedGraph.adjacencyList,
         combinedGraph.nodesById,
         startNodeId,
-        endNodeId
+        endNodeId,
+        accessibleOnly
     );
 
     return {

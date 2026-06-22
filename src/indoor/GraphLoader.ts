@@ -1,4 +1,3 @@
-
 import { FloorGraphJson, AdjacencyEdge, GraphEdge, GraphNode, LoadedGraph } from "./types";
 
 export class GraphLoader {
@@ -9,7 +8,6 @@ export class GraphLoader {
 
     for (const node of data.nodes) {
       adj[node.id] = [];
-
       nodesById[node.id] = {
         ...node,
         buildingId: data.buildingId,
@@ -19,14 +17,12 @@ export class GraphLoader {
 
     for (const edge of data.edges) {
       edgesById[edge.id] = edge;
-
       adj[edge.from].push({
         to: edge.to,
         cost: edge.cost,
         edgeId: edge.id,
         type: edge.type
       });
-
       adj[edge.to].push({
         to: edge.from,
         cost: edge.cost,
@@ -51,7 +47,8 @@ export class GraphLoader {
           to: vc.to,
           cost: vc.cost,
           edgeId: vc.id,
-          type: vc.type
+          type: vc.type,
+          accessibility: vc.accessibility
         });
       }
 
@@ -60,7 +57,8 @@ export class GraphLoader {
           to: vc.from,
           cost: vc.cost,
           edgeId: vc.id,
-          type: vc.type
+          type: vc.type,
+          accessibility: vc.accessibility
         });
       }
     }

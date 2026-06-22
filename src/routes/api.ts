@@ -682,20 +682,22 @@ router.get('/indoor/graph', getIndoorGraph);
 /**
  * Computes an indoor route between two node IDs
  */
+const IndoorRouteBody = z.object({
+    startNodeId: z.string().min(1),
+    endNodeId: z.string().min(1),
+    accessibleOnly: z.boolean().optional().default(false)
+});
+
 export async function getIndoorRoute(req: express.Request, res: express.Response) {
+    const parsed = IndoorRouteBody.safeParse(req.body);
+    if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.message });
+        return;
+    }
     try {
-        const { startNodeId, endNodeId } = req.body;
-
-        if (!startNodeId || !endNodeId) {
-            res.status(400).json({
-                error: "startNodeId and endNodeId are required"
-            });
-            return;
-        }
-
-        const result = await indoorNav.computeIndoorRoute(startNodeId, endNodeId);
+        const { startNodeId, endNodeId, accessibleOnly } = parsed.data;
+        const result = await indoorNav.computeIndoorRoute(startNodeId, endNodeId, accessibleOnly);
         res.json(result);
-
     } catch (error: any) {
         console.error("Indoor route error:", error);
         res.status(500).json({ error: error.message });
