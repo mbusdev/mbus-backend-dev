@@ -314,7 +314,7 @@ export function buildStopNodeMap(locations: Record<string, { lat: number, lon: n
 
 /**
  * Calculates a detailed walking path between two coordinates using A*.
- * Includes path geometry for rendering.
+ * Includes path geometry for rendering and turn by turn directions.
  * @param originLat - Latitude of origin.
  * @param originLon - Longitude of origin.
  * @param destLat - Latitude of destination.

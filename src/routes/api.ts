@@ -420,8 +420,8 @@ export async function planWalking(req: express.Request, res: express.Response) {
 
         res.json(walkingResponse);
     } catch (error) {
-        console.error("Journey plan error:", error);
-        res.status(500).json({ error: 'Journey planning failed' });
+        console.error("Walking plan error:", error);
+        res.status(500).json({ error: 'Walk planning failed' });
     }
 }
 router.get('/plan-walking', planWalking);
