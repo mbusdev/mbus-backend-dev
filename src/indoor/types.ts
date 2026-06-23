@@ -68,7 +68,6 @@ export interface AdjacencyEdge {
   cost: number;
   edgeId: string;
   type: EdgeType;
-  accessibility ?: boolean;
 }
 
 export interface LoadedGraph {
