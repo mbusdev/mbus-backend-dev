@@ -9,6 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
+import { addGetRoute, HandlerReturn, makeFailureResponse, makeSuccessResponse } from "./helper";
 
 /**
  * Express router for the MBus API v3.
@@ -431,7 +432,7 @@ export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
         min_supported_version: "2.0.0",
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
-        persistant_message: { title: "", subtitle: ""},
+        persistant_message: { title: "", subtitle: "" },
         one_time_message: { title: "", subtitle: "" },
         bus_image_version: "1",
     });
@@ -529,7 +530,7 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         res.status(400);
         res.send(result.error.message);
     } else {
-        const { token ,stpid, rtid } = result.data;
+        const { token, stpid, rtid } = result.data;
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
             res.status(400);
@@ -567,47 +568,46 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-export interface ActiveReminderInfo {
-    stpid: string
-    rtid: string
-    thresh: number | null
-    eta: number | null
-};
+const Token = z.string().transform(reminderService.registrationToken).meta({ id: "Token" })
+const ActiveReminder = z.object({
+    stpid: z.string(),
+    rtid: z.string(),
+    thresh: z.number().nullable(),
+    eta: z.number().nullable(),
+}).meta({ id: "Reminder" });
 
-/**
- * @param req - Express request, token is path encoded
- * @param res - Express response 
- */
-export function activeRemindersForToken(
-    req: express.Request,
-    res: express.Response<{ reminders: Array<ActiveReminderInfo> }>
-) {
-    const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold):
-        ActiveReminderInfo =>
+addGetRoute(
+    router, '/activeReminders/:token',
     {
-        return {
-            stpid: r.event.stpid,
-            rtid: r.event.rtid,
-            thresh: r.stage === 0 ? r.thresh : null,
-            eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+        params: z.object({ token: Token }),
+        query: z.unknown(),
+        resBody: z.object({ reminders: z.array(ActiveReminder) }),
+    },
+    ({token}, _) => {
+        const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold) => {
+            return {
+                stpid: r.event.stpid,
+                rtid: r.event.rtid,
+                thresh: r.stage === 0 ? r.thresh : null,
+                eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+            };
         };
-    };
-    const token = reminderService.registrationToken(req.params.registrationToken);
-    console.log(`Got request for active reminders of ${token}`);
-    res.status(200);
-    const universityReminders = reminderService
-        .universityReminderSubscriptions
-        .activeRemindersFor(token)
-        .map(subscriptionInfo);
-    const rideReminders = reminderService
-        .rideReminderSubscriptions
-        .activeRemindersFor(token)
-        .map(subscriptionInfo);
-    res.send({
-        reminders: universityReminders.concat(rideReminders)
-    });
-}
-router.get('/activeReminders/:registrationToken', activeRemindersForToken);
+        console.log(`Got request for active reminders of ${token}`);
+        const universityReminders = reminderService
+            .universityReminderSubscriptions
+            .activeRemindersFor(token)
+            .map(subscriptionInfo);
+        const rideReminders = reminderService
+            .rideReminderSubscriptions
+            .activeRemindersFor(token)
+            .map(subscriptionInfo);
+        return makeSuccessResponse(200, { reminders: universityReminders.concat(rideReminders) });
+    },
+    {
+        summary: "active reminders",
+        description: `big long description idk, gets the reminders associated with a **registration token**, which is gotten from fcm or smth`
+    },
+)
 
 const ModifyRemindersBody = z.object({
     token: z.string(),
@@ -645,7 +645,7 @@ export function modifyReminders(req: express.Request, res: express.Response) {
                     reminderService.registrationToken(token),
                     predsByStopId,
                     Date.now()
-                );            
+                );
             } else {
                 reminderSubscriptions.remove(
                     event, reminderService.registrationToken(token)
@@ -670,7 +670,7 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
     }
     setTimeout(() => {
         console.log(`sending test push notification to ${registrationToken}`);
-        reminderService.sendNotifToAll({ title: "hi", body: "hello world!"}, new Set([registrationToken]));
+        reminderService.sendNotifToAll({ title: "hi", body: "hello world!" }, new Set([registrationToken]));
     }, 0);
     res.sendStatus(200);
 }
