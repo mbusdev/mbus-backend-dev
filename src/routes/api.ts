@@ -676,4 +676,63 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
 }
 router.post('/notifyMeLater', notifyMeLater);
 
+const Area = z.array(z.object({
+    polygon: z.array(z.number())
+        .meta({ description: 'indexes into `points`, adjacent points (1st and last included) have an edge between them' }),
+    classification: z.literal(['hallway', 'classroom', 'bathroom', 'stairway', 'elevator',]),
+    label: z.union([
+        z.object({ type: z.literal('text'), value: z.string() }),
+        z.object({
+            type: z.literal('icon'),
+            of: z.literal([
+                "women's bathroom", "men's bathroom", "gender-neutral bathroom", "information",
+                "food", "stairs", "escalator", "elevator",
+            ])
+        })
+    ]),
+    labelPos: z.object({ x: z.number(), y: z.number() }),
+    doors: z.array(z.number()).meta({ description: 'indexes into `polygon`, orientation determined by neighboring edges' }),
+})).meta({ id: "Area" });
+
+const FloorPlanVisuals = z.object({
+    points: z.array(z.object({ x: z.number(), y: z.number() })),
+    areas: Area,
+}).meta({ id: "FloorPlanVisuals" });
+addGetRoute(
+    router, '/indoor/visuals',
+    {
+        params: z.object({}),
+        query: z.object({ buildingId: z.string(), floor: z.coerce.number() }),
+        resBody: FloorPlanVisuals,
+    },
+    (_, { buildingId, floor }) => {
+        const data: z.infer<typeof FloorPlanVisuals> = {
+            points: [
+                { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 1 },
+                { x: 3, y: 4 }, { x: 2, y: 4 }, { x: 2, y: 3 }, { x: 1, y: 3 }, { x: 1, y: 4 }, { x: 0, y: 4 }
+            ],
+            areas: [
+                {
+                    polygon: [0, 1, 2, 3, 4, 5, 6, 8],
+                    classification: 'bathroom',
+                    label: { type: 'icon', of: 'gender-neutral bathroom' },
+                    labelPos: { x: 0.5, y: 1.25 },
+                    doors: [7],
+                },
+                {
+                    polygon: [6, 8, 9, 11, 10, 7],
+                    classification: 'classroom',
+                    label: { type: 'text', value: '3178' },
+                    labelPos: { x: 1.5, y: 3.5 },
+                    doors: [4, 5],
+                }
+            ]
+        };
+        return makeSuccessResponse(
+            200,
+            data,
+        )
+    }
+)
+
 export default router;
