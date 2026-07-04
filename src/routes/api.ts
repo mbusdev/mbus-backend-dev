@@ -11,6 +11,7 @@ import * as graphBuilder from '../services/graphBuilder';
 import * as indoorNav from '../services/indoorNav';
 import { startBackgroundJobs } from '../jobs';
 import * as walking from '../walking/walkingMap';
+import { addGetRoute, makeSuccessResponse } from "./helper";
 
 /**
  * Express router for the MBus API v3.
@@ -458,7 +459,7 @@ export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
         min_supported_version: "2.0.0",
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
-        persistant_message: { title: "", subtitle: ""},
+        persistant_message: { title: "", subtitle: "" },
         one_time_message: { title: "", subtitle: "" },
         bus_image_version: "1",
     });
@@ -556,7 +557,7 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         res.status(400);
         res.send(result.error.message);
     } else {
-        const { token ,stpid, rtid } = result.data;
+        const { token, stpid, rtid } = result.data;
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
             res.status(400);
@@ -594,42 +595,46 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-type ActiveReminderInfo = { stpid: string, rtid: string, thresh: number | null, eta: number | null };
+const Token = z.string().transform(reminderService.registrationToken).meta({ id: "Token" })
+const ActiveReminder = z.object({
+    stpid: z.string(),
+    rtid: z.string(),
+    thresh: z.number().nullable(),
+    eta: z.number().nullable(),
+}).meta({ id: "Reminder" });
 
-/**
- * @param req - Express request, token is path encoded
- * @param res - Express response 
- */
-export function activeRemindersForToken(
-    req: express.Request,
-    res: express.Response<{ reminders: Array<ActiveReminderInfo> }>
-) {
-    const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold):
-        ActiveReminderInfo =>
+addGetRoute(
+    router, '/activeReminders/:token',
     {
-        return {
-            stpid: r.event.stpid,
-            rtid: r.event.rtid,
-            thresh: r.stage === 0 ? r.thresh : null,
-            eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+        params: z.object({ token: Token }),
+        query: z.object(),
+        resBody: z.object({ reminders: z.array(ActiveReminder) }),
+    },
+    ({ token }, _) => {
+        const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold) => {
+            return {
+                stpid: r.event.stpid,
+                rtid: r.event.rtid,
+                thresh: r.stage === 0 ? r.thresh : null,
+                eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+            };
         };
-    };
-    const token = reminderService.registrationToken(req.params.registrationToken);
-    console.log(`Got request for active reminders of ${token}`);
-    res.status(200);
-    const universityReminders = reminderService
-        .universityReminderSubscriptions
-        .activeRemindersFor(token)
-        .map(subscriptionInfo);
-    const rideReminders = reminderService
-        .rideReminderSubscriptions
-        .activeRemindersFor(token)
-        .map(subscriptionInfo);
-    res.send({
-        reminders: universityReminders.concat(rideReminders)
-    });
-}
-router.get('/activeReminders/:registrationToken', activeRemindersForToken);
+        console.log(`Got request for active reminders of ${token}`);
+        const universityReminders = reminderService
+            .universityReminderSubscriptions
+            .activeRemindersFor(token)
+            .map(subscriptionInfo);
+        const rideReminders = reminderService
+            .rideReminderSubscriptions
+            .activeRemindersFor(token)
+            .map(subscriptionInfo);
+        return makeSuccessResponse(200, { reminders: universityReminders.concat(rideReminders) });
+    },
+    {
+        summary: "active reminders",
+        description: `big long description idk, gets the reminders associated with a **registration token**, which is gotten from fcm or smth`
+    },
+)
 
 const ModifyRemindersBody = z.object({
     token: z.string(),
@@ -667,7 +672,7 @@ export function modifyReminders(req: express.Request, res: express.Response) {
                     reminderService.registrationToken(token),
                     predsByStopId,
                     Date.now()
-                );            
+                );
             } else {
                 reminderSubscriptions.remove(
                     event, reminderService.registrationToken(token)
@@ -744,10 +749,69 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
     }
     setTimeout(() => {
         console.log(`sending test push notification to ${registrationToken}`);
-        reminderService.sendNotifToAll({ title: "hi", body: "hello world!"}, new Set([registrationToken]));
+        reminderService.sendNotifToAll({ title: "hi", body: "hello world!" }, new Set([registrationToken]));
     }, 0);
     res.sendStatus(200);
 }
 router.post('/notifyMeLater', notifyMeLater);
+
+const Area = z.array(z.object({
+    polygon: z.array(z.number())
+        .meta({ description: 'indexes into `points`, adjacent points (1st and last included) have an edge between them' }),
+    classification: z.literal(['hallway', 'classroom', 'bathroom', 'stairway', 'elevator',]),
+    label: z.union([
+        z.object({ type: z.literal('text'), value: z.string() }),
+        z.object({
+            type: z.literal('icon'),
+            of: z.literal([
+                "women's bathroom", "men's bathroom", "gender-neutral bathroom", "information",
+                "food", "stairs", "escalator", "elevator",
+            ])
+        })
+    ]),
+    labelPos: z.object({ x: z.number(), y: z.number() }),
+    doors: z.array(z.number()).meta({ description: 'indexes into `polygon`, orientation determined by neighboring edges' }),
+})).meta({ id: "Area" });
+
+const FloorPlanVisuals = z.object({
+    points: z.array(z.object({ x: z.number(), y: z.number() })),
+    areas: Area,
+}).meta({ id: "FloorPlanVisuals" });
+addGetRoute(
+    router, '/indoor/visuals',
+    {
+        params: z.object({}),
+        query: z.object({ buildingId: z.string(), floor: z.coerce.number() }),
+        resBody: FloorPlanVisuals,
+    },
+    (_, { buildingId, floor }) => {
+        const data: z.infer<typeof FloorPlanVisuals> = {
+            points: [
+                { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 1 },
+                { x: 3, y: 4 }, { x: 2, y: 4 }, { x: 2, y: 3 }, { x: 1, y: 3 }, { x: 1, y: 4 }, { x: 0, y: 4 }
+            ],
+            areas: [
+                {
+                    polygon: [0, 1, 2, 3, 4, 5, 6, 8],
+                    classification: 'bathroom',
+                    label: { type: 'icon', of: 'gender-neutral bathroom' },
+                    labelPos: { x: 0.5, y: 1.25 },
+                    doors: [7],
+                },
+                {
+                    polygon: [6, 8, 9, 11, 10, 7],
+                    classification: 'classroom',
+                    label: { type: 'text', value: '3178' },
+                    labelPos: { x: 1.5, y: 3.5 },
+                    doors: [4, 5],
+                }
+            ]
+        };
+        return makeSuccessResponse(
+            200,
+            data,
+        )
+    }
+)
 
 export default router;
