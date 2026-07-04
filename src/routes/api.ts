@@ -9,7 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
-import { addGetRoute, HandlerReturn, makeFailureResponse, makeSuccessResponse } from "./helper";
+import { addGetRoute, makeSuccessResponse } from "./helper";
 
 /**
  * Express router for the MBus API v3.
@@ -580,10 +580,10 @@ addGetRoute(
     router, '/activeReminders/:token',
     {
         params: z.object({ token: Token }),
-        query: z.unknown(),
+        query: z.object(),
         resBody: z.object({ reminders: z.array(ActiveReminder) }),
     },
-    ({token}, _) => {
+    ({ token }, _) => {
         const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold) => {
             return {
                 stpid: r.event.stpid,
