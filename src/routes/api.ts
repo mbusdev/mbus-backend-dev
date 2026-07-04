@@ -676,7 +676,15 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
 }
 router.post('/notifyMeLater', notifyMeLater);
 
-const Area = z.array(z.object({
+const Point = z.object({ x: z.number(), y: z.number() })
+    .meta({
+        id: "Point",
+        description: "increasing `x` represents going northward, increasing `y` represents going eastward",
+    });
+
+const LatLon = z.object({ lon: z.number(), lat: z.number() }).meta({ id: "LatLon" });
+
+const Area = z.object({
     polygon: z.array(z.number())
         .meta({ description: 'indexes into `points`, adjacent points (1st and last included) have an edge between them' }),
     classification: z.literal(['hallway', 'classroom', 'bathroom', 'stairway', 'elevator',]),
@@ -690,13 +698,15 @@ const Area = z.array(z.object({
             ])
         })
     ]),
-    labelPos: z.object({ x: z.number(), y: z.number() }),
-    doors: z.array(z.number()).meta({ description: 'indexes into `polygon`, orientation determined by neighboring edges' }),
-})).meta({ id: "Area" });
+    labelPos: Point,
+    doors: z.array(z.number())
+        .meta({ description: 'indexes into `polygon`, orientation determined by neighboring edges' }),
+}).meta({ id: "Area" });
 
 const FloorPlanVisuals = z.object({
-    points: z.array(z.object({ x: z.number(), y: z.number() })),
-    areas: Area,
+    points: z.array(Point),
+    areas: z.array(Area),
+    boundingBox: z.object({ sw: LatLon, ne: LatLon }),
 }).meta({ id: "FloorPlanVisuals" });
 addGetRoute(
     router, '/indoor/visuals',
@@ -726,7 +736,8 @@ addGetRoute(
                     labelPos: { x: 1.5, y: 3.5 },
                     doors: [4, 5],
                 }
-            ]
+            ],
+            boundingBox: { sw: { lat: 42.290808, lon: -83.716188 }, ne: { lat: 42.291575, lon: -83.715149 } },
         };
         return makeSuccessResponse(
             200,
