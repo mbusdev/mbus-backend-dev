@@ -9,7 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
-import { addGetRoute, makeSuccessResponse } from "./helper";
+import { addGetRoute, addPostRoute, emptyFormat, makeFailureResponse, makeSuccessResponse } from "./documented";
 
 /**
  * Express router for the MBus API v3.
@@ -488,22 +488,12 @@ router.get('/get-key-stops', getKeyStops);
 // Notifications / Reminders
 
 const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
-/**
- * @param req - Express request, expects `SetReminderBody` in the body
- * @param res - Express response, error message as string if error occurs
- */
-export function setReminder(req: express.Request, res: express.Response) {
-    const result = SetReminderBody.safeParse(req.body);
-    if (!result.success) {
-        res.status(400);
-        res.send(result.error.message);
-    } else {
-        const { token, stpid, rtid, thresh } = result.data;
+addPostRoute(
+    router, '/setReminder', { ...emptyFormat, reqBody: SetReminderBody },
+    (_, __, { token, stpid, rtid, thresh }) => {
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
-            res.status(400);
-            res.send(`Invalid route ${rtid}`);
-            return;
+            return makeFailureResponse(400, `Invalid route ${rtid}`);
         }
         const { reminderSubscriptions, predsByStopId } = info;
         reminderSubscriptions.add(
@@ -513,11 +503,9 @@ export function setReminder(req: express.Request, res: express.Response) {
             predsByStopId,
             Date.now(),
         );
-        res.sendStatus(200);
+        return makeSuccessResponse(200, {});
     }
-
-}
-router.post('/setReminder', setReminder);
+);
 
 const UnsetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string() });
 /**
