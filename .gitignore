@@ -4,3 +4,4 @@ package-lock.json
 .vscode/
 src/assets/walkingCache.json
 /docs/
+*.log
