@@ -188,27 +188,17 @@ export function getRidePositions(req: express.Request, res: express.Response) {
 }
 router.get('/getRidePositions', getRidePositions);
 
-/**
- * Returns all cached route patterns.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `routes` mapping route IDs to patterns.
- */
-export function getAllRoutes(req: express.Request, res: express.Response) {
-    res.json({ routes: state.cachedRoutes });
-}
-router.get('/getAllRoutes', getAllRoutes);
+addGetRoute(
+    router, '/getAllRoutes', { ...emptyFormat, resBody: z.array(BusRouteLineSchema) },
+    () => makeSuccessResponse(200, Object.values(state.cachedRoutes).flat(1)),
+    { description: 'get all cached route patterns' }
+);
 
-/**
- * Returns all cached ride route patterns.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `routes` mapping route IDs to patterns.
- */
-export function getAllRideRoutes(req: express.Request, res: express.Response) {
-    res.json({ routes: state.cachedRideRoutes });
-}
-router.get('/getAllRideRoutes', getAllRideRoutes);
+addGetRoute(
+    router, '/getAllRideRoutes', { ...emptyFormat, resBody: z.array(BusRouteLineSchema) },
+    () => makeSuccessResponse(200, Object.values(state.cachedRideRoutes).flat(1)),
+    { description: 'get all cached ride route patterns' },
+)
 
 /**
  * Returns the route timing cache used for extrapolation.
