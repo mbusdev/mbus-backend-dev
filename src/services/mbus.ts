@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as process from "node:process";
 import dotenv from "dotenv";
+import { Pattern, PatternsArraySchema } from './bustimeTypes';
 
 dotenv.config();
 
@@ -44,13 +45,16 @@ export async function fetchRoutes() {
 }
 
 /** Fetches route patterns (path points) for a specific route. */
-export async function fetchPatterns(rt: string) {
+export async function fetchPatterns(rt: string): Promise<Pattern[]> {
     try {
         const res = await client.get('/getpatterns', {
             params: { requestType: 'getpatterns', rt: rt, rtpidatafeed: 'bustime' }
         });
-        return res.data['bustime-response']?.ptr || [];
+        const resData = res.data['bustime-response']?.ptr as unknown;
+        const patterns = PatternsArraySchema.parse(resData);
+        return patterns;
     } catch (e) {
+        console.error("Fetch Patterns failed", e);
         return [];
     }
 }
