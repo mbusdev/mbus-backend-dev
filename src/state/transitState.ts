@@ -1,3 +1,4 @@
+import { Pattern } from "@/services/bustimeTypes";
 import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
 
 /** Current positions of all buses. */
@@ -5,9 +6,9 @@ export const curBusPositions = { buses: [] as any[] };
 /** Current positions of all ride buses. */
 export const curRidePositions = { buses: [] as any[] };
 /** Cache of route patterns and static data. */
-export const cachedRoutes: Record<string, any> = {};
+export const cachedRoutes: Record<string, Pattern[]> = {};
 /** Cache of route patterns and static data for the ride. */
-export const cachedRideRoutes: Record<string, any> = {};
+export const cachedRideRoutes: Record<string, Pattern[]> = {};
 
 /** Represents a bus prediction. */
 export type Prediction = {
@@ -51,7 +52,8 @@ export let cachedStopLocations: Record<string, { name: string, lat: number, lon:
 export let cachedRideStopLocations: Record<string, { name: string, lat: number, lon: number }> = {};
 
 /** Cache of timing differences between stops for extrapolation. */
-export const routeTimingCache: Record<string, Record<string, Record<string, { diff: number, rtdir: string, rtNext: string }>>> = {
+export const routeTimingCache: Record<string, Record<string, Record<string,
+    { diff: number, rtdir: string, rtNext: string }>>> = {
     "CN": {
         "N434NORTHBOUND": {
             "N500": { "diff": 5, "rtdir": "SOUTHBOUND", "rtNext": "CS" }

@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import * as process from "node:process";
+import { Pattern, PatternsArraySchema } from './bustimeTypes';
 
 const RIDE_API_KEY = process.env.RIDE_API_KEY;
 const BASE_URL = process.env.RIDE_URL || 'https://rt.theride.org/bustime/api/v3/';
@@ -43,13 +44,15 @@ export async function fetchRoutes() {
 }
 
 /** Fetches route patterns (path points) for a specific route. */
-export async function fetchPatterns(rt: string) {
+export async function fetchPatterns(rt: string): Promise<Pattern[]> {
     try {
         const res = await client.get('/getpatterns', {
             params: { requestType: 'getpatterns', rt: rt, rtpidatafeed: 'bustime' }
         });
-        return res.data['bustime-response']?.ptr || [];
+        const resData = res.data['bustime-response']?.ptr as unknown;
+        return PatternsArraySchema.parse(resData);
     } catch (e) {
+        console.error("Fetch Patterns failed", e);
         return [];
     }
 }
