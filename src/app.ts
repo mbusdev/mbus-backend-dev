@@ -2,7 +2,7 @@ import express from "express";
 
 import "@/services/observability";
 import mbus from "./routes/api"
-import { addRouter, dumpReflectionInfo, reflection } from "./routes/helper";
+import { addRouter, dumpReflectionInfo, reflection } from "./routes/documented";
 
 const app = express();
 
