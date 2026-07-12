@@ -1,7 +1,7 @@
 import express from "express";
 
 import mbus from "./routes/api"
-import { addRouter, dumpReflectionInfo, reflection } from "./routes/helper";
+import { addRouter, dumpReflectionInfo, reflection } from "./routes/documented";
 
 const app = express();
 

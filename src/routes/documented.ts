@@ -7,13 +7,17 @@
  * directly for now.
  *
  * Nested routing not supported yet, but should probably be added since api.ts
- * is getting long.
+ * is getting long (or we could separate the functions from the route defintions?).
  *
- * Extra functionality will be added as needed.
+ * Extra functionality can be added as needed.
  *
- * TODO: post support
+ * EXAMPLES: 
+ *
+ * TODO: post support [done?]
  * TODO: add examples
- * TODO: add tests
+ * TODO: support empty request and response bodies
+ * TODO: make actually testable?
+ * TODO: add tests?
  */
 
 import express from 'express';
@@ -28,8 +32,7 @@ const info: ReflectionInfoRaw = {
 };
 
 /**
- * unresolved: how to get descriptions from the ts-doc comments?
- * probably handled by a typedoc plugin, or passed directly
+ * doc descriptions passed as data in summary and description fields
  */
 interface ReflectionInfoRaw {
     routers: Array<{ route: string, router: express.Router }>,
@@ -37,30 +40,27 @@ interface ReflectionInfoRaw {
     routes: Array<{
         router: express.Router,
         pathSuffix: string,
-        method: 'get',
+        summary: string,
+        description: string,
         params: Record<string, z.ZodType>,
         query: Record<string, z.ZodType>,
         resBody: z.ZodType,
-        summary: string,
-        description: string,
-    }>,
+    } & ({ method: 'get' } | { method: 'post', reqBody: z.ZodType })>,
 };
 
 interface ReflectionInfo {
     routes: Array<{
         path: string,
-        method: 'get',
+        summary: string,
+        description: string,
         params: Record<string, JSONSchema.JSONSchema>,
         query: Record<string, JSONSchema.JSONSchema>,
         resBody: JSONSchema.BaseSchema,
-        summary: string,
-        description: string,
-    }>,
+    } & ({ method: 'get' } | { method: 'post', reqBody: JSONSchema.BaseSchema | null })>,
     defs: Record<string, JSONSchema.JSONSchema>,
-    // model: JSONSchema.BaseSchema,
 };
 
-interface OpenAPIGetPath {
+interface OpenAPIPathCommon {
     summary: string,
     description: string,
     parameters: Array<{
@@ -68,7 +68,7 @@ interface OpenAPIGetPath {
         in: "path" | "query",
         schema: JSONSchema.JSONSchema,
         required: boolean,
-    }>
+    }>,
     responses: {
         "2XX": {
             description: "success",
@@ -78,8 +78,21 @@ interface OpenAPIGetPath {
                 }
             }
         }
-    }
-}
+    },
+};
+
+interface OpenAPIGetPath extends OpenAPIPathCommon { };
+
+interface OpenAPIPostPath extends OpenAPIPathCommon {
+    requestBody: {
+        content: {
+            "application/json": {
+                schema: JSONSchema.JSONSchema,
+            }
+        },
+        required: boolean,
+    },
+};
 
 /** the subset of the openapi format(s) we are concerned with generating */
 interface OpenAPI {
@@ -91,7 +104,7 @@ interface OpenAPI {
     components: {
         schemas: Record<string, JSONSchema.JSONSchema>,
     },
-    paths: Record<string, Record<"get", OpenAPIGetPath>>,
+    paths: Record<string, { get?: OpenAPIGetPath, post?: OpenAPIPostPath }/*Record<"get", OpenAPIGetPath>*/>,
 }
 
 function finalize(info: ReflectionInfoRaw): ReflectionInfo {
@@ -111,7 +124,7 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
         // reused: 'ref',
         io: 'input',
     }
-    const resultRoutes = [];
+    const resultRoutes: ReflectionInfo['routes'] = [];
 
     // used to get the shared $defs
     const model: Record<string, z.ZodType> = {};
@@ -134,14 +147,30 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
             model[path + '?' + key] = zodSchema;
             finalQuery[key] = fixSchema(zodSchema.toJSONSchema(schemaOpts));
         }
-        resultRoutes.push({
-            path, method: route.method,
+        const common = {
+            path,
             params: finalParams,
             query: finalQuery,
             resBody: fixSchema(route.resBody.toJSONSchema(schemaOpts)),
             summary: route.summary,
             description: route.description,
-        });
+        };
+        switch (route.method) {
+            case 'get':
+                resultRoutes.push({ ...common, method: 'get' });
+                break;
+            case 'post':
+                resultRoutes.push({
+                    ...common,
+                    method: 'post',
+                    reqBody: fixSchema(route.reqBody.toJSONSchema(schemaOpts)),
+                });
+                model[path + ' reqBody'] = route.resBody;
+                break;
+            default:
+                // TODO: use eslint exhaustiveness checking
+                const _: never = route;
+        }
         model[path + ' resBody'] = route.resBody;
     }
     return {
@@ -151,33 +180,49 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
 }
 
 function makeOpenAPI(info: ReflectionInfo): OpenAPI {
-    const pathsArray = info.routes.map((route) => {
-        const parameters: OpenAPIGetPath['parameters'] = [];
-        for (const name in route.params) {
-            parameters.push({ name: name, in: 'path', required: true, schema: route.params[name] });
-        }
-        for (const name in route.query) {
-            parameters.push({ name: name, in: 'query', required: true, schema: route.query[name] });
-        }
-        const responses: OpenAPIGetPath['responses'] = {
-            '2XX': {
-                description: 'success',
-                content: {
-                    'application/json': { schema: route.resBody }
-                }
+    const pathsArray = info.routes
+        .map((route): { url: string } & (
+            { method: 'get', path: OpenAPIGetPath } | { method: 'post', path: OpenAPIPostPath }
+        ) => {
+            const parameters: OpenAPIGetPath['parameters'] = [];
+            for (const name in route.params) {
+                parameters.push({ name: name, in: 'path', required: true, schema: route.params[name] });
             }
-        };
-        const path: OpenAPIGetPath = {
-            summary: route.summary,
-            description: route.description,
-            parameters,
-            responses,
-        };
-        return { url: route.path, path: { get: path } };
-    });
+            for (const name in route.query) {
+                parameters.push({ name: name, in: 'query', required: true, schema: route.query[name] });
+            }
+            const responses: OpenAPIGetPath['responses'] = {
+                '2XX': {
+                    description: 'success',
+                    content: {
+                        'application/json': { schema: route.resBody }
+                    }
+                }
+            };
+            const common: OpenAPIPathCommon = {
+                summary: route.summary,
+                description: route.description,
+                parameters,
+                responses,
+            };
+            switch (route.method) {
+                case 'get':
+                    return { url: route.path, method: 'get', path: common };
+                case 'post':
+                    return {
+                        url: route.path, method: 'post', path: {
+                            requestBody: { content: { "application/json": { schema: route.reqBody } } }, ...common
+                        }
+                    };
+            }
+        });
     const paths: OpenAPI['paths'] = {};
-    for (const { url, path } of pathsArray) {
-        paths[url] = path;
+    for (const { url, method, path } of pathsArray) {
+        if (!paths[url]) paths[url] = {};
+        if (method === 'get')
+            paths[url].get = path;
+        else
+            paths[url].post = path;
     }
     return {
         openapi: "3.1.2",
@@ -226,16 +271,28 @@ export function makeFailureResponse<T>(status: 400 | 401 | 403 | 404 | 500, erro
     return { success: false, status, error };
 }
 
+/** z.object({ example: z.(...), hello: z.number(), ... }) */
+export type StandardZodObject = z.ZodObject<Record<string, z.ZodType>>;
+
+export const emptyFormat = {
+    params: z.object(), query: z.object(), reqBody: z.unknown(), resBody: z.unknown(),
+};
+
 /**
  * wrapper around router.get with built in validation and schema recording
  *
  * the `req` and `res` objects aren't provided to the passed in handler, if
- * you're doing something more complicated just use the router direclty for
+ * you're doing something more complicated just use the router directly for
  * now, the functionality needed will be incorporated
+ *
+ * type parameters
+ * - P: path params
+ * - Q: query params
+ * - RB: response body
  */
 export function addGetRoute<
-    P extends z.ZodObject<Record<string, z.ZodType>>,
-    Q extends z.ZodObject<Record<string, z.ZodType>>,
+    P extends StandardZodObject,
+    Q extends StandardZodObject,
     RB extends z.ZodType
 >(
     router: express.Router,
@@ -243,7 +300,7 @@ export function addGetRoute<
     format: { params: P, query: Q, resBody: RB },
     handler: (params: z.infer<P>, query: z.infer<Q>) => HandlerReturn<z.infer<RB>>,
     docs?: {
-        /** a short description of what is route does */
+        /** a short description of what is route does, becomes the title */
         summary?: string,
         /** a longer explanation, commonmark accepted */
         description?: string,
@@ -256,7 +313,7 @@ export function addGetRoute<
             router, method: 'get', pathSuffix: path,
             params: paramsSchema.shape, query: querySchema.shape, resBody: resBodySchema,
             summary: docs?.summary ?? "", description: docs?.description ?? "",
-        })
+        });
     }
 
     router.get(path, (req: express.Request, res: express.Response<z.infer<RB> | { error: string }>) => {
@@ -293,5 +350,76 @@ export function addGetRoute<
 
 /**
  * wrapper around router.post with built in validation and schema recording
- * TODO: make this
+ *
+ * the `req` and `res` objects aren't provided to the passed in handler, if
+ * you're doing something more complicated just use the router directly for
+ * now, the functionality needed will be incorporated
+ *
+ * type parameters
+ * - P: path params
+ * - Q: query params
+ * - B: request body
+ * - RB: response body
  */
+export function addPostRoute<
+    P extends StandardZodObject,
+    Q extends StandardZodObject,
+    B extends z.ZodType,
+    RB extends z.ZodType,
+>(
+    router: express.Router,
+    path: string,
+    format: { params: P, query: Q, reqBody: B, resBody: RB },
+    handler: (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => HandlerReturn<z.infer<RB>>,
+    docs?: {
+        /** a short description of what is route does, becomes the title */
+        summary?: string,
+        /** a longer explanation, commonmark accepted */
+        description?: string,
+    },
+) {
+    const { params: paramsSchema, query: querySchema, reqBody: reqBodySchema, resBody: resBodySchema } = format;
+
+    if (reflection) {
+        info.routes.push({
+            router, method: 'post', pathSuffix: path,
+            params: paramsSchema.shape, query: querySchema.shape, reqBody: reqBodySchema, resBody: resBodySchema,
+            summary: docs?.summary ?? "", description: docs?.description ?? "",
+        });
+    }
+
+    router.post(path, (req, res: express.Response<z.infer<RB> | { error: string }>) => {
+        const { status, json } = determineResponse(req);
+        res.status(status).json(json);
+    });
+
+    const determineResponse = (req: express.Request): { status: number, json: z.infer<RB> | { error: string } } => {
+        let params = paramsSchema.safeParse(req.params);
+        if (params.error) {
+            return { status: 400, json: { error: "invalid path params: " + params.error.message } };
+        }
+        let query = querySchema.safeParse(req.query);
+        if (query.error) {
+            return { status: 400, json: { error: "invalid query params: " + query.error.message } };
+        }
+        let body = reqBodySchema.safeParse(req.body);
+        if (body.error) {
+            return { status: 400, json: { error: "invalid body: " + body.error.message } };
+        }
+        try {
+            const result = handler(params.data, query.data, body.data);
+            if (result.success) {
+                return { status: result.status, json: result.json };
+            } else {
+                return { status: result.status, json: { error: result.error } };
+            }
+        } catch (e) {
+            console.error(`uncaught exception in wrapped route: ${e}`)
+            if (e instanceof Error) {
+                return { status: 500, json: { error: e.message } }
+            } else {
+                return { status: 500, json: { error: JSON.stringify(e) } }
+            }
+        }
+    }
+}
