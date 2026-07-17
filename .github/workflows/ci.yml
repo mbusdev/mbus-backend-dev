@@ -1,0 +1,48 @@
+name: CI
+run-name: CI for ${{ github.ref }}
+on:
+  push:
+    branches-ignore:
+      - "tools/*"
+  pull_request:
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+      - name: NPM Install
+        run: npm i
+        working-directory: ${{ github.workspace }}
+      - name: Test Suite
+        run: |
+          export MBUS_URL=https://mbus.bustime.mock.mb.thething.fyi/
+          export RIDE_URL=https://ride.bustime.mock.mb.thething.fyi/
+          npm start &
+          until curl localhost:3000 > /dev/null 2>&1
+          do
+            sleep 1 # waits for initial startup
+          done
+          sleep 10
+          until curl localhost:3000 > /dev/null 2>&1
+          do
+            sleep 1 # waits for the walking cache to populate
+          done
+          sleep 10 # waits for the graph/predictions to be built
+          npx vitest run test
+          # npm test
+        working-directory: ${{ github.workspace }}
+  Typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+      # - name: Placeholder
+      #   run: echo hi
+      #   working-directory: ${{ github.workspace }}
+      - name: NPM Install
+        run: npm i
+        working-directory: ${{ github.workspace }}
+      - name: Typecheck
+        run: tsc --noEmit
+        working-directory: ${{ github.workspace }}
