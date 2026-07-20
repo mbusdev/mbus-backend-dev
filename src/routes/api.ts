@@ -567,7 +567,12 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-type ActiveReminderInfo = { stpid: string, rtid: string, thresh: number | null, eta: number | null };
+export interface ActiveReminderInfo {
+    stpid: string
+    rtid: string
+    thresh: number | null
+    eta: number | null
+};
 
 /**
  * @param req - Express request, token is path encoded

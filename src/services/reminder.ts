@@ -61,7 +61,7 @@ function prdctdnToNum(prdctdn: string): number {
 }
 
 /** result of ReminderSubscriptons.process */
-type RemindersToTrigger = {
+export type RemindersToTrigger = {
     /** can be sent in bulk based off of route, stop, and threshold (or route, stop, and prdctdn) */
     reminder: Map<Key<ThresholdEvent>, Set<RegistrationToken>>,
     /** can be sent in bulk based off of what route and stop */
@@ -74,7 +74,7 @@ type RemindersToTrigger = {
 };
 
 /** Subscriptions go through a pipeline, see types above for details. */
-class ReminderSubscriptions {
+export class ReminderSubscriptions {
     subscriptions: Array<{
         token: RegistrationToken, subscription: PreThreshold | PostThreshold
     }>

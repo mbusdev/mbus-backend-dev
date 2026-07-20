@@ -57,7 +57,7 @@ jobs:
         run: npm i
         working-directory: ${{ github.workspace }}
       - name: Build Docs
-        run: npx typedoc --entryPointStrategy expand ./src --exclude \"**/legacy/**\" --treatWarningsAsErrors
+        run: npx typedoc --entryPointStrategy expand ./src --treatWarningsAsErrors
         working-directory: ${{ github.workspace }}
       - name: Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
