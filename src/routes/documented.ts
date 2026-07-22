@@ -24,9 +24,10 @@
  *
  * ## Getting OpenAPI Specs
  *
- * Look into setting the environment variables `DOCUMENTED` (to anything truthy)
- * and `DOCUMENTED_OUTPUT_FILE` (or it will log to the console). Also look at
- * {@link globalContext}, {@link docsFor}, and {@link outputDocsFor}
+ * Look into setting the environment variables `DOCUMENTED` (to anything
+ * truthy), `DOCUMENTED_OUTPUT_FILE` (or it will log to the console), and
+ * `DOCUMENTED_EXIT_ON_OUTPUT`. Also look at {@link globalContext},
+ * {@link docsFor}, and {@link outputDocsFor}.
  *
  * TODO: add examples
  *
@@ -42,11 +43,13 @@ import dotenv from 'dotenv';
 import express from 'express';
 import z from 'zod';
 import { JSONSchema, ToJSONSchemaParams } from 'zod/v4/core';
+import { exit } from 'node:process';
 
 dotenv.config();
 
 export const ENABLED = process.env.DOCUMENTED && true;
 const OUTPUT_FILE = process.env.DOCUMENTED_OUTPUT_FILE ?? null
+const EXIT_ON_OUTPUT = process.env.DOCUMENTED_EXIT_ON_OUTPUT && true;
 
 // === interface for people defining apis ===
 
@@ -519,7 +522,7 @@ export function docsFor(ctx: Context) {
 
 /**
  * Output the OpenAPI spec to the file specified by the environment, or to the
- * console if this isn't set.
+ * console if this isn't set. Will also exit the process if configured to do so.
  */
 export async function outputDocsFor(ctx: Context) {
     console.log('outputting docs...');
@@ -529,5 +532,7 @@ export async function outputDocsFor(ctx: Context) {
         await fs.writeFile(OUTPUT_FILE, output);
     else
         console.log(output);
+    if (EXIT_ON_OUTPUT)
+        exit(0);
 }
 
