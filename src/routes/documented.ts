@@ -1,43 +1,73 @@
 /**
  * Wrappers around stuff you would otherwise do with express but with reflection
- * capabilities used for openapi specification generation.
+ * capabilities used for openapi specification generation and built-in request
+ * format validation.
  *
  * The `req` and `res` objects aren't provided to the passed in handler
  * functions, if you're doing something more complicated just use the router
  * directly for now.
  *
  * Nested routing not supported yet, but should probably be added since api.ts
- * is getting long (or we could separate the functions from the route defintions?).
+ * is getting long (or we could separate the functions from the route
+ * defintions).
  *
  * Extra functionality can be added as needed.
  *
- * EXAMPLES: 
+ * # Getting Started
+ * 
+ * ## Defining Routes
+ * 
+ * Make sure you know how to use Zod, then look into {@link addRouter},
+ * {@link addGetRoute}, and {@link addPostRoute}. It would also be useful to
+ * take a look at {@link HandlerReturn} + remember the existence of
+ * {@link emptyFormat} and  {@link globalContext}.
  *
- * TODO: post support [done?]
+ * ## Getting OpenAPI Specs
+ *
+ * Look into setting the environment variables `DOCUMENTED` (to anything truthy)
+ * and `DOCUMENTED_OUTPUT_FILE` (or it will log to the console). Also look at
+ * {@link globalContext}, {@link docsFor}, and {@link outputDocsFor}
+ *
  * TODO: add examples
- * TODO: support empty request and response bodies
+ *
  * TODO: make actually testable?
+ * 
  * TODO: add tests?
+ * @module
  */
 
+import * as fs from 'node:fs/promises';
+
+import dotenv from 'dotenv';
 import express from 'express';
 import z from 'zod';
 import { JSONSchema, ToJSONSchemaParams } from 'zod/v4/core';
 
-/** is reflection enabled? */
-export const reflection = true;
+dotenv.config();
+
+export const ENABLED = process.env.DOCUMENTED && true;
+const OUTPUT_FILE = process.env.DOCUMENTED_OUTPUT_FILE ?? null
 
 // === interface for people defining apis ===
 
-export function addRouter(app: express.Express, route: string, router: express.Router) {
-    if (reflection) {
-        info.routers.push({ route, router });
+/**
+ * Wrapper around `express.Express.use`, instead something like
+ * `app.use("/api", router)` you'd call
+ * `addRouter(someContext, app, "/api", router)`.
+ */
+export function addRouter(ctx: Context, app: express.Express, route: string, router: express.Router) {
+    if (ENABLED) {
+        ctx.routers.push({ route, router });
     }
     app.use(route, router);
 }
 
 /**
- * feel free to add more codes here and to the make[A-Za-z]*Response functions as you need them
+ * You should genrally use either {@link makeSuccessResponse} or
+ * {@link makeFailureResponse} to construct this.
+ *
+ * Feel free to add more codes here and to the make[A-Za-z]*Response functions
+ * as you need them.
  */
 export type HandlerReturn<T> = {
     success: true, status: 200 | 201 | 202 | 203 | 205, json: T
@@ -59,30 +89,46 @@ export function makeFailureResponse<T>(status: 400 | 401 | 403 | 404 | 500, erro
     return { success: false, status, error };
 }
 
-/** z.object({ example: z.(...), hello: z.number(), ... }) */
+/**
+ * A type representing a Zod object (i.e. `z.object(...)`) used normally.
+ */
 export type StandardZodObject = z.ZodObject<Record<string, z.ZodType>>;
 
+/**
+ * Meant to be used along with the spread operator to fill out format fields
+ * that aren't cared about.
+ */
 export const emptyFormat = {
     params: z.object(), query: z.object(), reqBody: z.unknown(), resBody: z.unknown(),
 };
 
 /**
- * wrapper around router.get with built in validation and schema recording
+ * Wrapper around router.get with built in validation and schema recording
  *
- * the `req` and `res` objects aren't provided to the passed in handler, if
- * you're doing something more complicated just use the router directly for
- * now, the functionality needed will be incorporated
+ * The `req` and `res` objects aren't provided to the passed in handler, if
+ * you're doing something more complicated (e.g. using headers) just use the
+ * router directly for now, the functionality needed could be incorporated in
+ * the future.
  *
- * type parameters
- * - P: path params
- * - Q: query params
- * - RB: response body
+ * @typeParam P - path parameters as a zod object
+ * @typeParam Q - query parameters as a zod object
+ * @typeParam RB - response body as a zod type
+ *
+ * @param ctx - which context to place this route in, see `globalContext`
+ * @param router - express router
+ * @param path - path the route happens, same format as used in express but
+ * avoid features not supported in openapi (e.g. advanced path matchers)
+ * @param format - zod schemas of the parts of the request and response, use
+ * `emptyFormat` to fill in default values
+ * @param handler - route handler
+ * @param docs - information that should end up in the openapi spec
  */
 export function addGetRoute<
     P extends StandardZodObject,
     Q extends StandardZodObject,
     RB extends z.ZodType
 >(
+    ctx: Context,
     router: express.Router,
     path: string,
     format: { params: P, query: Q, resBody: RB },
@@ -96,8 +142,8 @@ export function addGetRoute<
 ) {
     const { params: paramsSchema, query: querySchema, resBody: resBodySchema } = format;
 
-    if (reflection) {
-        info.routes.push({
+    if (ENABLED) {
+        ctx.routes.push({
             router, method: 'get',
             pathSuffix: path,
             params: paramsSchema.shape,
@@ -140,17 +186,22 @@ export function addGetRoute<
 }
 
 /**
- * wrapper around router.post with built in validation and schema recording
+ * Wrapper around router.post with built in validation and schema recording,
+ * more details can be found in {@link addGetRoute}.
  *
- * the `req` and `res` objects aren't provided to the passed in handler, if
- * you're doing something more complicated just use the router directly for
- * now, the functionality needed will be incorporated
+ * @typeParam P - path params
+ * @typeParam Q - query params
+ * @typeParam B - request body
+ * @typeParam RB - response body
  *
- * type parameters
- * - P: path params
- * - Q: query params
- * - B: request body
- * - RB: response body
+ * @param ctx - which context to place this route in, see `globalContext`
+ * @param router - express router
+ * @param path - path the route happens, same format as used in express but
+ * avoid features not supported in openapi (e.g. advanced path matchers)
+ * @param format - zod schemas of the parts of the request and response, use
+ * `emptyFormat` to fill in default values
+ * @param handler - route handler
+ * @param docs - information that should end up in the openapi spec
  */
 export function addPostRoute<
     P extends StandardZodObject,
@@ -158,6 +209,7 @@ export function addPostRoute<
     B extends z.ZodType,
     RB extends z.ZodType,
 >(
+    ctx: Context,
     router: express.Router,
     path: string,
     format: { params: P, query: Q, reqBody: B, resBody: RB },
@@ -171,8 +223,8 @@ export function addPostRoute<
 ) {
     const { params: paramsSchema, query: querySchema, reqBody: reqBodySchema, resBody: resBodySchema } = format;
 
-    if (reflection) {
-        info.routes.push({
+    if (ENABLED) {
+        ctx.routes.push({
             router, method: 'post', pathSuffix: path,
             params: paramsSchema.shape,
             query: querySchema.shape,
@@ -220,15 +272,22 @@ export function addPostRoute<
 
 // === end of interface for api defining ===
 
-const info: ReflectionInfoRaw = {
+/**
+ * The context you should probably be using for everything unless writing a
+ * test.
+ */
+export const globalContext: Context = {
     routers: [],
     routes: []
 };
 
+/** Where api route info is aggregated */
+export type Context = ReflectionInfoRaw;
+
 /**
- * doc descriptions passed as data in summary and description fields
+ * @internal
  */
-interface ReflectionInfoRaw {
+export interface ReflectionInfoRaw {
     routers: Array<{ route: string, router: express.Router }>,
     /** full routes along with req+res schemas, routes are incomplete until info is finalized */
     routes: Array<{
@@ -275,9 +334,9 @@ interface OpenAPIPathCommon {
     },
 };
 
-interface OpenAPIGetPath extends OpenAPIPathCommon { };
+export interface OpenAPIGetPath extends OpenAPIPathCommon { };
 
-interface OpenAPIPostPath extends OpenAPIPathCommon {
+export interface OpenAPIPostPath extends OpenAPIPathCommon {
     requestBody?: {
         content: {
             "application/json": {
@@ -289,7 +348,7 @@ interface OpenAPIPostPath extends OpenAPIPathCommon {
 };
 
 /** the subset of the openapi format(s) we are concerned with generating */
-interface OpenAPI {
+export interface OpenAPI {
     openapi: "3.1.2",
     info: {
         title: string,
@@ -451,9 +510,24 @@ function makeOpenAPI(info: ReflectionInfo): OpenAPI {
     }
 }
 
-export function dumpReflectionInfo() {
-    const finalized = finalize(info);
+/** Get the OpenAPI spec as a structured object. */
+export function docsFor(ctx: Context) {
+    const finalized = finalize(ctx);
     const openAPI = makeOpenAPI(finalized);
-    console.log(JSON.stringify(openAPI, null, 4));
+    return openAPI;
+}
+
+/**
+ * Output the OpenAPI spec to the file specified by the environment, or to the
+ * console if this isn't set.
+ */
+export async function outputDocsFor(ctx: Context) {
+    console.log('outputting docs...');
+    const openAPI = docsFor(ctx);
+    const output = JSON.stringify(openAPI, null, 4);
+    if (OUTPUT_FILE)
+        await fs.writeFile(OUTPUT_FILE, output);
+    else
+        console.log(output);
 }
 
