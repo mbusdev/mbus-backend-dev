@@ -48,6 +48,21 @@ jobs:
         run: tsc --noEmit
         working-directory: ${{ github.workspace }}
 
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+      - name: NPM Install
+        run: npm i
+        working-directory: ${{ github.workspace }}
+      - name: NPM Install
+        run: npm i
+        working-directory: ${{ github.workspace }}
+      - name: Lint
+        run: npx eslint
+        working-directory: ${{ github.workspace }}
+
   Typedoc:
     runs-on: ubuntu-latest
     steps:
