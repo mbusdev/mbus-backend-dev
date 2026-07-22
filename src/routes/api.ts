@@ -9,7 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
-import { addGetRoute, addPostRoute, emptyFormat, makeFailureResponse, makeSuccessResponse } from "./documented";
+import * as documented from "./documented";
 
 /**
  * Express router for the MBus API v3.
@@ -488,12 +488,12 @@ router.get('/get-key-stops', getKeyStops);
 // Notifications / Reminders
 
 const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
-addPostRoute(
-    router, '/setReminder', { ...emptyFormat, reqBody: SetReminderBody },
+documented.addPostRoute(
+    documented.globalContext, router, '/setReminder', { ...documented.emptyFormat, reqBody: SetReminderBody },
     (_, __, { token, stpid, rtid, thresh }) => {
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
-            return makeFailureResponse(400, `Invalid route ${rtid}`);
+            return documented.makeFailureResponse(400, `Invalid route ${rtid}`);
         }
         const { reminderSubscriptions, predsByStopId } = info;
         reminderSubscriptions.add(
@@ -503,7 +503,7 @@ addPostRoute(
             predsByStopId,
             Date.now(),
         );
-        return makeSuccessResponse(200, {});
+        return documented.makeSuccessResponse(200, {});
     }
 );
 
@@ -564,8 +564,8 @@ const ActiveReminder = z.object({
     eta: z.number().nullable(),
 }).meta({ id: "Reminder" });
 
-addGetRoute(
-    router, '/activeReminders/:token',
+documented.addGetRoute(
+    documented.globalContext, router, '/activeReminders/:token',
     {
         params: z.object({ token: Token }),
         query: z.object(),
@@ -589,7 +589,7 @@ addGetRoute(
             .rideReminderSubscriptions
             .activeRemindersFor(token)
             .map(subscriptionInfo);
-        return makeSuccessResponse(200, { reminders: universityReminders.concat(rideReminders) });
+        return documented.makeSuccessResponse(200, { reminders: universityReminders.concat(rideReminders) });
     },
     {
         summary: "active reminders",
