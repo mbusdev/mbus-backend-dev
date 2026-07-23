@@ -431,52 +431,56 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
     const model: Record<string, z.ZodType> = {};
 
     for (const route of info.routes) {
-        const basePath = info.routers.find((r) => r.router == route.router)?.route;
-        if (basePath == undefined) {
-            throw new Error('route has missing base path');
+        try {
+            const basePath = info.routers.find((r) => r.router == route.router)?.route;
+            if (basePath == undefined) {
+                throw new Error('route has missing base path');
+            }
+            const path = (basePath + route.pathSuffix).replace(/:([A-Za-z0-9_]+)/, "{$1}");
+            const finalParams: Record<string, JSONSchema.JSONSchema> = {};
+            for (const param in route.params) {
+                const zodSchema = route.params[param];
+                model[path + ' params ' + param] = zodSchema;
+                finalParams[param] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
+            }
+            const finalQuery: Record<string, JSONSchema.JSONSchema> = {};
+            for (const key in route.query) {
+                const zodSchema = route.query[key];
+                model[path + '?' + key] = zodSchema;
+                finalQuery[key] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
+            }
+            const common = {
+                path,
+                params: finalParams,
+                query: finalQuery,
+                resBody: route.resBody === null ? null : fixSchema(route.resBody.toJSONSchema(schemaOpts), true),
+                summary: route.summary,
+                description: route.description,
+            };
+            switch (route.method) {
+                case 'get':
+                    resultRoutes.push({ ...common, method: 'get' });
+                    break;
+                case 'post':
+                    resultRoutes.push({
+                        ...common,
+                        method: 'post',
+                        reqBody: route.reqBody === null
+                            ? null
+                            : fixSchema(route.reqBody.toJSONSchema(schemaOpts), true),
+                    });
+                    if (route.reqBody)
+                        model[path + ' reqBody'] = route.reqBody;
+                    break;
+                default:
+                    // TODO: use eslint exhaustiveness checking
+                    const _: never = route;
+            }
+            if (route.resBody)
+                model[path + ' resBody'] = route.resBody;
+        } catch (e) {
+            throw new Error(`couldn't finalize "${route.pathSuffix}": ${e}`);
         }
-        const path = (basePath + route.pathSuffix).replace(/:([A-Za-z0-9_]+)/, "{$1}");
-        const finalParams: Record<string, JSONSchema.JSONSchema> = {};
-        for (const param in route.params) {
-            const zodSchema = route.params[param];
-            model[path + ' params ' + param] = zodSchema;
-            finalParams[param] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
-        }
-        const finalQuery: Record<string, JSONSchema.JSONSchema> = {};
-        for (const key in route.query) {
-            const zodSchema = route.query[key];
-            model[path + '?' + key] = zodSchema;
-            finalQuery[key] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
-        }
-        const common = {
-            path,
-            params: finalParams,
-            query: finalQuery,
-            resBody: route.resBody === null ? null : fixSchema(route.resBody.toJSONSchema(schemaOpts), true),
-            summary: route.summary,
-            description: route.description,
-        };
-        switch (route.method) {
-            case 'get':
-                resultRoutes.push({ ...common, method: 'get' });
-                break;
-            case 'post':
-                resultRoutes.push({
-                    ...common,
-                    method: 'post',
-                    reqBody: route.reqBody === null
-                        ? null
-                        : fixSchema(route.reqBody.toJSONSchema(schemaOpts), true),
-                });
-                if (route.reqBody)
-                    model[path + ' reqBody'] = route.reqBody;
-                break;
-            default:
-                // TODO: use eslint exhaustiveness checking
-                const _: never = route;
-        }
-        if (route.resBody)
-            model[path + ' resBody'] = route.resBody;
     }
     return {
         routes: resultRoutes,
