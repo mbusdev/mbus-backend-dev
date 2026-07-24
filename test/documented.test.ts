@@ -1,8 +1,14 @@
-import { expect, it } from "vitest";
+import { beforeAll, expect, it } from "vitest";
 import * as d from '@/routes/documented';
 
 import express from 'express';
 import z from 'zod';
+
+beforeAll(() => {
+    if (!d.ENABLED) {
+        throw new Error('documented must be enabled');
+    }
+});
 
 it('should handle path params (GET)', () => {
     testCase(
