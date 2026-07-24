@@ -178,11 +178,14 @@ export function addGetRoute<
     const determineResponse = (req: ExpressRequest): { status: number, json: z.infer<RB> | { error: string } } => {
         let params = paramsSchema.safeParse(req.params);
         if (params.error) {
-            return { status: 400, json: { error: "invalid path params: " + params.error.message } };
+            return {
+                status: 400,
+                json: formatError('invalid path params', params.error)
+            };
         }
         let query = querySchema.safeParse(req.query);
         if (query.error) {
-            return { status: 400, json: { error: "invalid query params: " + query.error.message } };
+            return { status: 400, json: formatError('invalid query params', query.error) };
         }
         try {
             const result = handler(params.data, query.data);
@@ -263,15 +266,15 @@ export function addPostRoute<
     const determineResponse = (req: ExpressRequest): { status: number, json: z.infer<RB> | { error: string } } => {
         let params = paramsSchema.safeParse(req.params);
         if (params.error) {
-            return { status: 400, json: { error: "invalid path params: " + params.error.message } };
+            return { status: 400, json: formatError('invalid path params', params.error) };
         }
         let query = querySchema.safeParse(req.query);
         if (query.error) {
-            return { status: 400, json: { error: "invalid query params: " + query.error.message } };
+            return { status: 400, json: formatError('invalid query params', query.error) };
         }
         let body = reqBodySchema.safeParse(req.body);
         if (body.error) {
-            return { status: 400, json: { error: "invalid body: " + body.error.message } };
+            return { status: 400, json: formatError('invalid body', body.error) };
         }
         try {
             const result = handler(params.data, query.data, body.data);
@@ -290,6 +293,13 @@ export function addPostRoute<
         }
     }
     return determineResponse;
+}
+
+function formatError(title: string, error: z.ZodError) {
+    const issuesText = error.issues
+        .map(i => `- ${i.path.length ? (i.path.join('.') + ': ') : ''}${i.message}`)
+        .join('\n');
+    return { error: `${title}:\n${issuesText}` };
 }
 
 // === end of interface for api defining ===
