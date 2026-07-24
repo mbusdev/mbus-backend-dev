@@ -15,6 +15,7 @@ jobs:
         working-directory: ${{ github.workspace }}
       - name: Test Suite
         run: |
+          export DOCUMENTED=1
           export MBUS_URL=https://mbus.bustime.mock.mb.thething.fyi/
           export RIDE_URL=https://ride.bustime.mock.mb.thething.fyi/
           npm start &
