@@ -24,14 +24,11 @@
  *
  * ### Be Careful With Zod Transformations
  * The OpenAPI spec will be populated with the output formats of the schemas you
- * define routes with. This gives z.coerce the correct behavior and also will
- * work with carefully constructed z.pipe chains, but a z.transform without
- * further validation through pipe will not work. Uses of z.coerce, z.pipe, and
- * z.transform should generally conform to a parse string into primative type
- * pattern, and only be used for path and query parameters. Response schemas
- * are not guaranteed to be used (currently they aren't but this may change in
- * the future) so avoid *any* kind of data transformation in them unless it is
- * confirmed that response schemas will be used.
+ * define routes with. This makes coerce work well with path/query formats but
+ * might be problematic with client generation if using transformations to
+ * non-primative types. Only use coerce, pipe, and transform with the parts of
+ * the request, not the response (the resBody schema is never used to validate,
+ * only to get a type).
  *
  * ## Getting OpenAPI Specs
  *
@@ -106,13 +103,15 @@ export function makeFailureResponse<T>(status: 400 | 401 | 403 | 404 | 500, erro
  * A type representing a Zod object (i.e. `z.object(...)`) where string fields
  * like those from query & path parms can get parsed.
  */
-export type StandardZodObject = z.ZodObject<Record<string, z.ZodType<unknown, string>>>;
+export type StringlyZodObject = z.ZodObject<Record<string, z.ZodType<unknown, string>>>;
 
 /**
  * Meant to be used along with the spread operator to fill out format fields
  * that aren't cared about.
  */
-export const emptyFormat = {
+export const emptyFormat: {
+    params: StringlyZodObject, query: StringlyZodObject, reqBody: z.ZodType, resBody: z.ZodType,
+} = {
     params: z.object(), query: z.object(), reqBody: z.unknown(), resBody: z.unknown(),
 };
 
@@ -141,8 +140,8 @@ export const emptyFormat = {
  * to be used in testing
  */
 export function addGetRoute<
-    P extends StandardZodObject,
-    Q extends StandardZodObject,
+    P extends StringlyZodObject,
+    Q extends StringlyZodObject,
     RB extends z.ZodType
 >(
     ctx: Context,
@@ -228,8 +227,8 @@ export function addGetRoute<
  * to be used in testing
  */
 export function addPostRoute<
-    P extends StandardZodObject,
-    Q extends StandardZodObject,
+    P extends StringlyZodObject,
+    Q extends StringlyZodObject,
     B extends z.ZodType,
     RB extends z.ZodType,
 >(
