@@ -559,6 +559,7 @@ function makeOpenAPI(info: ReflectionInfo): OpenAPI {
 
 /** Get the OpenAPI spec as a structured object. */
 export function docsFor(ctx: Context) {
+    if (!ENABLED) throw new Error('documented must be enabled');
     const finalized = finalize(ctx);
     const openAPI = makeOpenAPI(finalized);
     return openAPI;
@@ -569,6 +570,7 @@ export function docsFor(ctx: Context) {
  * console if this isn't set. Will also exit the process if configured to do so.
  */
 export async function outputDocsFor(ctx: Context) {
+    if (!ENABLED) throw new Error('documented must be enabled');
     console.log('outputting docs...');
     const openAPI = docsFor(ctx);
     const output = JSON.stringify(openAPI, null, 4);
