@@ -9,6 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
+import { BusRouteLineSchema } from "../services/bustimeCommon";
 import * as documented from "./documented";
 
 /**
@@ -188,15 +189,17 @@ export function getRidePositions(req: express.Request, res: express.Response) {
 }
 router.get('/getRidePositions', getRidePositions);
 
-addGetRoute(
-    router, '/getAllRoutes', { ...emptyFormat, resBody: z.array(BusRouteLineSchema) },
-    () => makeSuccessResponse(200, Object.values(state.cachedRoutes).flat(1)),
+documented.addGetRoute(
+    documented.globalContext, router, '/getAllRoutes',
+    { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
+    () => documented.makeSuccessResponse(200, Object.values(state.cachedRoutes).flat(1)),
     { description: 'get all cached route patterns' }
 );
 
-addGetRoute(
-    router, '/getAllRideRoutes', { ...emptyFormat, resBody: z.array(BusRouteLineSchema) },
-    () => makeSuccessResponse(200, Object.values(state.cachedRideRoutes).flat(1)),
+documented.addGetRoute(
+    documented.globalContext, router, '/getAllRideRoutes',
+    { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
+    () => documented.makeSuccessResponse(200, Object.values(state.cachedRideRoutes).flat(1)),
     { description: 'get all cached ride route patterns' },
 )
 
