@@ -558,7 +558,7 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-const Token = z.string().transform(reminderService.registrationToken).meta({ id: "Token" })
+const Token = z.string().meta({ id: "Token" })
 const ActiveReminder = z.object({
     stpid: z.string(),
     rtid: z.string(),
@@ -574,6 +574,7 @@ documented.addGetRoute(
         resBody: z.object({ reminders: z.array(ActiveReminder) }),
     },
     ({ token }, _) => {
+        const regTok = reminderService.registrationToken(token);
         const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold) => {
             return {
                 stpid: r.event.stpid,
@@ -585,11 +586,11 @@ documented.addGetRoute(
         console.log(`Got request for active reminders of ${token}`);
         const universityReminders = reminderService
             .universityReminderSubscriptions
-            .activeRemindersFor(token)
+            .activeRemindersFor(regTok)
             .map(subscriptionInfo);
         const rideReminders = reminderService
             .rideReminderSubscriptions
-            .activeRemindersFor(token)
+            .activeRemindersFor(regTok)
             .map(subscriptionInfo);
         return documented.makeSuccessResponse(200, { reminders: universityReminders.concat(rideReminders) });
     },
