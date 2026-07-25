@@ -192,14 +192,14 @@ router.get('/getRidePositions', getRidePositions);
 documented.addGetRoute(
     documented.globalContext, router, '/getAllRoutes',
     { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
-    () => documented.makeSuccessResponse(200, Object.values(state.cachedRoutes).flat(1)),
+    () => documented.makeSuccessResponse(Object.values(state.cachedRoutes).flat(1)),
     { description: 'get all cached route patterns' }
 );
 
 documented.addGetRoute(
     documented.globalContext, router, '/getAllRideRoutes',
     { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
-    () => documented.makeSuccessResponse(200, Object.values(state.cachedRideRoutes).flat(1)),
+    () => documented.makeSuccessResponse(Object.values(state.cachedRideRoutes).flat(1)),
     { description: 'get all cached ride route patterns' },
 )
 
