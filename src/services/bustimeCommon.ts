@@ -22,7 +22,7 @@ export type Pattern = z.infer<typeof PatternSchema>
 
 export const PatternsArraySchema = z.array(PatternSchema);
 
-export const LatLonSchema = z.object({ lat: z.number(), lon: z.number() }).meta({ name: 'LatLon' });
+export const LatLonSchema = z.object({ lat: z.number(), lon: z.number() }).meta({ id: 'LatLon' });
 
 export const BusStopSchema = z.object({
     id: z.string(),
