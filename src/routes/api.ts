@@ -503,7 +503,7 @@ documented.addPostRoute(
             predsByStopId,
             Date.now(),
         );
-        return documented.makeSuccessResponse(200, {});
+        return documented.makeSuccessResponse({});
     }
 );
 
@@ -590,7 +590,7 @@ documented.addGetRoute(
             .rideReminderSubscriptions
             .activeRemindersFor(regTok)
             .map(subscriptionInfo);
-        return documented.makeSuccessResponse(200, { reminders: universityReminders.concat(rideReminders) });
+        return documented.makeSuccessResponse({ reminders: universityReminders.concat(rideReminders) });
     },
     {
         summary: "active reminders",
