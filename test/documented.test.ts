@@ -90,7 +90,7 @@ it('should handle response bodies (GET)', () => {
           }
         `),
         null,
-        (spec) => expect(spec.paths['/4/34'].get?.responses["2XX"].content?.["application/json"].schema)
+        (spec) => expect(spec.paths['/4/34'].get?.responses["200"].content?.["application/json"].schema)
             .toMatchInlineSnapshot(`
               {
                 "type": "number",
@@ -100,7 +100,7 @@ it('should handle response bodies (GET)', () => {
     // can be empty
     testCase(
         'get', '', '/h', {}, {}, {}, null, null,
-        (spec) => expect(spec.paths['/h'].get!.responses["2XX"].content)
+        (spec) => expect(spec.paths['/h'].get!.responses["200"].content)
             .toMatchInlineSnapshot(`undefined`)
     );
 });
@@ -210,7 +210,7 @@ it('should handle response bodies (POST)', () => {
           }
         `),
         null,
-        (spec) => expect(spec.paths['/4/34'].post?.responses["2XX"].content?.["application/json"].schema)
+        (spec) => expect(spec.paths['/4/34'].post?.responses["200"].content?.["application/json"].schema)
             .toMatchInlineSnapshot(`
               {
                 "type": "number",
@@ -220,7 +220,7 @@ it('should handle response bodies (POST)', () => {
     // can be empty
     testCase(
         'post', '', '/h', {}, {}, {}, null, null,
-        (spec) => expect(spec.paths['/h'].post!.responses["2XX"].content)
+        (spec) => expect(spec.paths['/h'].post!.responses["200"].content)
             .toMatchInlineSnapshot(`undefined`)
     );
 });
@@ -233,8 +233,8 @@ it('should be able to handle GET & POST to the same path', () => {
     const ctx = d.newContext();
     d.addRouter(ctx, app, '', router);
 
-    d.addGetRoute(ctx, router, '/rt', d.emptyFormat, () => d.makeSuccessResponse(200, {}), {});
-    d.addPostRoute(ctx, router, '/rt', d.emptyFormat, () => d.makeSuccessResponse(200, {}), {});
+    d.addGetRoute(ctx, router, '/rt', d.emptyFormat, () => d.makeSuccessResponse({}), {});
+    d.addPostRoute(ctx, router, '/rt', d.emptyFormat, () => d.makeSuccessResponse({}), {});
 
     const path = d.docsFor(ctx).paths['/rt'];
     expect(path.get).toBeDefined();
@@ -252,7 +252,7 @@ it('should handle zod transform types in the request', () => {
     const handler = d.addPostRoute(
         ctx, router, '/rt',
         { ...d.emptyFormat, reqBody: z.string().transform((s) => s.toLowerCase()) },
-        (_, __, body) => d.makeSuccessResponse(200, body)
+        (_, __, body) => d.makeSuccessResponse(body)
     );
     const res = handler({ params: {}, query: {}, body: 'HI' });
     expect(res.json).toMatchInlineSnapshot(`"hi"`);
@@ -267,7 +267,7 @@ it('should surface type descriptions & names', () => {
     d.addGetRoute(
         ctx, router, '/pan',
         { ...d.emptyFormat, resBody: z.object().meta({ id: 'Obj', description: 'obj' }) },
-        () => d.makeSuccessResponse(200, {})
+        () => d.makeSuccessResponse({})
     );
     const spec = d.docsFor(ctx);
     expect(spec.components.schemas).toMatchInlineSnapshot(`
@@ -291,7 +291,7 @@ it('should surface route descriptions & names', () => {
     d.addGetRoute(
         ctx, router, '/pan',
         d.emptyFormat,
-        () => d.makeSuccessResponse(200, {}),
+        () => d.makeSuccessResponse({}),
         { summary: 'summary', description: 'description' }
     );
     const spec = d.docsFor(ctx);
@@ -320,12 +320,12 @@ function testCase(
         ? d.addGetRoute(
             ctx, router, suffix,
             { ...d.emptyFormat, ...format },
-            (params, query) => d.makeSuccessResponse(200, { params, query })
+            (params, query) => d.makeSuccessResponse({ params, query })
         )
         : d.addPostRoute(
             ctx, router, suffix,
             { ...d.emptyFormat, ...format },
-            (params, query, body) => d.makeSuccessResponse(200, { params, query, body })
+            (params, query, body) => d.makeSuccessResponse({ params, query, body })
         );
 
     const defaultResponse: d.ExpressRequest = { query: {}, params: {}, body: {} };

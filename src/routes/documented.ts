@@ -22,6 +22,12 @@
  * take a look at {@link HandlerReturn} + remember the existence of
  * {@link emptyFormat} and  {@link globalContext}.
  *
+ * If a Zod schema is reused / important enough to get its own variable, make
+ * sure to at the very least add `.meta({ id: 'unique name' })` to it so that
+ * API/docs consumers can also take advantage of this. Other schemas can also
+ * have this even if they are not variables. Note that id must be unique, and
+ * accidentally setting `name` instead won't have the intended outcome.
+ *
  * ### Be Careful With Zod Transformations
  * The OpenAPI spec will be populated with the output formats of the schemas you
  * define routes with. This makes coerce work well with path/query formats but
@@ -76,11 +82,11 @@ export function addRouter(ctx: Context, app: express.Express, route: string, rou
  * You should genrally use either {@link makeSuccessResponse} or
  * {@link makeFailureResponse} to construct this.
  *
- * Feel free to add more codes here and to the make[A-Za-z]*Response functions
- * as you need them.
+ * Success responses were limited to just 200 because the response body of a
+ * 2XX catch-all entry isn't reflected in swagger_parser's output.
  */
 export type HandlerReturn<T> = {
-    success: true, status: 200 | 201 | 202 | 203 | 205, json: T
+    success: true, status: 200, json: T
 } | {
     success: false, status: 400 | 401 | 403 | 404 | 500, error: string
 };
@@ -88,8 +94,8 @@ export type HandlerReturn<T> = {
 /**
  * helper function that should avoid weird typechecker issues
  */
-export function makeSuccessResponse<T>(status: 200 | 201 | 202 | 203 | 205, json: T): HandlerReturn<T> {
-    return { success: true, status, json };
+export function makeSuccessResponse<T>(json: T): HandlerReturn<T> {
+    return { success: true, status: 200, json };
 }
 
 /**
@@ -358,7 +364,7 @@ interface OpenAPIPathCommon {
         required: boolean,
     }>,
     responses: {
-        "2XX": {
+        "200": {
             description: "success",
             content?: {
                 "application/json": {
@@ -513,7 +519,7 @@ function makeOpenAPI(info: ReflectionInfo): OpenAPI {
                 ? undefined
                 : { 'application/json': { schema: route.resBody } };
             const responses: OpenAPIGetPath['responses'] = {
-                '2XX': {
+                '200': {
                     description: 'success',
                     content,
                 }
