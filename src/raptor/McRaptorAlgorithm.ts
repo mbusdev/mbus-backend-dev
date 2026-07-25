@@ -25,14 +25,14 @@ interface JourneyLegCommon {
     destinationID: StopID;
 };
 
-interface JourneyLegTrip extends JourneyLegCommon {
+export interface JourneyLegTrip extends JourneyLegCommon {
     type: 'Trip';
     trip: Trip;
     rt?: string;
     stopTimes: StopTime[];
 };
 
-interface JourneyLegTransfer extends JourneyLegCommon {
+export interface JourneyLegTransfer extends JourneyLegCommon {
     type: 'Transfer',
     transfer: Transfer,
 };
