@@ -89,14 +89,14 @@ interface FormattedLegCommon {
     destinationID: string,
 };
 
-interface FormattedLegWalk extends
+export interface FormattedLegWalk extends
     FormattedLegCommon,
     Partial<Omit<walking.WalkingResponse, "duration" | "distance">> // leaves just the path_coords field for now
 {
     mode: 'walk'
 };
 
-interface FormattedLegBus extends FormattedLegCommon {
+export interface FormattedLegBus extends FormattedLegCommon {
     mode: 'bus',
     stopTimes: StopTime[],
     trip: Trip,
@@ -105,7 +105,7 @@ interface FormattedLegBus extends FormattedLegCommon {
     vid: string | null,
 };
 
-type FormattedLeg = FormattedLegWalk | FormattedLegBus
+export type FormattedLeg = FormattedLegWalk | FormattedLegBus
 
 async function processJourneys(journeys: Journey[], oLat: number, oLon: number, dLat: number, dLon: number) {
 
