@@ -15,12 +15,48 @@
  *
  * # Getting Started
  * 
- * ## Defining Routes
+ * ```typescript
+ * // have express app
+ * const app = express();
+ *
+ * // cool router (mandatory probably)
+ * const router = express.Router();
+ *
+ * // use local context if you want
+ * const ctx = newContext();
+ *
+ * // add router to app (app.use(router, '/api'))
+ * addRouter(globalContext, app, router, '/api')
+ *
+ * // add route (/api/double)
+ * addGetRoute(
+ *     globalContext, router, '/double',
+ *     // Zod schemas for each part of the request & response, defaults=emptyFormat
+ *     // since query params end up as strings, z.coerce.number() is needed not z.number()
+ *     { ...emptyFormat, query: z.object({ x: z.coerce.number() }), resBody: z.number() },
+ *     // handling logic goes here, first arg is ignored b/c it is the path params
+ *     (_, { x }) => {
+ *         // x is already a number as opposed to any/unknown
+ *         makeSuccessResponse(x * 2);
+ *     },
+ *     // documentation goes here
+ *     { name: 'double a number', description: 'f: R -> R, x |-> 2x'}
+ * );
+ *
+ * // get docs
+ * const spec: OpenAPI = docsFor(globalContext);
+ * // output docs
+ * outputDocsFor(globalContext);
+ * ```
  * 
+ * ## Defining Routes
+ *
  * Make sure you know how to use Zod, then look into {@link addRouter},
  * {@link addGetRoute}, and {@link addPostRoute}. It would also be useful to
  * take a look at {@link HandlerReturn} + remember the existence of
  * {@link emptyFormat} and  {@link globalContext}.
+ *
+ * `z.tuple` isn't handled well by swagger_parser, prefer objects instead.
  *
  * If a Zod schema is reused / important enough to get its own variable, make
  * sure to at the very least add `.meta({ id: 'unique name' })` to it so that
@@ -43,7 +79,6 @@
  * `DOCUMENTED_EXIT_ON_OUTPUT`. Also look at {@link globalContext},
  * {@link docsFor}, and {@link outputDocsFor}.
  *
- * TODO: add examples
  * @module
  */
 
