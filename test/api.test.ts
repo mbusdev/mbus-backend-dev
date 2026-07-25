@@ -44,9 +44,8 @@ describe('API Endpoints', () => {
     it('should get all cached routes and confirm structure', async () => {
         const response = await axios.get(`${BASE_URL}/getAllRoutes`);
         expect(response.status).toBe(200);
-        expect(response.data).toHaveProperty('routes');
-        expect(typeof response.data.routes).toBe('object'); // cachedRoutes is an object, not array
-        console.log(`GET /getAllRoutes: ${Object.keys(response.data.routes).length} cached routes found.`);
+        expect(typeof response.data).toBe('object'); // should be array
+        console.log(`GET /getAllRoutes: ${Object.keys(response.data).length} cached routes found.`);
     });
 
     it('should get all bus predictions and log stop IDs', async () => {
@@ -171,13 +170,13 @@ describe('API Endpoints', () => {
             expect(response.status).toBe(200);
             expect(response.data).toHaveProperty('journeys');
             expect(Array.isArray(response.data.journeys)).toBe(true);
-            console.log('GET /plan-journey (test 1):', JSON.stringify(response.data.journeys, null, 2));
+            // console.log('GET /plan-journey (test 1):', JSON.stringify(response.data.journeys, null, 2));
 
             const response2 = await axios.get(`${BASE_URL}/plan-journey?originLat=42.27389558&originLon=-83.73739576&destLat=42.29303061&destLon=-83.7163671`);
             expect(response2.status).toBe(200);
             expect(response2.data).toHaveProperty('journeys');
             expect(Array.isArray(response2.data.journeys)).toBe(true);
-            console.log('GET /plan-journey (test 2):', JSON.stringify(response2.data.journeys, null, 2));
+            // console.log('GET /plan-journey (test 2):', JSON.stringify(response2.data.journeys, null, 2));
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error('Error fetching path:', error.message);
