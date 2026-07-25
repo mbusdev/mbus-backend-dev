@@ -14,7 +14,7 @@ it('should handle path params (GET)', () => {
     testCase(
         'get',
         '/root', '/path/{item}',
-        { ...d.emptyFormat, params: z.strictObject({ item: z.string() }) },
+        { params: z.strictObject({ item: z.string() }) },
         { params: { item: 'five' }, query: {}, body: {} },
         { params: { wrong: 'five' }, query: {}, body: {} },
         (correct) => expect(correct)
@@ -43,6 +43,27 @@ it('should handle path params (GET)', () => {
                 },
               }
             `),
+    );
+});
+
+it('should accept params named id', () => {
+    testCase(
+        'get',
+        '', '/test',
+        { params: z.object({ id: z.string() }) },
+        {}, {}, null, null,
+        (spec) => expect(spec.paths['/test'].get?.parameters[0].name).toEqual("id")
+    );
+});
+
+it('should work with schemas containing id', () => {
+    const B = z.object({ id: z.number() }).meta({ id: 'B'});
+    testCase(
+        'post',
+        '', '/test',
+        { reqBody: B, resBody: B },
+        {}, {}, null, null,
+        (spec) => expect(spec.components.schemas.B.properties).toHaveProperty('id'),
     );
 });
 
