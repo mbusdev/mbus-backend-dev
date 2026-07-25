@@ -464,7 +464,6 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
             delete s['$defs'];
         }
         if ('$schema' in s) delete s['$schema'];
-        if ('id' in s) delete s['id'];
         for (const v of Object.values(s)) {
             stripExtraKeys(v, shouldStripDefs);
         }
