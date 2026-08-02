@@ -30,8 +30,6 @@
  * {@link docsFor}, and {@link outputDocsFor}.
  *
  * TODO: add examples
-
- * TODO: add tests?
  * @module
  */
 
