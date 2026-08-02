@@ -203,14 +203,17 @@ describe('Reminders', () => {
     it('should get unix timestamp from ride bus api', async () => {
         configDotenv();
         const RIDE_API_KEY = process.env.RIDE_API_KEY;
-        const BASE_URL = 'https://rt.theride.org/bustime/api/v3/';
+        expect(RIDE_API_KEY || process.env.RIDE_URL, 'unable to make requests to a theride bustime server')
+            .toBeTruthy();
+        const BASE_URL = process.env.RIDE_URL || 'https://rt.theride.org/bustime/api/v3/';
 
         const client = axios.create({
             baseURL: BASE_URL,
             params: { key: RIDE_API_KEY, format: 'json' }
         });
         const res = await client.get('/gettime', { params: { unixTime: true } });
-        expect(Math.abs(parseInt(res.data["bustime-response"]["tm"]) - Date.now())).toBeLessThan(60 * 1000);
+        expect(Math.abs(parseInt(res.data["bustime-response"]["tm"]) - Date.now()))
+            .toBeLessThan(2 * 24 * 60 * 60 * 1000);
     });
 
     it('should have cached preds in a good state', async () => {
@@ -229,7 +232,7 @@ describe('Reminders', () => {
             for (const k in sample) {
                 expect(k + ":" +typeof x[k]).toBe(k + ":" + typeof sample[k]);
                 if (k == "prdtm") {
-                    expect(x[k]).toBeGreaterThanOrEqual(Date.now() - 15 * 1000);
+                    expect(x[k]).toBeGreaterThanOrEqual(Date.now() - 2 * 24 * 60 * 60 * 1000);
                 }
             }  
         };

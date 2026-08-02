@@ -8,7 +8,7 @@
         "start": "tsx src/app.ts",
         "test": "vitest run test",
         "stress-test": "vitest run test/search-stress.test.ts",
-        "docs": "typedoc --entryPointStrategy expand ./src --exclude \"**/legacy/**\""
+        "docs": "typedoc --entryPointStrategy expand ./src"
     },
     "author": "Efe Akinci",
     "license": "ISC",
