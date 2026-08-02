@@ -51,97 +51,66 @@ export const BusRouteLineSchema = z.object({
     routeId: z.string(),
     routeDirection: z.string(),
     points: z.array(LatLonSchema),
-    stops: z.array(z.tuple([z.int(), BusStopSchema])),
+    stops: z.array(z.object({ index: z.int(), stop: BusStopSchema })),
 }).meta({ id: 'BusRouteLine' });
 export type BusRouteLine = z.infer<typeof BusRouteLineSchema>;
 
 export function makeBusRouteLines(rt: string, pattern: Pattern, isRide: boolean): BusRouteLine[] {
-    const lines: BusRouteLine[] = [];
-    const points = [];
-    const stops: [number, BusStop][] = [];
 
-    const pointList = pattern.pt;
-    for (let i = 0; i < pointList.length; i++) {
-        const point = pointList[i];
-        const isLast = i == pointList.length - 1; // bool to check if last
-        points.push({ lat: point.lat, lon: point.lon });
-        if (point.typ === 'S') {
-            // get rotation of stop
-            let stopRotation;
-            if (isLast) {
-                // use the previous 2 points to calculate rotation
-                stopRotation = pointRotation(
-                    pointList[i - 2].lat ?? 0,
-                    pointList[i - 2].lon ?? 0,
-                    pointList[i - 1].lat ?? 0,
-                    pointList[i - 1].lon ?? 0,
-                );
-            } else {
-                // use the next 2 points to calculate rotation
-                stopRotation = pointRotation(
-                    pointList[i + 1].lat ?? 0,
-                    pointList[i + 1].lon ?? 0,
-                    pointList[i + 2].lat ?? 0,
-                    pointList[i + 2].lon ?? 0,
-                );
-            }
-            stops.push([
-                i,
-                makeBusStop(
-                    { id: point.stpid, name: point.stpnm, lat: point.lat, lon: point.lon },
-                    rt, stopRotation, isRide
-                )
-            ]);
-        }
-    }
-
-    lines.push({ routeId: rt, points, stops, routeDirection: pattern.rtdir });
-
-    // Handle detour points if present
-    if (pattern.dtrpt) {
-        const detourPoints = [];
-        const detourStops = [];
-
-        const detourPointList = pattern.dtrpt;
-
-        for (let i = 0; i < detourPointList.length; i++) {
-              const point = detourPointList[i];
-              const isLast = i === detourPointList.length - 1; // bool to check if last
-
-            detourPoints.push({ lat: point.lat, lon: point.lon });
-            if (point.typ == 'S') {
+    const process = (pointList: Pattern['pt']): {
+        points: BusRouteLine['points'],
+        stops: BusRouteLine['stops']
+    } => {
+        const points = [];
+        const stops = [];
+        for (let i = 0; i < pointList.length; i++) {
+            const point = pointList[i];
+            const isLast = i == pointList.length - 1; // bool to check if last
+            points.push({ lat: point.lat, lon: point.lon });
+            if (point.typ === 'S') {
                 // get rotation of stop
                 let stopRotation;
                 if (isLast) {
                     // use the previous 2 points to calculate rotation
                     stopRotation = pointRotation(
-                        detourPointList[i - 2].lat ?? 0,
-                        detourPointList[i - 2].lon ?? 0,
-                        detourPointList[i - 1].lat ?? 0,
-                        detourPointList[i - 1].lon ?? 0,
+                        pointList[i - 2]?.lat ?? 0,
+                        pointList[i - 2]?.lon ?? 0,
+                        pointList[i - 1]?.lat ?? 0,
+                        pointList[i - 1]?.lon ?? 0,
                     );
-
                 } else {
                     // use the next 2 points to calculate rotation
                     stopRotation = pointRotation(
-                        detourPointList[i + 1].lat ?? 0,
-                        detourPointList[i + 1].lon ?? 0,
-                        detourPointList[i + 2].lat ?? 0,
-                        detourPointList[i + 2].lon ?? 0,
+                        pointList[i + 1]?.lat ?? 0,
+                        pointList[i + 1]?.lon ?? 0,
+                        pointList[i + 2]?.lat ?? 0,
+                        pointList[i + 2]?.lon ?? 0,
                     );
                 }
-                detourStops.push([
-                    i,
-                    makeBusStop(
-                        { id: point.stpid, name: point.stpnm, lat: point.lat, lon: point.lon},
+                stops.push({
+                    index: i,
+                    stop : makeBusStop(
+                        { id: point.stpid, name: point.stpnm, lat: point.lat, lon: point.lon },
                         rt, stopRotation, isRide
                     )
-                ])
+                });
             }
         }
-
+        return { points, stops };
+    }
+    
+    const lines: BusRouteLine[] = [];
+    {
+        const { points, stops } = process(pattern.pt);
         lines.push({ routeId: rt, points, stops, routeDirection: pattern.rtdir });
     }
+
+    // Handle detour points if present
+    if (pattern.dtrpt) {
+        const { points, stops } = process(pattern.dtrpt);
+        lines.push({ routeId: rt, points, stops, routeDirection: pattern.rtdir });
+    }
+
     return lines;
 }
 
