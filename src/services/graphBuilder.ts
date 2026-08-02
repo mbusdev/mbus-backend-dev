@@ -58,9 +58,10 @@ export async function rebuildGraph() {
     try {
         console.log(`Rebuilding graph...`);
         const allStopIds = new Set<string>();
-        Object.values(state.cachedRoutes).flat(1).flatMap((line) => line.stops).forEach(([_, stop]) => {
-            allStopIds.add(stop.id);
-        });
+        Object.values(state.cachedRoutes)
+            .flat(1)
+            .flatMap((line) => line.stops)
+            .forEach(({ index: _, stop }) => allStopIds.add(stop.id));
 
         const rawPreds = await mbus.fetchPredictions(Array.from(allStopIds), DEFAULT_ROUTES);
         const formattedPreds = processPredictions(rawPreds);
@@ -73,9 +74,10 @@ export async function rebuildGraph() {
         
         // extra stuff to update the busses for the ride
         const rideStopIds = new Set<string>();
-        Object.values(state.cachedRideRoutes).flat(1).flatMap((line) => line.stops).forEach(([_, stop]) => {
-            rideStopIds.add(stop.id);
-        });
+        Object.values(state.cachedRideRoutes)
+            .flat(1)
+            .flatMap((line) => line.stops)
+            .forEach(({ index: _, stop }) => rideStopIds.add(stop.id));
         const rawRidePreds = await rideBus.fetchPredictions(Array.from(rideStopIds), DEFAULT_RIDE_ROUTES);
         const formattedRidePreds = processRidePredictions(rawRidePreds);
         populateRideLookupMaps(formattedRidePreds);
@@ -97,9 +99,10 @@ export async function rebuildGraph() {
  * @param preds List of processed predictions
  */
 function populateLookupMaps(preds: any[]) {
-    Object.values(state.cachedRoutes).flat(1).flatMap((line) => line.stops).forEach(([_, stop]) => {
-        state.stopIdToName[stop.id] = stop.name;
-    });
+    Object.values(state.cachedRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) => state.stopIdToName[stop.id] = stop.name);
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             if (stop.stpid && stop.stpnm) {
@@ -123,9 +126,10 @@ function populateLookupMaps(preds: any[]) {
  * @param preds List of processed predictions from the ride
  */
 function populateRideLookupMaps(preds: any[]) {
-    Object.values(state.cachedRideRoutes).flat(1).flatMap((line) => line.stops).forEach(([_, stop]) => {
-        state.rideStopIdToName[stop.id] = stop.name;
-    });
+    Object.values(state.cachedRideRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) => state.rideStopIdToName[stop.id] = stop.name);
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             if (stop.stpid && stop.stpnm) {
@@ -141,9 +145,12 @@ function populateRideLookupMaps(preds: any[]) {
  */
 function buildStopLocationMap() {
     const locs: Record<string, any> = {};
-    Object.values(state.cachedRoutes).flat(1).flatMap((line) => line.stops).forEach(([_, stop]) => {
-        locs[stop.id] = { name: stop.name, lat: stop.location.lat, lon: stop.location.lon };
-    });
+    Object.values(state.cachedRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) =>
+            locs[stop.id] = { name: stop.name, lat: stop.location.lat, lon: stop.location.lon }
+        );
     state.setCachedStopLocations(locs);
     walking.buildStopNodeMap(locs);
 }
@@ -153,9 +160,11 @@ function buildStopLocationMap() {
  */
 function buildRideStops() {
     const locs: Record<string, any> = {};
-    Object.values(state.cachedRideRoutes).flat(1).flatMap((line) => line.stops).forEach(([_, stop]) => {
-        locs[stop.id] = { name: stop.name, lat: stop.location.lat, lon: stop.location.lon };
-    });
+    Object.values(state.cachedRideRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) =>
+            locs[stop.id] = { name: stop.name, lat: stop.location.lat, lon: stop.location.lon });
     state.setCachedRideStopLocations(locs);
 }
 
@@ -228,7 +237,7 @@ function processPredictions(rawChunks: any[]) {
             const rtdir = route.routeDirection;
             const routeKey = routeName + rtdir;
             if (!routeInfoFilter[routeKey]) routeInfoFilter[routeKey] = [];
-            for (const [_, stop] of route.stops) {
+            for (const { index: _, stop } of route.stops) {
                 routeInfoFilter[routeKey].push({ stpid: stop.id, rtdir });
             }
         }
