@@ -22,6 +22,17 @@
  * take a look at {@link HandlerReturn} + remember the existence of
  * {@link emptyFormat} and  {@link globalContext}.
  *
+ * ### Be Careful With Zod Transformations
+ * The OpenAPI spec will be populated with the output formats of the schemas you
+ * define routes with. This gives z.coerce the correct behavior and also will
+ * work with carefully constructed z.pipe chains, but a z.transform without
+ * further validation through pipe will not work. Uses of z.coerce, z.pipe, and
+ * z.transform should generally conform to a parse string into primative type
+ * pattern, and only be used for path and query parameters. Response schemas
+ * are not guaranteed to be used (currently they aren't but this may change in
+ * the future) so avoid *any* kind of data transformation in them unless it is
+ * confirmed that response schemas will be used.
+ *
  * ## Getting OpenAPI Specs
  *
  * Look into setting the environment variables `DOCUMENTED` (to anything
@@ -53,6 +64,9 @@ const EXIT_ON_OUTPUT = process.env.DOCUMENTED_EXIT_ON_OUTPUT && true;
  * Wrapper around `express.Express.use`, instead something like
  * `app.use("/api", router)` you'd call
  * `addRouter(someContext, app, "/api", router)`.
+ *
+ * @param route should not have a trailing slash (notably '/' would be
+ * incorrect, pass '' instead)
  */
 export function addRouter(ctx: Context, app: express.Express, route: string, router: express.Router) {
     if (ENABLED) {
@@ -89,9 +103,10 @@ export function makeFailureResponse<T>(status: 400 | 401 | 403 | 404 | 500, erro
 }
 
 /**
- * A type representing a Zod object (i.e. `z.object(...)`) used normally.
+ * A type representing a Zod object (i.e. `z.object(...)`) where string fields
+ * like those from query & path parms can get parsed.
  */
-export type StandardZodObject = z.ZodObject<Record<string, z.ZodType>>;
+export type StandardZodObject = z.ZodObject<Record<string, z.ZodType<unknown, string>>>;
 
 /**
  * Meant to be used along with the spread operator to fill out format fields
@@ -396,20 +411,19 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
     const stripExtraKeys = <T>(s: T, shouldStripDefs: boolean): T => {
         if (typeof s !== 'object' || !s) return s;
         if (shouldStripDefs && '$defs' in s) {
-            s['$defs'] = undefined;
+            delete s['$defs'];
         }
-        if ('$schema' in s) s['$schema'] = undefined;
-        if ('id' in s) s['id'] = undefined;
+        if ('$schema' in s) delete s['$schema'];
+        if ('id' in s) delete s['id'];
         for (const v of Object.values(s)) {
             stripExtraKeys(v, shouldStripDefs);
         }
         return s;
     }
 
-    // TODO: try output first then fallback to input
     const schemaOpts: ToJSONSchemaParams = {
         // reused: 'ref',
-        io: 'input',
+        io: 'output',
     }
     const resultRoutes: ReflectionInfo['routes'] = [];
 
