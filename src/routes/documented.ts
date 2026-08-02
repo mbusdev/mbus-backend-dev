@@ -30,9 +30,7 @@
  * {@link docsFor}, and {@link outputDocsFor}.
  *
  * TODO: add examples
- *
- * TODO: make actually testable?
- * 
+
  * TODO: add tests?
  * @module
  */
@@ -125,6 +123,9 @@ export const emptyFormat = {
  * `emptyFormat` to fill in default values
  * @param handler - route handler
  * @param docs - information that should end up in the openapi spec
+ *
+ * @returns the handler function that got passed to `router.get` internally,
+ * to be used in testing
  */
 export function addGetRoute<
     P extends StandardZodObject,
@@ -156,12 +157,12 @@ export function addGetRoute<
         });
     }
 
-    router.get(path, (req: express.Request, res: express.Response<z.infer<RB> | { error: string }>) => {
+    router.get(path, (req: ExpressRequest, res: express.Response<z.infer<RB> | { error: string }>) => {
         const { status, json } = determineResponse(req);
         res.status(status).json(json);
     });
 
-    const determineResponse = (req: express.Request): { status: number, json: z.infer<RB> | { error: string } } => {
+    const determineResponse = (req: ExpressRequest): { status: number, json: z.infer<RB> | { error: string } } => {
         let params = paramsSchema.safeParse(req.params);
         if (params.error) {
             return { status: 400, json: { error: "invalid path params: " + params.error.message } };
@@ -186,6 +187,7 @@ export function addGetRoute<
             }
         }
     }
+    return determineResponse;
 }
 
 /**
@@ -205,6 +207,9 @@ export function addGetRoute<
  * `emptyFormat` to fill in default values
  * @param handler - route handler
  * @param docs - information that should end up in the openapi spec
+ *
+ * @returns the handler function that got passed to `router.post` internally,
+ * to be used in testing
  */
 export function addPostRoute<
     P extends StandardZodObject,
@@ -242,7 +247,7 @@ export function addPostRoute<
         res.status(status).json(json);
     });
 
-    const determineResponse = (req: express.Request): { status: number, json: z.infer<RB> | { error: string } } => {
+    const determineResponse = (req: ExpressRequest): { status: number, json: z.infer<RB> | { error: string } } => {
         let params = paramsSchema.safeParse(req.params);
         if (params.error) {
             return { status: 400, json: { error: "invalid path params: " + params.error.message } };
@@ -271,6 +276,7 @@ export function addPostRoute<
             }
         }
     }
+    return determineResponse;
 }
 
 // === end of interface for api defining ===
@@ -279,10 +285,14 @@ export function addPostRoute<
  * The context you should probably be using for everything unless writing a
  * test.
  */
-export const globalContext: Context = {
-    routers: [],
-    routes: []
-};
+export const globalContext: Context = newContext();
+
+/**
+ * Returns an independent context.
+ */
+export function newContext() {
+    return { routers: [], routes: [] };
+}
 
 /** Where api route info is aggregated */
 export type Context = ReflectionInfoRaw;
@@ -361,6 +371,15 @@ export interface OpenAPI {
         schemas: Record<string, JSONSchema.JSONSchema>,
     },
     paths: Record<string, { get?: OpenAPIGetPath, post?: OpenAPIPostPath }/*Record<"get", OpenAPIGetPath>*/>,
+}
+
+/**
+ * the parts of an express request that are relevant for mocking during tests
+ */
+export interface ExpressRequest {
+    params: express.Request['params']
+    query: express.Request['query']
+    body: express.Request['body']
 }
 
 function finalize(info: ReflectionInfoRaw): ReflectionInfo {
