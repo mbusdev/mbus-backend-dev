@@ -37,7 +37,7 @@ export function addRouter(app: express.Express, route: string, router: express.R
 }
 
 /**
- * feel free to add more codes here and to the make*[a-z]Response functions as you need them
+ * feel free to add more codes here and to the make[A-Za-z]*Response functions as you need them
  */
 export type HandlerReturn<T> = {
     success: true, status: 200 | 201 | 202 | 203 | 205, json: T
@@ -303,15 +303,29 @@ interface OpenAPI {
 
 function finalize(info: ReflectionInfoRaw): ReflectionInfo {
     // replace $def with components/schemas
-    const fixSchema = <T>(s: T): T => {
+    const fixSchema = <T>(s: T, shouldStripDefs: boolean): T => {
+        stripExtraKeys(s, shouldStripDefs);
         if (typeof s !== 'object' || !s) return s;
         if ('$ref' in s && typeof s.$ref == 'string')
             s.$ref = s.$ref.replace('$defs', 'components/schemas');
         for (const v of Object.values(s)) {
-            fixSchema(v);
+            fixSchema(v, shouldStripDefs);
         }
         return s;
     };
+
+    const stripExtraKeys = <T>(s: T, shouldStripDefs: boolean): T => {
+        if (typeof s !== 'object' || !s) return s;
+        if (shouldStripDefs && '$defs' in s) {
+            s['$defs'] = undefined;
+        }
+        if ('$schema' in s) s['$schema'] = undefined;
+        if ('id' in s) s['id'] = undefined;
+        for (const v of Object.values(s)) {
+            stripExtraKeys(v, shouldStripDefs);
+        }
+        return s;
+    }
 
     // TODO: try output first then fallback to input
     const schemaOpts: ToJSONSchemaParams = {
@@ -333,19 +347,19 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
         for (const param in route.params) {
             const zodSchema = route.params[param];
             model[path + ' params ' + param] = zodSchema;
-            finalParams[param] = fixSchema(zodSchema.toJSONSchema(schemaOpts));
+            finalParams[param] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
         }
         const finalQuery: Record<string, JSONSchema.JSONSchema> = {};
         for (const key in route.query) {
             const zodSchema = route.query[key];
             model[path + '?' + key] = zodSchema;
-            finalQuery[key] = fixSchema(zodSchema.toJSONSchema(schemaOpts));
+            finalQuery[key] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
         }
         const common = {
             path,
             params: finalParams,
             query: finalQuery,
-            resBody: route.resBody === null ? null : fixSchema(route.resBody.toJSONSchema(schemaOpts)),
+            resBody: route.resBody === null ? null : fixSchema(route.resBody.toJSONSchema(schemaOpts), true),
             summary: route.summary,
             description: route.description,
         };
@@ -357,7 +371,9 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
                 resultRoutes.push({
                     ...common,
                     method: 'post',
-                    reqBody: route.reqBody === null ? null : fixSchema(route.reqBody.toJSONSchema(schemaOpts)),
+                    reqBody: route.reqBody === null
+                        ? null
+                        : fixSchema(route.reqBody.toJSONSchema(schemaOpts), true),
                 });
                 if (route.reqBody)
                     model[path + ' reqBody'] = route.reqBody;
@@ -371,7 +387,7 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
     }
     return {
         routes: resultRoutes,
-        defs: fixSchema(z.object(model).toJSONSchema(schemaOpts)).$defs ?? {},
+        defs: fixSchema(z.object(model).toJSONSchema(schemaOpts), false).$defs ?? {},
     };
 }
 
