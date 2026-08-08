@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 
 const SERVER_PORT = 3000;
 const BASE_URL = `http://localhost:${SERVER_PORT}/mbus/api/v3`;
+const V4_BASE_URL = `http://localhost:${SERVER_PORT}/api/v4`;
 
 describe('API Endpoints', () => {
     beforeAll(async () => {
@@ -41,8 +42,16 @@ describe('API Endpoints', () => {
         console.log(`GET /getSelectableRoutes: ${response.data['bustime-response'].routes.length} routes found.`);
     });
 
-    it('should get all cached routes and confirm structure', async () => {
+    it('should get all cached routes and confirm structure (mb2 legacy)', async () => {
         const response = await axios.get(`${BASE_URL}/getAllRoutes`);
+        expect(response.status).toBe(200);
+        expect(response.data).toHaveProperty('routes');
+        expect(typeof response.data.routes).toBe('object'); // cachedRoutes is an object, not array
+        console.log(`GET /getAllRoutes: ${Object.keys(response.data.routes).length} cached routes found.`);
+    });
+
+    it('should get all cached routes and confirm structure', async () => {
+        const response = await axios.get(`${V4_BASE_URL}/getAllRoutes`);
         expect(response.status).toBe(200);
         expect(typeof response.data).toBe('object'); // should be array
         console.log(`GET /getAllRoutes: ${Object.keys(response.data).length} cached routes found.`);

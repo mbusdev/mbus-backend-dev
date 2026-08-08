@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 
 const SERVER_PORT = 3000;
 const BASE_URL = `http://localhost:${SERVER_PORT}/mbus/api/v3`;
+const V4_BASE_URL = `http://localhost:${SERVER_PORT}/api/v4`;
 
 describe('The Ride (AAATA) API Endpoints', () => {
 
@@ -24,8 +25,19 @@ describe('The Ride (AAATA) API Endpoints', () => {
     });
 
     // --- Ride Routes ---
-    it('should get all Ride routes', async () => {
+    it('should get all Ride routes (mb2 legacy)', async () => {
         const response = await axios.get(`${BASE_URL}/getAllRideRoutes`);
+        expect(response.status).toBe(200);
+        expect(response.data).toHaveProperty('routes');
+        expect(typeof response.data.routes).toBe('object');
+        
+        const routeCount = Object.keys(response.data.routes).length;
+        console.log(`GET /getAllRideRoutes: ${routeCount} Ride routes found.`);
+        expect(routeCount).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should get all Ride routes', async () => {
+        const response = await axios.get(`${V4_BASE_URL}/getAllRideRoutes`);
         expect(response.status).toBe(200);
         expect(typeof response.data).toBe('object');
         
