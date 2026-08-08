@@ -10,6 +10,10 @@ export const cachedRoutes: Record<string, BusRouteLine[]> = {};
 /** Cache of route patterns and static data for the ride. */
 export const cachedRideRoutes: Record<string, BusRouteLine[]> = {};
 
+// Remove when support for mb2 is dropped
+export const cachedRoutesLegacy: Record<string, Pattern[]> = {};
+export const cachedRideRoutesLegacy: Record<string, Pattern[]> = {};
+
 /** Represents a bus prediction. */
 export type Prediction = {
     /** route id */

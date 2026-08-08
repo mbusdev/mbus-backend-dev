@@ -189,19 +189,15 @@ export function getRidePositions(req: express.Request, res: express.Response) {
 }
 router.get('/getRidePositions', getRidePositions);
 
-documented.addGetRoute(
-    documented.globalContext, router, '/getAllRoutes',
-    { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
-    () => documented.makeSuccessResponse(Object.values(state.cachedRoutes).flat(1)),
-    { description: 'get all cached route patterns' }
-);
+// remove when mb2 support is dropped
+router.get('/getAllRoutes', (_, res) => {
+    res.json({ routes: state.cachedRoutesLegacy })
+});
 
-documented.addGetRoute(
-    documented.globalContext, router, '/getAllRideRoutes',
-    { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
-    () => documented.makeSuccessResponse(Object.values(state.cachedRideRoutes).flat(1)),
-    { description: 'get all cached ride route patterns' },
-)
+// remove when mb2 support is dropped
+router.get('/getAllRideRoutes', (_, res) => {
+    res.json({ routes: state.cachedRideRoutesLegacy });
+});
 
 /**
  * Returns the route timing cache used for extrapolation.
