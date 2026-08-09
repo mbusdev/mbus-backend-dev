@@ -10,8 +10,8 @@ beforeAll(() => {
     }
 });
 
-it('should handle path params (GET)', () => {
-    testCase(
+it('should handle path params (GET)', async () => {
+    await testCase(
         'get',
         '/root', '/path/{item}',
         { params: z.strictObject({ item: z.string() }) },
@@ -46,8 +46,8 @@ it('should handle path params (GET)', () => {
     );
 });
 
-it('should accept params named id', () => {
-    testCase(
+it('should accept params named id', async () => {
+    await testCase(
         'get',
         '', '/test',
         { params: z.object({ id: z.string() }) },
@@ -56,9 +56,9 @@ it('should accept params named id', () => {
     );
 });
 
-it('should work with schemas containing id', () => {
+it('should work with schemas containing id', async () => {
     const B = z.object({ id: z.number() }).meta({ id: 'B'});
-    testCase(
+    await testCase(
         'post',
         '', '/test',
         { reqBody: B, resBody: B },
@@ -67,8 +67,8 @@ it('should work with schemas containing id', () => {
     );
 });
 
-it('should handle query params (GET)', () => {
-    testCase(
+it('should handle query params (GET)', async () => {
+    await testCase(
         'get', '', '/api',
         { query: z.object({ field: z.coerce.number() })},
         { query: { field: "-2" } },
@@ -98,9 +98,9 @@ it('should handle query params (GET)', () => {
     )
 });
 
-it('should handle response bodies (GET)', () => {
+it('should handle response bodies (GET)', async () => {
     // shows up in docs
-    testCase(
+    await testCase(
         'get', '/4', '/34',
         { resBody: z.number() },
         {}, {},
@@ -119,15 +119,15 @@ it('should handle response bodies (GET)', () => {
             `)
     );
     // can be empty
-    testCase(
+    await testCase(
         'get', '', '/h', {}, {}, {}, null, null,
         (spec) => expect(spec.paths['/h'].get!.responses["200"].content)
             .toMatchInlineSnapshot(`undefined`)
     );
 });
 
-it('should handle path params (POST)', () => {
-    testCase(
+it('should handle path params (POST)', async () => {
+    await testCase(
         'post',
         '/root', '/path/{item}',
         { ...d.emptyFormat, params: z.object({ item: z.string() }) },
@@ -162,8 +162,8 @@ it('should handle path params (POST)', () => {
     );
 });
 
-it('should handle query params (POST)', () => {
-    testCase(
+it('should handle query params (POST)', async () => {
+    await testCase(
         'post', '', '/api',
         { query: z.object({ field: z.coerce.number() })},
         { query: { field: "-2" } },
@@ -194,8 +194,8 @@ it('should handle query params (POST)', () => {
     )
 });
 
-it('should handle request bodies (POST)', () => {
-    testCase(
+it('should handle request bodies (POST)', async () => {
+    await testCase(
         'post', '/a/b', '/c',
         { reqBody: z.object({ field: z.boolean() })},
         { body: { field: true } },
@@ -217,9 +217,9 @@ it('should handle request bodies (POST)', () => {
     )
 });
 
-it('should handle response bodies (POST)', () => {
+it('should handle response bodies (POST)', async () => {
     // shows up in docs
-    testCase(
+    await testCase(
         'post', '/4', '/34',
         { resBody: z.number() },
         {}, {},
@@ -239,7 +239,7 @@ it('should handle response bodies (POST)', () => {
             `)
     );
     // can be empty
-    testCase(
+    await testCase(
         'post', '', '/h', {}, {}, {}, null, null,
         (spec) => expect(spec.paths['/h'].post!.responses["200"].content)
             .toMatchInlineSnapshot(`undefined`)
@@ -254,8 +254,8 @@ it('should be able to handle GET & POST to the same path', () => {
     const ctx = d.newContext();
     d.addRouter(ctx, app, '', router);
 
-    d.addGetRoute(ctx, router, '/rt', d.emptyFormat, () => d.makeSuccessResponse({}), {});
-    d.addPostRoute(ctx, router, '/rt', d.emptyFormat, () => d.makeSuccessResponse({}), {});
+    d.addGetRoute(ctx, router, '/rt', d.emptyFormat, async () => d.makeSuccessResponse({}), {});
+    d.addPostRoute(ctx, router, '/rt', d.emptyFormat, async () => d.makeSuccessResponse({}), {});
 
     const path = d.docsFor(ctx).paths['/rt'];
     expect(path.get).toBeDefined();
@@ -263,7 +263,7 @@ it('should be able to handle GET & POST to the same path', () => {
     expect(path.get).toEqual(path.post);
 });
 
-it('should handle zod transform types in the request', () => {
+it('should handle zod transform types in the request', async () => {
     const app = express();
     const router = express.Router();
 
@@ -273,9 +273,9 @@ it('should handle zod transform types in the request', () => {
     const handler = d.addPostRoute(
         ctx, router, '/rt',
         { ...d.emptyFormat, reqBody: z.string().transform((s) => s.toLowerCase()) },
-        (_, __, body) => d.makeSuccessResponse(body)
+        async (_, __, body) => d.makeSuccessResponse(body)
     );
-    const res = handler({ params: {}, query: {}, body: 'HI' });
+    const res = await handler({ params: {}, query: {}, body: 'HI' });
     expect(res.json).toMatchInlineSnapshot(`"hi"`);
 });
 
@@ -288,7 +288,7 @@ it('should surface type descriptions & names', () => {
     d.addGetRoute(
         ctx, router, '/pan',
         { ...d.emptyFormat, resBody: z.object().meta({ id: 'Obj', description: 'obj' }) },
-        () => d.makeSuccessResponse({})
+        async () => d.makeSuccessResponse({})
     );
     const spec = d.docsFor(ctx);
     expect(spec.components.schemas).toMatchInlineSnapshot(`
@@ -312,7 +312,7 @@ it('should surface route descriptions & names', () => {
     d.addGetRoute(
         ctx, router, '/pan',
         d.emptyFormat,
-        () => d.makeSuccessResponse({}),
+        async () => d.makeSuccessResponse({}),
         { summary: 'summary', description: 'description' }
     );
     const spec = d.docsFor(ctx);
@@ -321,7 +321,7 @@ it('should surface route descriptions & names', () => {
     expect(path).toHaveProperty('summary', 'summary');
 });
 
-function testCase(
+async function testCase(
     mode: 'get' | 'post',
     base: string,
     suffix: string,
@@ -341,25 +341,25 @@ function testCase(
         ? d.addGetRoute(
             ctx, router, suffix,
             { ...d.emptyFormat, ...format },
-            (params, query) => d.makeSuccessResponse({ params, query })
+            async (params, query) => d.makeSuccessResponse({ params, query })
         )
         : d.addPostRoute(
             ctx, router, suffix,
             { ...d.emptyFormat, ...format },
-            (params, query, body) => d.makeSuccessResponse({ params, query, body })
+            async (params, query, body) => d.makeSuccessResponse({ params, query, body })
         );
 
     const defaultResponse: d.ExpressRequest = { query: {}, params: {}, body: {} };
     // correct value goes through?
     if (validateCorrect) {
-        const res = handler({ ...defaultResponse, ...correct });
+        const res = await handler({ ...defaultResponse, ...correct });
         expect(res.status).toBe(200);
         validateCorrect(res.json);
     }
 
     // incorrect value is caught?
     if (validateIncorrect) {
-        const res = handler({ ...defaultResponse, ...incorrect });
+        const res = await handler({ ...defaultResponse, ...incorrect });
         expect(res.status).toBe(400);
         validateIncorrect(
             typeof res.json === 'object' && res.json && 'error' in res.json && typeof res.json.error === 'string'
