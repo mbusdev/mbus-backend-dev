@@ -365,41 +365,44 @@ export function getNearestStops(req: express.Request, res: express.Response) {
 }
 router.get('/nearest-stops', getNearestStops);
 
-/**
- * Plans a journey between origin and destination coordinates.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `journeys` array containing possible routes.
- */
-export async function planJourney(req: express.Request, res: express.Response) {
-    try {
-        const { originLat, originLon, destLat, destLon, walkingPenalty, range } = req.query;
+documented.addGetRoute(
+    documented.globalContext, router, '/plan-journey',
+    {
+        ...documented.emptyFormat,
+        query: z.object({
+            originLat: z.coerce.number(),
+            originLon: z.coerce.number(),
+            destLat: z.coerce.number(),
+            destLon: z.coerce.number(),
+            walkingPenalty: z.optional(z.string())
+                .transform((x) => x === undefined ? undefined : parseFloat(x))
+                .pipe(z.optional(z.number())),
+            range: z.optional(z.string())
+                .transform((x) => x === undefined ? undefined : parseInt(x))
+                .pipe(z.optional(z.number())),
+        }),
+        resBody: z.any(),
+    },
+    async (_, { originLat, originLon, destLat, destLon, walkingPenalty, range }) => {
+        try {
+            const now = new Date();
+            const secondsSinceMidnight = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
-        if (!originLat || !originLon || !destLat || !destLon) {
-            res.status(400).json({ error: 'coordinates are required' });
-            return;
+            const results = await journeyService.planJourney(
+                originLat, originLon,
+                destLat, destLon,
+                secondsSinceMidnight,
+                { walkingPenalty, range },
+            );
+
+            return documented.makeSuccessResponse({ journeys: results });
+        } catch (error) {
+            console.error("Journey plan error:", error);
+            return documented.makeFailureResponse(500, 'Journey planning failed');
         }
-
-        const now = new Date();
-        const secondsSinceMidnight = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
-
-        const results = await journeyService.planJourney(
-            parseFloat(originLat as string), parseFloat(originLon as string),
-            parseFloat(destLat as string), parseFloat(destLon as string),
-            secondsSinceMidnight,
-            {
-                walkingPenalty: walkingPenalty ? parseFloat(walkingPenalty as string) : undefined,
-                range: range ? parseInt(range as string) : undefined
-            }
-        );
-
-        res.json({ journeys: results });
-    } catch (error) {
-        console.error("Journey plan error:", error);
-        res.status(500).json({ error: 'Journey planning failed' });
-    }
-}
-router.get('/plan-journey', planJourney);
+    },
+    { description: 'Plans a journey between origin and destination coordinates.' },
+);
 
 /**
  * Saves the current graph state to a file (DEV mode only).
@@ -490,7 +493,7 @@ router.get('/get-key-stops', getKeyStops);
 const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
 documented.addPostRoute(
     documented.globalContext, router, '/setReminder', { ...documented.emptyFormat, reqBody: SetReminderBody },
-    (_, __, { token, stpid, rtid, thresh }) => {
+    async (_, __, { token, stpid, rtid, thresh }) => {
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
             return documented.makeFailureResponse(400, `Invalid route ${rtid}`);
@@ -571,7 +574,7 @@ documented.addGetRoute(
         query: z.object(),
         resBody: z.object({ reminders: z.array(ActiveReminder) }),
     },
-    ({ token }, _) => {
+    async ({ token }, _) => {
         const regTok = reminderService.registrationToken(token);
         const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold) => {
             return {
