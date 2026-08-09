@@ -35,7 +35,7 @@
  *     // since query params end up as strings, z.coerce.number() is needed not z.number()
  *     { ...emptyFormat, query: z.object({ x: z.coerce.number() }), resBody: z.number() },
  *     // handling logic goes here, first arg is ignored b/c it is the path params
- *     (_, { x }) => {
+ *     async (_, { x }) => {
  *         // x is already a number as opposed to any/unknown
  *         makeSuccessResponse(x * 2);
  *     },
@@ -144,7 +144,7 @@ export function makeFailureResponse<T>(status: 400 | 401 | 403 | 404 | 500, erro
  * A type representing a Zod object (i.e. `z.object(...)`) where string fields
  * like those from query & path parms can get parsed.
  */
-export type StringlyZodObject = z.ZodObject<Record<string, z.ZodType<unknown, string>>>;
+export type StringlyZodObject = z.ZodObject<Record<string, z.ZodType<unknown, string | undefined>>>;
 
 /**
  * Meant to be used along with the spread operator to fill out format fields
@@ -189,7 +189,7 @@ export function addGetRoute<
     router: express.Router,
     path: string,
     format: { params: P, query: Q, resBody: RB },
-    handler: (params: z.infer<P>, query: z.infer<Q>) => HandlerReturn<z.infer<RB>>,
+    handler: (params: z.infer<P>, query: z.infer<Q>) => Promise<HandlerReturn<z.infer<RB>>>,
     docs?: {
         /** a short description of what is route does, becomes the title */
         summary?: string,
@@ -210,12 +210,12 @@ export function addGetRoute<
         });
     }
 
-    router.get(path, (req: ExpressRequest, res: express.Response<z.infer<RB> | { error: string }>) => {
-        const { status, json } = determineResponse(req);
+    router.get(path, async (req: ExpressRequest, res: express.Response<z.infer<RB> | { error: string }>) => {
+        const { status, json } = await determineResponse(req);
         res.status(status).json(json);
     });
 
-    const determineResponse = (req: ExpressRequest): { status: number, json: z.infer<RB> | { error: string } } => {
+    const determineResponse = async (req: ExpressRequest): Promise<{ status: number, json: z.infer<RB> | { error: string } }> => {
         let params = paramsSchema.safeParse(req.params);
         if (params.error) {
             return {
@@ -228,7 +228,7 @@ export function addGetRoute<
             return { status: 400, json: formatError('invalid query params', query.error) };
         }
         try {
-            const result = handler(params.data, query.data);
+            const result = await handler(params.data, query.data);
             if (result.success) {
                 return { status: result.status, json: result.json };
             } else {
@@ -277,7 +277,7 @@ export function addPostRoute<
     router: express.Router,
     path: string,
     format: { params: P, query: Q, reqBody: B, resBody: RB },
-    handler: (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => HandlerReturn<z.infer<RB>>,
+    handler: (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => Promise<HandlerReturn<z.infer<RB>>>,
     docs?: {
         /** a short description of what is route does, becomes the title */
         summary?: string,
@@ -298,12 +298,12 @@ export function addPostRoute<
         });
     }
 
-    router.post(path, (req, res: express.Response<z.infer<RB> | { error: string }>) => {
-        const { status, json } = determineResponse(req);
+    router.post(path, async (req, res: express.Response<z.infer<RB> | { error: string }>) => {
+        const { status, json } = await determineResponse(req);
         res.status(status).json(json);
     });
 
-    const determineResponse = (req: ExpressRequest): { status: number, json: z.infer<RB> | { error: string } } => {
+    const determineResponse = async (req: ExpressRequest): Promise<{ status: number, json: z.infer<RB> | { error: string } }> => {
         let params = paramsSchema.safeParse(req.params);
         if (params.error) {
             return { status: 400, json: formatError('invalid path params', params.error) };
@@ -317,7 +317,7 @@ export function addPostRoute<
             return { status: 400, json: formatError('invalid body', body.error) };
         }
         try {
-            const result = handler(params.data, query.data, body.data);
+            const result = await handler(params.data, query.data, body.data);
             if (result.success) {
                 return { status: result.status, json: result.json };
             } else {
