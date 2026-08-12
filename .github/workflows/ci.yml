@@ -1,5 +1,4 @@
 name: CI
-run-name: CI for ${{ github.ref }}
 on:
   push:
     branches-ignore:
