@@ -370,7 +370,7 @@ documented.addGetRoute(
                 .transform((x) => x === undefined ? undefined : parseInt(x))
                 .pipe(z.optional(z.number())),
         }),
-        resBody: z.any(),
+        resBody: z.object({ journeys: z.array(journeyService.ProcessedJourneySchema) }),
     },
     async (_, { originLat, originLon, destLat, destLon, walkingPenalty, range }) => {
         try {
