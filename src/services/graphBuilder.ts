@@ -8,6 +8,7 @@ import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as bustime from './bustimeCommon';
+import { toKey } from '@/types';
 
 const DEFAULT_ROUTES = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
 const DEFAULT_RIDE_ROUTES = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "42", "43", "44", "45", "46", "47", "61", "62", "63", "64", "65", "66", "67", "68", "104"];
@@ -51,6 +52,7 @@ export async function initializeRoutes() {
             state.cachedRideRoutesLegacy[r.rt] = patterns;
         }));
 
+        buildStopToStopPaths();
         buildStopLocationMap();
         buildRideStops();
         await buildWalkingTransfers();
@@ -202,6 +204,24 @@ async function buildWalkingTransfers() {
             }
         });
     });
+}
+
+function buildStopToStopPaths() {
+    const data = state.cachedStopToStopPaths;
+    data.clear();
+    for (const directory of [state.cachedRoutes, state.cachedRideRoutes]) {
+        for (const rtId in directory) {
+            for (const rt of state.cachedRoutes[rtId] ?? []) {
+                for (let i = 1; i < rt.stops.length; i++) {
+                    const from = rt.stops[i - 1];
+                    const to = rt.stops[i];
+                    const key = toKey({ rt: rtId, from: from.stop.id, to: to.stop.id });
+                    if (data.has(key)) continue;
+                    data.set(key, rt.points.slice(from.index, to.index));
+                }
+            }
+        }
+    }
 }
 
 /**
