@@ -1,18 +1,22 @@
+import { Key } from "@/types";
 import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
-import { BusRouteLine, Pattern } from "@/services/bustimeCommon";
+import * as bustime from '@/services/bustimeCommon';
 
 /** Current positions of all buses. */
 export const curBusPositions = { buses: [] as any[] };
 /** Current positions of all ride buses. */
 export const curRidePositions = { buses: [] as any[] };
 /** Cache of route patterns and static data. */
-export const cachedRoutes: Record<string, BusRouteLine[]> = {};
+export const cachedRoutes: Record<string, bustime.BusRouteLine[]> = {};
 /** Cache of route patterns and static data for the ride. */
-export const cachedRideRoutes: Record<string, BusRouteLine[]> = {};
+export const cachedRideRoutes: Record<string, bustime.BusRouteLine[]> = {};
+
+/** Poly lines to use when constructing the path taken by a bus leg */
+export const cachedStopToStopPaths: Map<Key<{ rt: string, from: string, to: string }>, bustime.LatLon[]> = new Map();
 
 // Remove when support for mb2 is dropped
-export const cachedRoutesLegacy: Record<string, Pattern[]> = {};
-export const cachedRideRoutesLegacy: Record<string, Pattern[]> = {};
+export const cachedRoutesLegacy: Record<string, bustime.Pattern[]> = {};
+export const cachedRideRoutesLegacy: Record<string, bustime.Pattern[]> = {};
 
 /** Represents a bus prediction. */
 export type Prediction = {
