@@ -1,5 +1,7 @@
 import z from "zod";
 
+// ========== patterns & bus lines =========
+
 const PatternPtSchema = z.object({
     seq: z.int(),
     typ: z.string(),
@@ -20,9 +22,8 @@ export const PatternSchema = z.object({
 }).meta({ id: 'Pattern' });
 export type Pattern = z.infer<typeof PatternSchema>
 
-export const PatternsArraySchema = z.array(PatternSchema);
-
 export const LatLonSchema = z.object({ lat: z.number(), lon: z.number() }).meta({ id: 'LatLon' });
+export type LatLon = z.infer<typeof LatLonSchema>;
 
 export const BusStopSchema = z.object({
     id: z.string(),
@@ -141,4 +142,44 @@ function normalizeStopName(rawStopName: string): string {
         .replaceAll(/\s+/g, ' ')
         .trim();
 }
+
+// ========= predictions ==========
+
+// fields that were not present in practice are commented out
+// might've missed a field given it happened with prdctdn (in response fields table but not the xml schema)...
+export const PredictionSchema = z.object({
+    tmstmp: z.string(),
+    typ: z.string(),
+    stpid: z.string(),
+    stpnm: z.string(),
+    vid: z.string(), // number in schema
+    dstp: z.number(),
+    rt: z.string(),
+    rtdd: z.string(),
+    rtdir: z.string(),
+    des: z.string(),     
+    prdtm: z.string(),
+    dly: z.optional(z.boolean()),
+    dyn: z.number(),
+    tablockid: z.string(),
+    tatripid: z.string(),
+    origtatripno: z.string(),
+    prdctdn: z.string(), // not in xml schema
+    zone: z.string(),
+    psgld: z.string(),
+    // gtfsseq: z.string(),
+    nbus: z.optional(z.string()),
+    stst: z.optional(z.number()),
+    stsd: z.optional(z.string()), // number? in schema
+    // flagStop: z.number(),
+}).meta({ id: 'Prediction' });
+export type Prediction = z.infer<typeof PredictionSchema>;
+
+export const GetPredictionsResponseSchema = z.object({
+    'bustime-response': z.object({
+        'prd': z.optional(z.array(PredictionSchema)),
+        'error': z.optional(z.unknown()),
+    })
+}).meta({ id: 'GetPredictionsResponse' });
+export type GetPredictionsResponse = z.infer<typeof GetPredictionsResponseSchema>;
 

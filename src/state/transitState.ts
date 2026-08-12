@@ -26,7 +26,7 @@ export type Prediction = {
     prdtm: number,
     /** minutes until arrival, or 'DUE' (corresponding to 1 minute) */
     prdctdn: string
-} & Record<string, any>;
+} & Record<string, unknown>;
 
 /** Predictions indexed by vehicle ID. */
 export const cachedPredsByVid: Record<string, Prediction[]> = {};

@@ -7,10 +7,17 @@ import * as process from "node:process";
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 import * as fs from 'fs';
 import * as path from 'path';
-import { makeBusRouteLines } from './bustimeCommon';
+import * as bustime from './bustimeCommon';
 
 const DEFAULT_ROUTES = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
 const DEFAULT_RIDE_ROUTES = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "42", "43", "44", "45", "46", "47", "61", "62", "63", "64", "65", "66", "67", "68", "104"];
+
+type FormattedPrediction = {
+    tatripid: string,
+    vid: string,
+    des: string,
+    stops: Array<{ stpnm: string, stpid: string, prdctdn: string, rt: string, rtdir: string, prdtm: number, isExtrapolated?: boolean }>,
+};
 
 /** Fetches and updates current bus positions in state. */
 export async function updateBusPositions() {
@@ -33,14 +40,14 @@ export async function initializeRoutes() {
         await Promise.all(routesData.map(async (r: any) => {
             state.validRoutes.add(r.rt);
             const patterns = await mbus.fetchPatterns(r.rt);
-            state.cachedRoutes[r.rt] = patterns.map((p) => makeBusRouteLines(r.rt, p, false)).flat(1);
+            state.cachedRoutes[r.rt] = patterns.map((p) => bustime.makeBusRouteLines(r.rt, p, false)).flat(1);
             state.cachedRoutesLegacy[r.rt] = patterns;
         }));
 
         await Promise.all(rideRoutesData.map(async (r: any) => {
             state.validRideRoutes.add(r.rt);
             const patterns = await rideBus.fetchPatterns(r.rt);
-            state.cachedRideRoutes[r.rt] = patterns.map((p) => makeBusRouteLines(r.rt, p, true)).flat(1);
+            state.cachedRideRoutes[r.rt] = patterns.map((p) => bustime.makeBusRouteLines(r.rt, p, true)).flat(1);
             state.cachedRideRoutesLegacy[r.rt] = patterns;
         }));
 
@@ -100,22 +107,22 @@ export async function rebuildGraph() {
  * Populates lookup maps for stop names and trip-to-route mappings.
  * @param preds List of processed predictions
  */
-function populateLookupMaps(preds: any[]) {
+function populateLookupMaps(preds: FormattedPrediction[]) {
     Object.values(state.cachedRoutes)
         .flat(1)
         .flatMap((line) => line.stops)
         .forEach(({ index: _, stop }) => state.stopIdToName[stop.id] = stop.name);
-    preds.forEach((trip: any) => {
-        trip.stops.forEach((stop: any) => {
+    preds.forEach((trip) => {
+        trip.stops.forEach((stop) => {
             if (stop.stpid && stop.stpnm) {
                 state.stopIdToName[stop.stpid] = stop.stpnm;
             }
         });
     });
 
-    preds.forEach((trip: any) => {
+    preds.forEach((trip) => {
         if (trip.tatripid && trip.stops.length > 0) {
-            const firstStopWithRt = trip.stops.find((s: any) => s.rt);
+            const firstStopWithRt = trip.stops.find((s) => s.rt);
             if (firstStopWithRt) {
                 state.tatripidToRt[trip.tatripid] = firstStopWithRt.rt;
             }
@@ -127,13 +134,13 @@ function populateLookupMaps(preds: any[]) {
  * Populates the lookup map for ride stop names
  * @param preds List of processed predictions from the ride
  */
-function populateRideLookupMaps(preds: any[]) {
+function populateRideLookupMaps(preds: FormattedPrediction[]) {
     Object.values(state.cachedRideRoutes)
         .flat(1)
         .flatMap((line) => line.stops)
         .forEach(({ index: _, stop }) => state.rideStopIdToName[stop.id] = stop.name);
-    preds.forEach((trip: any) => {
-        trip.stops.forEach((stop: any) => {
+    preds.forEach((trip) => {
+        trip.stops.forEach((stop) => {
             if (stop.stpid && stop.stpnm) {
                 state.rideStopIdToName[stop.stpid] = stop.stpnm;
             }
@@ -202,33 +209,32 @@ async function buildWalkingTransfers() {
  * Handles flattening, sorting, and extrapolating predictions.
  * @param rawChunks Raw API response chunks
  */
-function processPredictions(rawChunks: any[]) {
-    const formattedPredictions = rawChunks.flat().reduce((acc: any[], chunk: any) => {
-        if (chunk['bustime-response']?.['prd']) {
-            chunk['bustime-response']['prd'].forEach((prd: any) => {
-                let trip = acc.find((t: any) => t.tatripid === prd.tatripid);
-                // If no tatripid, try to match by vid (mbus API specifics)
-                if (!trip && prd.vid) trip = acc.find((t: any) => t.vid === prd.vid);
-                // If no match, create new trip
-                if (!trip) {
-                    trip = { tatripid: prd.tatripid, vid: prd.vid, des: prd.des, stops: [] };
-                    acc.push(trip);
-                } else {
-                    if (!trip.tatripid) trip.tatripid = prd.tatripid;
-                    if (!trip.vid && prd.vid) trip.vid = prd.vid;
-                }
-                // If no stop, create new stop
-                let stop = trip.stops.find((s: any) => s.stpid === prd.stpid);
-                if (!stop) {
-                    stop = { stpnm: prd.stpnm, stpid: prd.stpid, prdctdn: null, rt: null, rtdir: null };
-                    trip.stops.push(stop);
-                }
-                stop.rtdir = prd.rtdir;
-                stop.rt = prd.rt;
-                stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
-                stop.prdtm = parseInt(prd.prdtm);
-            });
-        }
+function processPredictions(rawChunks: Array<bustime.GetPredictionsResponse | null>): FormattedPrediction[] {
+    const formattedPredictions = rawChunks.flat().reduce<FormattedPrediction[]>((acc, chunk) => {
+        if (!chunk || !chunk['bustime-response'].prd) return acc;
+        chunk['bustime-response']['prd'].forEach((prd) => {
+            let trip = acc.find((t) => t.tatripid === prd.tatripid);
+            // If no tatripid, try to match by vid (mbus API specifics)
+            if (!trip && prd.vid) trip = acc.find((t) => t.vid === prd.vid);
+            // If no match, create new trip
+            if (!trip) {
+                trip = { tatripid: prd.tatripid, vid: prd.vid, des: prd.des, stops: [] };
+                acc.push(trip);
+            } else {
+                if (!trip.tatripid) trip.tatripid = prd.tatripid;
+                if (!trip.vid && prd.vid) trip.vid = prd.vid;
+            }
+            // If no stop, create new stop
+            let stop = trip.stops.find((s) => s.stpid === prd.stpid);
+            if (!stop) {
+                stop = { stpnm: prd.stpnm, stpid: prd.stpid, prdctdn: '', rt: '', rtdir: '', prdtm: 0 };
+                trip.stops.push(stop);
+            }
+            stop.rtdir = prd.rtdir;
+            stop.rt = prd.rt;
+            stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
+            stop.prdtm = parseInt(prd.prdtm);
+        });
         return acc;
     }, []);
 
@@ -252,14 +258,14 @@ function processPredictions(rawChunks: any[]) {
     }
 
     // sort predictions based on route (oddly complicated)
-    formattedPredictions.forEach((trip: any) => {
+    formattedPredictions.forEach((trip) => {
         if (trip.stops.length == 0) return;
-        const minPrdctdn = Math.min(...trip.stops.map((s: any) => parseInt(s.prdctdn, 10)));
-        const firstRoute = trip.stops.find((s: any) => parseInt(s.prdctdn, 10) === minPrdctdn)?.rt;
+        const minPrdctdn = Math.min(...trip.stops.map((s) => parseInt(s.prdctdn, 10)));
+        const firstRoute = trip.stops.find((s) => parseInt(s.prdctdn, 10) === minPrdctdn)?.rt;
 
         if (!firstRoute) return;
 
-        trip.stops.sort((a: any, b: any) => {
+        trip.stops.sort((a, b) => {
             const diffTime = parseInt(a.prdctdn, 10) - parseInt(b.prdctdn, 10);
             if (diffTime !== 0) return diffTime;
             if (a.rt + a.rtdir !== b.rt + b.rtdir) {
@@ -307,7 +313,7 @@ function processPredictions(rawChunks: any[]) {
 
 
     // extrapolate predictions
-    formattedPredictions.forEach((trip: any) => {
+    formattedPredictions.forEach((trip) => {
         let stopsAdded = 0;
         while (stopsAdded < 20 && trip.stops.length > 0) {
             const lastStop = trip.stops[trip.stops.length - 1];
@@ -328,9 +334,10 @@ function processPredictions(rawChunks: any[]) {
                 stpnm: state.cachedStopLocations[nextStopId]?.name || nextStopId,
                 stpid: nextStopId,
                 prdctdn: nextPrdctdn,
+                prdtm: lastStop.prdtm + diff * 60 * 1000,
                 rt: rtNext,
                 rtdir: rtdir,
-                isExtrapolated: true
+                isExtrapolated: true,
             });
             stopsAdded++;
         }
@@ -339,44 +346,47 @@ function processPredictions(rawChunks: any[]) {
     return formattedPredictions;
 }
 
-
 /**
  * COPIED FROM PROCESS PREDICTIONS AND MODIFIED TO WORK WITH THE RIDE
  * @param rawChunks Raw API response chunks
  */
-function processRidePredictions(rawChunks: any[]) {
-    const formattedPredictions = rawChunks.flat().reduce((acc: any[], chunk: any) => {
-        if (chunk['bustime-response']?.['prd']) {
-            chunk['bustime-response']['prd'].forEach((prd: any) => {
-                let trip = acc.find((t: any) => t.tatripid === prd.tatripid);
-                // If no tatripid, try to match by vid (mbus API specifics)
-                if (!trip && prd.vid) trip = acc.find((t: any) => t.vid === prd.vid);
-                // If no match, create new trip
-                if (!trip) {
-                    trip = { tatripid: prd.tatripid, vid: prd.vid, des: prd.des, stops: [] };
-                    acc.push(trip);
-                } else {
-                    if (!trip.tatripid) trip.tatripid = prd.tatripid;
-                    if (!trip.vid && prd.vid) trip.vid = prd.vid;
-                }
-                // If no stop, create new stop
-                let stop = trip.stops.find((s: any) => s.stpid === prd.stpid);
-                if (!stop) {
-                    stop = { stpnm: prd.stpnm, stpid: prd.stpid, prdctdn: null, rt: null, rtdir: null };
-                    trip.stops.push(stop);
-                }
-                stop.rtdir = prd.rtdir;
-                stop.rt = prd.rt;
-                stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
-                // console.log(prd.prdtm);
-                // prdtm is in format YYYYMMDD HH:MM:SS
-                // stop.prdtm = parseInt(prd.prdtm);
-                // TODO: use actual timestamp
-                stop.prdtm = Date.now() + (parseInt(stop.prdctdn) + 0.5) * 60 * 1000;
-            });
-        }
-        return acc;
-    }, []);
+function processRidePredictions(rawChunks: Array<bustime.GetPredictionsResponse | null>) {
+    const formattedPredictions = rawChunks
+        .flat()
+        .reduce<FormattedPrediction[]>(
+            (acc, chunk) => {
+                if (!chunk || !chunk['bustime-response'].prd) return acc;
+                chunk['bustime-response'].prd.forEach((prd) => {
+                    let trip = acc.find((t) => t.tatripid === prd.tatripid);
+                    // If no tatripid, try to match by vid (mbus API specifics)
+                    if (!trip && prd.vid) trip = acc.find((t) => t.vid === prd.vid);
+                    // If no match, create new trip
+                    if (!trip) {
+                        trip = { tatripid: prd.tatripid, vid: prd.vid, des: prd.des, stops: [] };
+                        acc.push(trip);
+                    } else {
+                        if (!trip.tatripid) trip.tatripid = prd.tatripid;
+                        if (!trip.vid && prd.vid) trip.vid = prd.vid;
+                    }
+                    // If no stop, create new stop
+                    let stop = trip.stops.find((s) => s.stpid === prd.stpid);
+                    if (!stop) {
+                        stop = { stpnm: prd.stpnm, stpid: prd.stpid, prdctdn: "", rt: "", rtdir: "", prdtm: 0 };
+                        trip.stops.push(stop);
+                    }
+                    stop.rtdir = prd.rtdir;
+                    stop.rt = prd.rt;
+                    stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
+                    // console.log(prd.prdtm);
+                    // prdtm is in format YYYYMMDD HH:MM:SS
+                    // stop.prdtm = parseInt(prd.prdtm);
+                    // TODO: use actual timestamp
+                    stop.prdtm = Date.now() + (parseInt(stop.prdctdn) + 0.5) * 60 * 1000;
+                });
+                return acc;
+            },
+            []
+        );
 
     return formattedPredictions;
 }
@@ -385,12 +395,12 @@ function processRidePredictions(rawChunks: any[]) {
  * Updates global prediction lookup caches (by VID and Stop ID).
  * @param preds List of processed predictions
  */
-function updatePredictionLookups(preds: any[]) {
+function updatePredictionLookups(preds: FormattedPrediction[]) {
     for (const key in state.cachedPredsByVid) delete state.cachedPredsByVid[key];
     for (const key in state.cachedPredsByStopId) delete state.cachedPredsByStopId[key];
 
-    preds.forEach((trip: any) => {
-        trip.stops.forEach((stop: any) => {
+    preds.forEach((trip) => {
+        trip.stops.forEach((stop) => {
             if (stop.isExtrapolated) return; 
 
             const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid, des: trip.des };
@@ -415,12 +425,12 @@ function updatePredictionLookups(preds: any[]) {
  * Updates global prediction lookup caches (by VID and Stop ID).
  * @param preds List of processed predictions
  */
-function updateRideLookups(preds: any[]) {
+function updateRideLookups(preds: FormattedPrediction[]) {
     for (const key in state.cachedRidePredsByVid) delete state.cachedRidePredsByVid[key];
     for (const key in state.cachedRidePredsByStopId) delete state.cachedRidePredsByStopId[key];
 
-    preds.forEach((trip: any) => {
-        trip.stops.forEach((stop: any) => {
+    preds.forEach((trip) => {
+        trip.stops.forEach((stop) => {
             const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid, des: trip.des };
 
             if (!state.cachedRidePredsByStopId[stop.stpid]) state.cachedRidePredsByStopId[stop.stpid] = [];
@@ -448,13 +458,13 @@ export function sortPreds(x: Record<string, state.Prediction[]>) {
  * Converts processed predictions into the Trip format used by the Raptor algorithm.
  * @param preds List of processed predictions
  */
-function convertToTrips(preds: any[]): Trip[] {
+function convertToTrips(preds: FormattedPrediction[]): Trip[] {
     const trips: Trip[] = [];
     const now = new Date();
     const currentTime = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
-    preds.forEach((p: any) => {
-        const stopTimes: StopTime[] = p.stops.map((s: any) => ({
+    preds.forEach((p) => {
+        const stopTimes: StopTime[] = p.stops.map((s) => ({
             stop: s.stpid,
             arrivalTime: currentTime + (parseInt(s.prdctdn) * 60),
             departureTime: currentTime + (parseInt(s.prdctdn) * 60),
