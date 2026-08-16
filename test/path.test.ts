@@ -12,7 +12,7 @@ describe('API Endpoints', () => {
             console.error('Server is not running! Please start the server with: npm start');
             process.exit(1);
         }
-    });
+    }, 20000);
 
     it('should get bus predictions and log stop IDs', async () => {
         try {
