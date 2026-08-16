@@ -15,7 +15,7 @@ const router = express.Router();
 const ctx = documented.globalContext;
 
 documented.addGetRoute(
-    ctx, router, '/getAllRoutes',
+    ctx, router, '/getAllMbusRoutes',
     { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
     async () => documented.makeSuccessResponse(Object.values(state.cachedRoutes).flat(1)),
     { description: 'get all cached route patterns' }
