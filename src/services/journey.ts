@@ -115,8 +115,14 @@ const TripSchema = z.object({
 
 const FormattedLegBusSchema = z.object({
     ...formattedLegCommonFields,
-    busPathCoords: z.array(z.object({ rt: z.nullable(z.string()), path: z.array(LatLonSchema) })),
-    stopCoords: z.array(z.object({ rt: z.nullable(z.string()), location: LatLonSchema })),
+    busPathSegments: z.array(
+        z.object({ rt: z.nullable(z.string()), path: z.array(LatLonSchema) })
+            .meta({ id: 'FormattedLegBusPathRouteSegment' })
+    ),
+    stopCoords: z.array(
+        z.object({ rt: z.nullable(z.string()), location: LatLonSchema })
+            .meta({ id: 'FormattedLegBusStopCoord' })
+    ),
     mode: z.literal('bus'),
     stopTimes: z.array(StopTimeSchema),
     trip: TripSchema,
@@ -175,7 +181,7 @@ async function processJourneys(
                 tripId: leg.trip.tripId,
                 vid: leg.trip.vid,
                 rt: rt ?? 'UNKNOWN',
-                busPathCoords: paths,
+                busPathSegments: paths,
                 stopCoords: stops,
             };
         } else {
