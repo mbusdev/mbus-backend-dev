@@ -123,10 +123,11 @@ const FormattedLegBusSchema = z.object({
     tripId: z.string(),
     rt: z.string(),
     vid: z.nullable(z.string()),
-});
+}).meta({ id: 'FormattedLegBus' });
 
 
 export const FormattedLegSchema = z.discriminatedUnion('mode', [FormattedLegWalkSchema, FormattedLegBusSchema])
+    .meta({ id: 'FormattedLeg' })
 export type FormattedLeg = z.infer<typeof FormattedLegSchema>;
 
 export const ProcessedJourneySchema = z.object({
