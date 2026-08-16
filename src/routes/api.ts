@@ -685,7 +685,7 @@ const Area = z.object({
         z.object({
             type: z.literal('icon'),
             of: z.literal([
-                "women's bathroom", "men's bathroom", "gender-neutral bathroom", "information",
+                "bathroomWomen", "bathroomMen", "bathroomNeutral", "information",
                 "food", "stairs", "escalator", "elevator",
             ])
         })
@@ -718,7 +718,7 @@ documented.addGetRoute(
                 {
                     polygon: [0, 1, 2, 3, 4, 5, 6, 8],
                     classification: 'bathroom',
-                    label: { type: 'icon', of: 'gender-neutral bathroom' },
+                    label: { type: 'icon', of: 'bathroomNeutral' },
                     labelPos: { x: 0.5, y: 1.25 },
                     doors: [7],
                 },
