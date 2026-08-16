@@ -700,14 +700,15 @@ const FloorPlanVisuals = z.object({
     areas: z.array(Area),
     boundingBox: z.object({ sw: LatLon, ne: LatLon }),
 }).meta({ id: "FloorPlanVisuals" });
-addGetRoute(
+documented.addGetRoute(
+    documented.globalContext,
     router, '/indoor/visuals',
     {
         params: z.object({}),
         query: z.object({ buildingId: z.string(), floor: z.coerce.number() }),
         resBody: FloorPlanVisuals,
     },
-    (_, { buildingId, floor }) => {
+    async (_, { buildingId, floor }) => {
         const data: z.infer<typeof FloorPlanVisuals> = {
             points: [
                 { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 1 },
@@ -731,8 +732,7 @@ addGetRoute(
             ],
             boundingBox: { sw: { lat: 42.290808, lon: -83.716188 }, ne: { lat: 42.291575, lon: -83.715149 } },
         };
-        return makeSuccessResponse(
-            200,
+        return documented.makeSuccessResponse(
             data,
         )
     }
