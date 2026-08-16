@@ -9,6 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
+import * as bustime from "../services/bustimeCommon";
 import * as documented from "./documented";
 import * as walking from '../walking/walkingMap';
 
@@ -688,8 +689,6 @@ const Point = z.object({ x: z.number(), y: z.number() })
         description: "increasing `x` represents going northward, increasing `y` represents going eastward",
     });
 
-const LatLon = z.object({ lon: z.number(), lat: z.number() }).meta({ id: "LatLon" });
-
 const Area = z.object({
     polygon: z.array(z.number())
         .meta({ description: 'indexes into `points`, adjacent points (1st and last included) have an edge between them' }),
@@ -712,7 +711,7 @@ const Area = z.object({
 const FloorPlanVisuals = z.object({
     points: z.array(Point),
     areas: z.array(Area),
-    boundingBox: z.object({ sw: LatLon, ne: LatLon }),
+    boundingBox: z.object({ sw: bustime.LatLonSchema, ne: bustime.LatLonSchema }),
 }).meta({ id: "FloorPlanVisuals" });
 documented.addGetRoute(
     documented.globalContext,
