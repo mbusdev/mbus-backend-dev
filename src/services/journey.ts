@@ -88,8 +88,6 @@ const formattedLegCommonFields = {
     startTime: z.number(),
     endTime: z.number(),
     duration: z.number(),
-    originID: z.string(),
-    destinationID: z.string(),
 };
 
 const FormattedLegWalkSchema = z.object({
@@ -160,7 +158,7 @@ async function processJourneys(
         const isWalk = leg.type === 'Transfer';
 
         let formattedLeg: FormattedLeg;
-        const formattedLegCommon  = {
+        const formattedLegCommon = {
             origin_id: leg.origin,
             origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (state.stopIdToName[leg.origin] || leg.origin)),
             destination_id: leg.destination,
@@ -169,8 +167,6 @@ async function processJourneys(
             startTime: Math.round(leg.startTime),
             endTime: Math.round(leg.endTime),
             duration: Math.round(leg.duration),
-            originID: leg.originID,
-            destinationID: leg.destinationID,
         };
 
         if (!isWalk) {
