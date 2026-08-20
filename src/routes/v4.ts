@@ -15,14 +15,14 @@ const router = express.Router();
 const ctx = documented.globalContext;
 
 documented.addGetRoute(
-    ctx, router, '/getAllMbusRoutes',
+    ctx, router, '/all-mbus-routes',
     { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
     async () => documented.makeSuccessResponse(Object.values(state.cachedRoutes).flat(1)),
     { description: 'get all cached route patterns' }
 );
 
 documented.addGetRoute(
-    ctx, router, '/getAllRideRoutes',
+    ctx, router, '/all-ride-routes',
     { ...documented.emptyFormat, resBody: z.array(BusRouteLineSchema) },
     async () => documented.makeSuccessResponse(Object.values(state.cachedRideRoutes).flat(1)),
     { description: 'get all cached ride route patterns' },

@@ -37,12 +37,12 @@ describe('The Ride (AAATA) API Endpoints', () => {
     });
 
     it('should get all Ride routes', async () => {
-        const response = await axios.get(`${V4_BASE_URL}/getAllRideRoutes`);
+        const response = await axios.get(`${V4_BASE_URL}/all-ride-routes`);
         expect(response.status).toBe(200);
         expect(typeof response.data).toBe('object');
         
         const routeCount = Object.keys(response.data).length;
-        console.log(`GET /getAllRideRoutes: ${routeCount} Ride routes found.`);
+        console.log(`GET /all-ride-routes: ${routeCount} Ride routes found.`);
         expect(routeCount).toBeGreaterThanOrEqual(0);
     });
 
