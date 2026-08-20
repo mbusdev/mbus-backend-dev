@@ -51,10 +51,10 @@ describe('API Endpoints', () => {
     });
 
     it('should get all cached routes and confirm structure', async () => {
-        const response = await axios.get(`${V4_BASE_URL}/getAllMbusRoutes`);
+        const response = await axios.get(`${V4_BASE_URL}/all-mbus-routes`);
         expect(response.status).toBe(200);
         expect(typeof response.data).toBe('object'); // should be array
-        console.log(`GET /getAllMbusRoutes: ${Object.keys(response.data).length} cached routes found.`);
+        console.log(`GET /all-mbus-routes: ${Object.keys(response.data).length} cached routes found.`);
     });
 
     it('should get all bus predictions and log stop IDs', async () => {
