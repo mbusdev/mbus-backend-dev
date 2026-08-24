@@ -383,7 +383,7 @@ interface ReflectionInfo {
         summary: string,
         description: string,
         params: Record<string, JSONSchema.JSONSchema>,
-        query: Record<string, JSONSchema.JSONSchema>,
+        query: Record<string, { required: boolean, schema: JSONSchema.JSONSchema }>,
         resBody: JSONSchema.BaseSchema | null,
     } & ({ method: 'get' } | { method: 'post', reqBody: JSONSchema.BaseSchema | null })>,
     defs: Record<string, JSONSchema.JSONSchema>,
@@ -492,13 +492,16 @@ function finalize(info: ReflectionInfoRaw): ReflectionInfo {
                 model[path + ' params ' + param] = zodSchema;
                 finalParams[param] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
             }
-            const finalQuery: Record<string, JSONSchema.JSONSchema> = {};
+            const finalQuery: Record<string, { required: boolean, schema: JSONSchema.JSONSchema }> = {};
             for (const key in route.query) {
                 const zodSchema = route.query[key];
                 model[path + '?' + key] = zodSchema;
-                finalQuery[key] = fixSchema(zodSchema.toJSONSchema(schemaOpts), true);
+                finalQuery[key] = {
+                    required: !zodSchema.safeParse(undefined).success,
+                    schema: fixSchema(zodSchema.toJSONSchema(schemaOpts), true)
+                };
             }
-            const common = {
+            const common: Omit<ReflectionInfo['routes'][number], 'method' | 'reqBody'> = {
                 path,
                 params: finalParams,
                 query: finalQuery,
@@ -547,7 +550,8 @@ function makeOpenAPI(info: ReflectionInfo): OpenAPI {
                 parameters.push({ name: name, in: 'path', required: true, schema: route.params[name] });
             }
             for (const name in route.query) {
-                parameters.push({ name: name, in: 'query', required: true, schema: route.query[name] });
+                const { required, schema } = route.query[name];
+                parameters.push({ name: name, in: 'query', required, schema });
             }
             const content = route.resBody === null
                 ? undefined
