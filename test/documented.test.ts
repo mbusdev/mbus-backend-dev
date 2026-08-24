@@ -321,6 +321,22 @@ it('should surface route descriptions & names', () => {
     expect(path).toHaveProperty('summary', 'summary');
 });
 
+it('should support optional query parameters', () => {
+    const app = express();
+    const router = express.Router();
+    const ctx = d.newContext();
+    d.addRouter(ctx, app, '', router);
+    d.addGetRoute(
+        ctx, router, '/test',
+        { ...d.emptyFormat, query: z.object({ x: z.string(), y: z.optional(z.string()) }) },
+        async () => d.makeSuccessResponse({}),
+    );
+    const spec = d.docsFor(ctx);
+    const params = spec.paths['/test'].get?.parameters ?? [];
+    expect(params[0].required).toEqual(true);
+    expect(params[1].required).toEqual(false);
+});
+
 async function testCase(
     mode: 'get' | 'post',
     base: string,
