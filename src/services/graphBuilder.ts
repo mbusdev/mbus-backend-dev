@@ -57,8 +57,8 @@ export async function rebuildGraph() {
     try {
         console.log(`Rebuilding graph...`);
         const allStopIds = new Set<string>();
-        Object.values(state.cachedRoutes).forEach((patterns: any) => {
-            patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+        Object.values(state.cachedRoutes).forEach((patterns) => {
+            patterns.forEach((p) => p.pt.forEach((pt) => {
                 if (pt.stpid) allStopIds.add(pt.stpid);
             }));
         });
@@ -74,8 +74,8 @@ export async function rebuildGraph() {
         
         // extra stuff to update the busses for the ride
         const rideStopIds = new Set<string>();
-        Object.values(state.cachedRideRoutes).forEach((patterns: any) => {
-            patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+        Object.values(state.cachedRideRoutes).forEach((patterns) => {
+            patterns.forEach((p) => p.pt.forEach((pt) => {
                 if (pt.stpid) rideStopIds.add(pt.stpid);
             }));
         });
@@ -100,8 +100,8 @@ export async function rebuildGraph() {
  * @param preds List of processed predictions
  */
 function populateLookupMaps(preds: any[]) {
-    Object.values(state.cachedRoutes).forEach((patterns: any) => {
-        patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+    Object.values(state.cachedRoutes).forEach((patterns) => {
+        patterns.forEach((p) => p.pt.forEach((pt) => {
             if (pt.stpid && pt.stpnm) {
                 state.stopIdToName[pt.stpid] = pt.stpnm;
             }
@@ -130,8 +130,8 @@ function populateLookupMaps(preds: any[]) {
  * @param preds List of processed predictions from the ride
  */
 function populateRideLookupMaps(preds: any[]) {
-    Object.values(state.cachedRideRoutes).forEach((patterns: any) => {
-        patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+    Object.values(state.cachedRideRoutes).forEach((patterns) => {
+        patterns.forEach((p) => p.pt.forEach((pt) => {
             if (pt.stpid && pt.stpnm) {
                 state.rideStopIdToName[pt.stpid] = pt.stpnm;
             }
@@ -152,10 +152,10 @@ function populateRideLookupMaps(preds: any[]) {
  */
 function buildStopLocationMap() {
     const locs: Record<string, any> = {};
-    Object.values(state.cachedRoutes).forEach((patterns: any) => {
-        patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+    Object.values(state.cachedRoutes).forEach((patterns) => {
+        patterns.forEach((p) => p.pt.forEach((pt) => {
             if (pt.stpid && pt.lat) {
-                locs[pt.stpid] = { name: pt.stpnm, lat: parseFloat(pt.lat), lon: parseFloat(pt.lon) };
+                locs[pt.stpid] = { name: pt.stpnm, lat: pt.lat, lon: pt.lon };
             }
         }));
     });
@@ -168,10 +168,10 @@ function buildStopLocationMap() {
  */
 function buildRideStops() {
     const locs: Record<string, any> = {};
-    Object.values(state.cachedRideRoutes).forEach((patterns: any) => {
-        patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
+    Object.values(state.cachedRideRoutes).forEach((patterns) => {
+        patterns.forEach((p) => p.pt.forEach((pt) => {
             if (pt.stpid && pt.lat) {
-                locs[pt.stpid] = { name: pt.stpnm, lat: parseFloat(pt.lat), lon: parseFloat(pt.lon) };
+                locs[pt.stpid] = { name: pt.stpnm, lat: pt.lat, lon: pt.lon };
             }
         }));
     });
@@ -242,7 +242,7 @@ function processPredictions(rawChunks: any[]) {
 
     // build index maps
     const routeInfoFilter: Record<string, { stpid: string; rtdir: string }[]> = {};
-    for (const [routeName, routeList] of Object.entries(state.cachedRoutes as Record<string, any[]>)) {
+    for (const [routeName, routeList] of Object.entries(state.cachedRoutes)) {
         for (const route of routeList) {
             const rtdir = route.rtdir;
             const routeKey = routeName + rtdir;
