@@ -266,8 +266,12 @@ function initializeGraph() {
     // The landmark cache is only valid for the graph it was computed from: a
     // stale cache makes the ALT heuristic inadmissible (A* silently returns
     // non-shortest paths), so recompute whenever the map file is newer.
+    // The tolerance absorbs checkout/copy jitter (a fresh git clone writes both
+    // files within milliseconds of each other, in arbitrary order); a genuine
+    // map update is newer by far more than this.
+    const STALE_TOLERANCE_MS = 60_000;
     const landmarksFresh = fs.existsSync(CACHE_FILE)
-        && fs.statSync(CACHE_FILE).mtimeMs >= fs.statSync(MAP_FILE).mtimeMs;
+        && fs.statSync(CACHE_FILE).mtimeMs >= fs.statSync(MAP_FILE).mtimeMs - STALE_TOLERANCE_MS;
 
     let landmarksLoaded = false;
     if (landmarksFresh) {
