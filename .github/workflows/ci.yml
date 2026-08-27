@@ -17,19 +17,45 @@ jobs:
         run: |
           export MBUS_URL=https://mbus.bustime.mock.mb.thething.fyi/
           export RIDE_URL=https://ride.bustime.mock.mb.thething.fyi/
-          npm start &
-          until curl localhost:3000 > /dev/null 2>&1
-          do
-            sleep 1 # waits for initial startup
+          npm start > /tmp/server.log 2>&1 &
+          # The server binds and serves 404s long before its data is ready and
+          # a bare `curl` exits 0 on a 404, so poll data endpoints with -sf and
+          # check the content we actually need.
+          wait_for() {
+            endpoint="$1"; needle="$2"; tries="$3"
+            for i in $(seq 1 "$tries"); do
+              if curl -sf "localhost:3000$endpoint" | grep -q "$needle"; then
+                echo "ready: $endpoint has $needle (after $((i * 2))s)"
+                return 0
+              fi
+              sleep 2
+            done
+            echo "::warning::timed out after $((tries * 2))s waiting for $endpoint to contain $needle"
+            tail -30 /tmp/server.log
+            return 1
+          }
+          # Stops appear once route patterns are fetched. Required: without
+          # them nothing else can be built.
+          if ! wait_for /mbus/api/v3/getAllStops stpid 150; then
+            echo "::error::server never loaded stop data"
+            exit 1
+          fi
+          # walkingCache.json is gitignored, so CI always starts cold and the
+          # server computes every stop-pair path (~10k, several minutes),
+          # persisting them in one atomic write at the end. Wait for that file:
+          # otherwise the vitest process recomputes the whole matrix in-process
+          # and the live reminder test races its own timeout. Warn-only - the
+          # tests are the authoritative verdict.
+          # ~4 min on a dev laptop; allow generous headroom for slower runners.
+          for i in $(seq 1 450); do
+            [ -f src/assets/walkingCache.json ] && { echo "walking cache ready (after $((i * 2))s)"; break; }
+            sleep 2
           done
-          sleep 10
-          until curl localhost:3000 > /dev/null 2>&1
-          do
-            sleep 1 # waits for the walking cache to populate
-          done
-          sleep 10 # waits for the graph/predictions to be built
+          [ -f src/assets/walkingCache.json ] || echo "::warning::walking cache never persisted; tests will recompute it in-process"
+          # The routing graph is rebuilt on an interval, so predictions can lag
+          # the cache slightly.
+          wait_for /mbus/api/v3/getAllPredictions stpid 60 || true
           npx vitest run test
-          # npm test
         working-directory: ${{ github.workspace }}
 
   Typecheck:
@@ -37,14 +63,13 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
-      # - name: Placeholder
-      #   run: echo hi
-      #   working-directory: ${{ github.workspace }}
       - name: NPM Install
         run: npm i
         working-directory: ${{ github.workspace }}
       - name: Typecheck
-        run: tsc --noEmit
+        # npx: use the project-pinned TypeScript, not whatever the runner
+        # image happens to ship globally.
+        run: npx tsc --noEmit
         working-directory: ${{ github.workspace }}
 
   Typedoc:
@@ -59,6 +84,9 @@ jobs:
         run: npx typedoc --entryPointStrategy expand ./src --treatWarningsAsErrors
         working-directory: ${{ github.workspace }}
       - name: Sync files
+        # Deploy only from pushes to main: fork PRs have no secrets (the step
+        # would always fail), and unreviewed branches must not publish docs.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}

@@ -1,9 +1,11 @@
 import fs from 'fs';
 import { XMLParser } from 'fast-xml-parser';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { GraphMLNode, GraphMLEdge } from './types';
 
-const MAP_FILE = path.resolve(process.cwd(), 'src/assets/ann_arbor.graphml');
+// Module-relative so the server works regardless of the launch directory.
+export const MAP_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../assets/ann_arbor.graphml');
 const DEBUG = false;
 
 /**
@@ -203,6 +205,21 @@ export function loadMap() {
                 });
                 totalEdges += 2;
             }
+        }
+    }
+
+    // The source data is a multigraph: parallel edges can connect the same
+    // pair of nodes with different lengths. Only the shortest is ever useful,
+    // and path reconstruction looks edges up by (from, to), so keep just one.
+    for (const [id, edges] of graph) {
+        if (edges.length < 2) continue;
+        const bestByTarget = new Map<string, GraphMLEdge>();
+        for (const e of edges) {
+            const existing = bestByTarget.get(e.to);
+            if (!existing || e.dist < existing.dist) bestByTarget.set(e.to, e);
+        }
+        if (bestByTarget.size !== edges.length) {
+            graph.set(id, Array.from(bestByTarget.values()));
         }
     }
 

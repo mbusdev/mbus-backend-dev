@@ -7,6 +7,7 @@
     "scripts": {
         "start": "tsx src/app.ts",
         "test": "vitest run test",
+        "test:search": "vitest run test/raptor-core.test.ts test/raptor-property.test.ts test/ingestion.test.ts test/journey-plan.test.ts test/api-handlers.test.ts",
         "stress-test": "vitest run test/search-stress.test.ts",
         "docs": "typedoc --entryPointStrategy expand ./src"
     },
@@ -21,7 +22,6 @@
         "fast-xml-parser": "^5.3.2",
         "firebase-admin": "^13.6.0",
         "lru-cache": "^11.2.5",
-        "ts-array-utils": "^0.5.0",
         "tsx": "^4.11.0",
         "zod": "^4.3.6"
     },
@@ -30,6 +30,7 @@
         "@types/node": "^20.12.12",
         "@vitest/coverage-v8": "^4.1.10",
         "typedoc": "^0.28.15",
+        "typescript": "^5.9.3",
         "vitest": "^4.1.10"
     }
 }

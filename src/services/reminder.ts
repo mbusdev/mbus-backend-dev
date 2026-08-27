@@ -9,8 +9,12 @@ export * from "./reminderTypes";
 
 dotenv.config()
 
+let firebaseInitialized = false;
 export function initializeReminders() {
-    // Initialize Firebase
+    // Initialize Firebase. Idempotent: initializeApp throws on a second call,
+    // and callers (entry points, tests) must be able to invoke this safely.
+    if (firebaseInitialized) return;
+    firebaseInitialized = true;
     initializeApp({ credential: applicationDefault() });
 }
 
@@ -29,13 +33,16 @@ export type PreThreshold = {
     as things are updated and such a change won't trigger a disappeared notification */
     candidateVid: string | null,
     /** minutes */
-    candidateVidPredPrev: number | null
+    candidateVidPredPrev: number | null,
+    /** unix epoch milliseconds of the candidate's predicted arrival */
+    candidatePrdtm: number | null
 };
 
 /** factory */
 function preThreshold(event: BaseEvent, thresh: number, candidateVid: string | null, now: number): PreThreshold {
     return {
-        stage: 0, event, thresh, mustBeAfter: now + thresh * 60 * 1000, candidateVid, candidateVidPredPrev: null
+        stage: 0, event, thresh, mustBeAfter: now + thresh * 60 * 1000,
+        candidateVid, candidateVidPredPrev: null, candidatePrdtm: null
     };
 }
 
@@ -49,17 +56,35 @@ function firstPredAfter(timestamp: number, preds: state.Prediction[]): state.Pre
 /** Waiting for the bus indicated by `vid` to be at the stop indicated by `stpid`. Logic for what notification to send
  *  is complicated by arrival times sometimes skipping DUE, see `ReminderSubscriptons.process` for details.
  */
-export type PostThreshold = { stage: 1, event: BaseEvent, vid: string, vidPredPrev: number | null };
+export type PostThreshold = {
+    stage: 1,
+    event: BaseEvent,
+    vid: string,
+    vidPredPrev: number | null,
+    /** predicted arrival timestamp (epoch ms) of the tracked pass. Predictions
+     *  are matched by PROXIMITY to this: an early-running bus stays matched
+     *  (a frozen lower cutoff would drop it and fire a false "disappeared"),
+     *  while the same looping vehicle's other passes stay excluded. */
+    expectedPrdtm: number
+};
 
 /** factory */
 function postThreshold(prev: PreThreshold, vid: string): PostThreshold {
     return {
-        stage: 1, event: prev.event, vid, vidPredPrev: prev.candidateVid === vid ? prev.candidateVidPredPrev : null
+        stage: 1, event: prev.event, vid,
+        vidPredPrev: prev.candidateVid === vid ? prev.candidateVidPredPrev : null,
+        expectedPrdtm: prev.candidatePrdtm ?? prev.mustBeAfter
     };
 }
 
 function prdctdnToNum(prdctdn: string): number {
     return prdctdn === 'DUE' ? 1 : parseInt(prdctdn);
+}
+
+/** Delayed buses ("DLY") are surfaced to prediction endpoints but carry no
+ *  usable countdown, so the reminder pipeline must never track them. */
+function hasUsableCountdown(p: state.Prediction): boolean {
+    return Number.isFinite(prdctdnToNum(p.prdctdn));
 }
 
 /** result of ReminderSubscriptons.process */
@@ -78,7 +103,7 @@ export type RemindersToTrigger = {
 /** Subscriptions go through a pipeline, see types above for details. */
 export class ReminderSubscriptions {
     subscriptions: Array<{
-        token: RegistrationToken, subscription: PreThreshold | PostThreshold
+        token: RegistrationToken, subscription: PreThreshold | PostThreshold, createdAt: number
     }>;
     pure: boolean;
 
@@ -105,9 +130,15 @@ export class ReminderSubscriptions {
         const subscription = preThreshold(event, thresh, null, now);
         if (predictions) {
             const relevant = predictions
-                .filter((p) => p.rt === event.rtid);
-            const candidate = firstPredAfter(subscription.mustBeAfter, relevant);
-            subscription.candidateVid = candidate?.vid ?? null;
+                .filter((p) => p.rt === event.rtid && hasUsableCountdown(p));
+            // Prefer a trackable (vid-assigned) bus over a vid-less schedule
+            // row, which would hold the threshold indefinitely.
+            const candidate = firstPredAfter(subscription.mustBeAfter, relevant.filter((p) => p.vid))
+                ?? firstPredAfter(subscription.mustBeAfter, relevant);
+            // || null: schedule-based feed rows carry vid "" until a vehicle
+            // is assigned; those cannot be tracked in stage 1.
+            subscription.candidateVid = candidate?.vid || null;
+            subscription.candidatePrdtm = candidate?.prdtm ?? null;
             if (candidate?.prdctdn) {
                 subscription.candidateVidPredPrev = prdctdnToNum(candidate?.prdctdn);
             } else {
@@ -116,7 +147,7 @@ export class ReminderSubscriptions {
         }
         // remove existing
         this.remove(event, token, { noUpdate: true });
-        this.subscriptions.push({ token, subscription });
+        this.subscriptions.push({ token, subscription, createdAt: now });
         if (options?.noUpdate || this.pure) return;
         sendReminderUpdateToAll(new Set([token]));
     }
@@ -170,8 +201,17 @@ export class ReminderSubscriptions {
             updated: new Set<RegistrationToken>()
         };
 
+        // Reminders are short-lived by nature: expire stale subscriptions so
+        // no-candidate zombies and dead-token entries cannot accumulate
+        // forever (or fire a bogus stale reminder the next service day).
+        const SUBSCRIPTION_TTL_MS = 3 * 60 * 60 * 1000;
+
         const newSubscriptions: typeof this.subscriptions = [];
         for (const s of this.subscriptions) {
+            if (now - s.createdAt > SUBSCRIPTION_TTL_MS) {
+                notifications.updated.add(s.token);
+                continue;
+            }
             // only one is sent, variable order is priority
             let disappeared: BaseEvent | null = null;
             let delayed: DelayEvent | null = null;
@@ -184,11 +224,11 @@ export class ReminderSubscriptions {
                 // did the candidate vehicle change?
                 // PERF: caching these filter results might be good
                 const relevantPreds = (predsByStopId[s.subscription.event.stpid] ?? [])
-                    .filter((p) => p.rt === s.subscription.event.rtid);
-                const newCandidate = firstPredAfter(
-                    s.subscription.mustBeAfter,
-                    relevantPreds
-                );
+                    .filter((p) => p.rt === s.subscription.event.rtid && hasUsableCountdown(p));
+                // Same preference as add(): a trackable vid'd bus beats a
+                // vid-less schedule row.
+                const newCandidate = firstPredAfter(s.subscription.mustBeAfter, relevantPreds.filter((p) => p.vid))
+                    ?? firstPredAfter(s.subscription.mustBeAfter, relevantPreds);
                 if (newCandidate === null) {
                     if (s.subscription.candidateVid !== null) {
                         // no candidate now + existed before
@@ -199,14 +239,18 @@ export class ReminderSubscriptions {
                     if (s.subscription.candidateVidPredPrev !== pred) {
                         timeChanged = true;
                     }
-                    if (newCandidate.vid !== s.subscription.candidateVid) {
+                    // || null: schedule-based feed rows carry vid "" (or none)
+                    // until a vehicle is assigned; an empty-string candidate
+                    // would slip past === null guards into untrackable stage 1.
+                    if ((newCandidate.vid || null) !== s.subscription.candidateVid) {
                         // new candidate
                         console.log(`stage 0: new candidate, time is now ${pred}`);
-                        s.subscription.candidateVid = newCandidate.vid;
+                        s.subscription.candidateVid = newCandidate.vid || null;
                     } else {
                         // same candidate
                         console.log(`stage 0: same candidate, time is now ${pred}`);
                     }
+                    s.subscription.candidatePrdtm = newCandidate.prdtm;
                     if (s.subscription.candidateVidPredPrev !== null
                         && pred > s.subscription.candidateVidPredPrev
                     ) {
@@ -216,7 +260,11 @@ export class ReminderSubscriptions {
                         );
                     }
                     s.subscription.candidateVidPredPrev = pred;
-                    if (newCandidate.prdtm > s.subscription.mustBeAfter && pred <= s.subscription.thresh) {
+                    // A vid-less (schedule-based) candidate cannot be tracked
+                    // in stage 1: hold the threshold until a vehicle is
+                    // assigned, which happens as the bus enters service.
+                    if (newCandidate.prdtm > s.subscription.mustBeAfter && pred <= s.subscription.thresh
+                        && s.subscription.candidateVid !== null) {
                         threshold = thresholdEvent({
                             ...s.subscription.event,
                             threshold: s.subscription.thresh,
@@ -233,19 +281,67 @@ export class ReminderSubscriptions {
                 const shouldBeArrivingThresh = 3;
                 const maxDelayWhenShouldBeArriving = 1;
 
-                const prdctdn = (predsByVid[s.subscription.vid] ?? [])
-                    .find((p) => p.stpid === s.subscription.event.stpid)?.prdctdn ?? null;
-                const currArrivalTime = prdctdn == null ? null : prdctdnToNum(prdctdn);
+                // A vanished pass is only inferred as "arrived" when the bus
+                // was already this close (minutes); farther out, a big
+                // prediction jump is far more likely a delay than an arrival.
+                const arrivalInferenceMax = 5;
+
+                // Track the pass by PROXIMITY to its expected arrival: a bus
+                // running a few minutes early stays matched, while the same
+                // looping vehicle's other passes (typically >= 8 minutes away)
+                // stay excluded and cannot masquerade as a huge delay.
+                const PASS_MATCH_SLACK_MS = 5 * 60 * 1000;
+                const expected = s.subscription.expectedPrdtm;
+                const allStopPreds = (predsByVid[s.subscription.vid] ?? [])
+                    .filter((p) => p.stpid === s.subscription.event.stpid);
+                const stopPreds = allStopPreds.filter(hasUsableCountdown);
                 const prevArrivalTime = s.subscription.vidPredPrev;
 
-                console.log(`stage 1: time is now ${currArrivalTime}`);
+                let tracked = stopPreds.find((p) => Math.abs(p.prdtm - expected) <= PASS_MATCH_SLACK_MS) ?? null;
+                let inferredArrival = false;
+                let delayedHold = false;
+                if (tracked === null) {
+                    const laterPred = stopPreds.find((p) => p.prdtm > expected + PASS_MATCH_SLACK_MS) ?? null;
+                    if (allStopPreds.some((p) => !hasUsableCountdown(p))) {
+                        // The vehicle reports "DLY" for this stop: its position
+                        // in the loop is unknowable this tick, so hold the
+                        // subscription rather than guess arrival/disappearance.
+                        delayedHold = true;
+                    } else if (laterPred !== null) {
+                        if (prevArrivalTime !== null && prevArrivalTime <= arrivalInferenceMax) {
+                            // The tracked pass vanished close to arrival while a
+                            // LATER pass of the looping vehicle is still listed:
+                            // the bus completed this pass, i.e. it arrived.
+                            inferredArrival = true;
+                        } else {
+                            // The prediction jumped past the window in a single
+                            // tick while the bus was still far out: treat it as
+                            // the tracked pass being delayed and follow it.
+                            tracked = laterPred;
+                        }
+                    }
+                }
+                if (tracked) {
+                    // Follow gradual drift/delay so the window moves with the bus.
+                    s.subscription.expectedPrdtm = tracked.prdtm;
+                }
 
-                if (currArrivalTime !== prevArrivalTime) {
+                const prdctdn = tracked?.prdctdn ?? null;
+                const currArrivalTime = prdctdn == null ? null : prdctdnToNum(prdctdn);
+
+                console.log(`stage 1: time is now ${delayedHold ? 'unknown (DLY)' : currArrivalTime}`);
+
+                if (currArrivalTime !== prevArrivalTime && !delayedHold) {
                     timeChanged = true;
                 }
-                if (currArrivalTime === null) {
-                    // disappeared
-                    if (prevArrivalTime !== null && prevArrivalTime <= shouldBeArrivingThresh
+                if (delayedHold) {
+                    // no notification this tick; the subscription is retained
+                    // with its state unchanged until the countdown recovers
+                } else if (currArrivalTime === null) {
+                    if (inferredArrival) {
+                        console.log("tracked pass completed (later loop pass still listed): at the stop");
+                        ats = s.subscription.event;
+                    } else if (prevArrivalTime !== null && prevArrivalTime <= shouldBeArrivingThresh
                     ) {
                         // override
                         console.log("disappeared notification was overriden!");
@@ -272,7 +368,9 @@ export class ReminderSubscriptions {
                         );
                     }
                 }
-                s.subscription.vidPredPrev = currArrivalTime;
+                if (!delayedHold) {
+                    s.subscription.vidPredPrev = currArrivalTime;
+                }
             }
 
             if (disappeared || delayed || threshold || ats || delayed || timeChanged) {
@@ -293,7 +391,7 @@ export class ReminderSubscriptions {
                     throw Error("A threshold notification was triggered without a corresponding vid");
                 }
                 newSubscriptions.push(
-                    { token: s.token, subscription: postThreshold(s.subscription, s.subscription.candidateVid) }
+                    { token: s.token, subscription: postThreshold(s.subscription, s.subscription.candidateVid), createdAt: s.createdAt }
                 );
             } else if (ats) {
                 addHelper(notifications.atTheStop, toKey(ats), s.token);
@@ -318,13 +416,18 @@ export class ReminderSubscriptions {
     }
 
     swapToken(from: RegistrationToken, to: RegistrationToken) {
-        this.subscriptions = this.subscriptions.map((s) => {
-            if (s.token === from) {
-                return { ...s, token: to };
-            } else {
-                return s;
-            }
-        });
+        // A same-token swap must be a no-op (the dedup below would otherwise
+        // see every event as "already held" and delete all subscriptions).
+        if (from === to) return;
+        // Drop source subscriptions whose event the new token already holds:
+        // renaming them would leave two live subscriptions (possibly in
+        // different stages) for one (event, token) pair.
+        const existingEvents = this.subscriptions
+            .filter((s) => s.token === to)
+            .map((s) => s.subscription.event);
+        this.subscriptions = this.subscriptions
+            .filter((s) => !(s.token === from && existingEvents.some((e) => eventsEqual(e, s.subscription.event))))
+            .map((s) => s.token === from ? { ...s, token: to } : s);
     }
 
     activeRemindersFor(id: RegistrationToken): Array<PreThreshold | PostThreshold> {
@@ -348,8 +451,9 @@ export function processUniversityReminders() {
             state.stopIdToName
         );
     } catch (e) {
-        console.log("Processing university reminders failed");
-        console.log(`${JSON.stringify(e)}`);
+        // Not JSON.stringify: Errors serialize to '{}' (message/stack are
+        // non-enumerable), which made recurring failures undiagnosable.
+        console.error("Processing university reminders failed", e);
     }
 }
 
@@ -362,8 +466,7 @@ export function processRideReminders() {
             state.rideStopIdToName,
         );
     } catch (e) {
-        console.log("Processing ride reminders failed");
-        console.log(`${JSON.stringify(e)}`);
+        console.error("Processing ride reminders failed", e);
     }
 }
 
@@ -470,10 +573,25 @@ function sendToAll(msg: any, tokens: Set<string>) {
     sendToAllHelper(msg, group);
 }
 
+/** Removes every subscription for a token FCM reports as dead, so the
+ *  in-memory lists cannot grow forever with uninstalled clients. */
+function pruneDeadToken(token: string) {
+    for (const subs of [universityReminderSubscriptions, rideReminderSubscriptions]) {
+        const before = subs.subscriptions.length;
+        subs.subscriptions = subs.subscriptions.filter((s) => s.token !== token);
+        if (subs.subscriptions.length !== before) {
+            console.log(`Pruned ${before - subs.subscriptions.length} subscription(s) for a dead registration token`);
+        }
+    }
+}
+
 // REQUIRES: tokens.size <= 500
 function sendToAllHelper(msg: any, tokens: Set<string>) {
     console.log(`helper sending to ${tokens.size}`);
-    const payload = { tokens: Array.from(tokens), ...msg };
+    // Snapshot: the caller reuses and refills the Set for the next batch, so
+    // the async callbacks below must not read it by reference.
+    const sentTokens = Array.from(tokens);
+    const payload = { tokens: sentTokens, ...msg };
     console.log(`payload: ${JSON.stringify(payload)}`);
     getMessaging().sendEachForMulticast(payload)
         .then((res) => {
@@ -483,10 +601,19 @@ function sendToAllHelper(msg: any, tokens: Set<string>) {
                     if (!res.success) {
                         console.log(`message send ${idx} failed`);
                         console.log(res.error);
-                        console.log(`tokens was: ${JSON.stringify(Array.from(tokens))}`);
+                        console.log(`token was: ${JSON.stringify(sentTokens[idx])}`);
+                        const code = (res.error as any)?.code;
+                        if (code === 'messaging/registration-token-not-registered'
+                            || code === 'messaging/invalid-registration-token') {
+                            pruneDeadToken(sentTokens[idx]);
+                        }
                     }
                 })
             }
+        })
+        .catch((err) => {
+            // An unhandled rejection here would crash the whole server.
+            console.error('sendEachForMulticast failed', err);
         });
 }
 
