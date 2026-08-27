@@ -410,10 +410,16 @@ describe('Reminders', () => {
             params: { key: RIDE_API_KEY, format: 'json' }
         });
         const res = await client.get('/gettime', { params: { unixTime: true } });
-        // 1 hour, not 2 days: the point is verifying the feed returns epoch
-        // milliseconds; a seconds-vs-milliseconds mixup must fail this.
-        expect(Math.abs(parseInt(res.data["bustime-response"]["tm"]) - Date.now()))
-            .toBeLessThan(60 * 60 * 1000);
+        const tm = parseInt(res.data["bustime-response"]["tm"]);
+
+        // The invariant under test is the FORMAT: with unixTime=true the feed
+        // must return epoch milliseconds, not its default "YYYYMMDD HH:MM:SS"
+        // (which parseInt turns into ~2e7) and not epoch seconds (~1.8e9).
+        // Proximity to Date.now() is deliberately NOT asserted: CI points
+        // RIDE_URL at a mock that replays a recorded fixture, so its clock is
+        // legitimately hours or days stale.
+        expect(tm).toBeGreaterThan(1_000_000_000_000); // after 2001 in ms
+        expect(tm).toBeLessThan(10_000_000_000_000);   // before 2286 in ms
     });
 
     it('should have cached preds in a good state', async () => {
