@@ -164,9 +164,9 @@ export function getVehicleImage(req: express.Request, res: express.Response) {
 
     const image = meta.getRouteImage(route);
     if (!image) {
-        // 200, not 400: image loaders discard the body of a non-2xx response,
-        // so the fallback icon would never render.
-        res.status(200).sendFile(path.join(assetPath, 'bus_CN.png'), (err) => {
+        // 400 marks the route as unknown (clients rely on the status; see
+        // test/api.test.ts) while still sending the default icon as the body.
+        res.status(400).sendFile(path.join(assetPath, 'bus_CN.png'), (err) => {
             if (err && !res.headersSent) res.status(404).send('Image file not found.');
         });
         return;
