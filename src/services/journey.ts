@@ -43,24 +43,14 @@ export async function planJourney(
         });
     });
 
-    const requestTrips = state.cachedGraph.trips.map(trip => {
-        if (trip.tripId === 'VIRTUAL_ORIGIN_TRIP') {
-            return {
-                ...trip,
-                stopTimes: [{ stop: V_ORIGIN, arrivalTime: time, departureTime: time, pickUp: true, dropOff: true }]
-            };
-        }
-        if (trip.tripId === 'VIRTUAL_DESTINATION_TRIP') {
-            return {
-                ...trip,
-                stopTimes: [{ stop: V_DEST, arrivalTime: time, departureTime: time, pickUp: true, dropOff: true }]
-            };
-        }
-        return trip;
-    });
-
-    const mcRaptor = new McRaptorAlgorithm(requestTrips, transferData, state.cachedGraph.interchange);
-    mcRaptor.setWalkingPenalty(options.walkingPenalty || 1);
+    // Use the cached trips array directly: it keeps the same identity for
+    // every request between graph rebuilds, so the algorithm's per-graph route
+    // index is built once per rebuild instead of once per request. The
+    // VIRTUAL_*_TRIP placeholders are single-stop trips that can never be
+    // ridden, so they need no per-request patching.
+    const mcRaptor = new McRaptorAlgorithm(state.cachedGraph.trips, transferData, state.cachedGraph.interchange);
+    // ?? not ||: an explicit walkingPenalty of 0 (walking is free) is valid.
+    mcRaptor.setWalkingPenalty(options.walkingPenalty ?? 1);
 
     const range = options.range;
     const journeys = range === undefined
@@ -118,8 +108,11 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
                 if (l1 && l2) {
                     try {
                         const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
-                        data.duration = Math.round(data.duration);
                         Object.assign(formattedLeg, data);
+                        // Keep the duration the journey was routed with so the
+                        // leg stays consistent with its start/end times; the
+                        // fresh response only contributes geometry/distance.
+                        formattedLeg.duration = Math.round(leg.duration);
                     } catch (e) {
                         formattedLeg.path_coords = [];
                     }
@@ -137,7 +130,7 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
 
         return {
             legs,
-            departureTime: journey.criteria.arrivalTime - (legs.reduce((acc, leg) => acc + leg.duration, 0)),
+            departureTime: legs.length > 0 ? legs[0].startTime : journey.criteria.arrivalTime,
             arrivalTime: journey.criteria.arrivalTime,
             criteria: journey.criteria
         };

@@ -2,7 +2,7 @@
 **link to flowchart on figjam or alternative:** none
 **Developer(s):** Edward Zhang
 **Feature / Algorithm Name:** documented
-* *Status:* Implemented
+* *Status:* Proposed — NOT yet implemented in this branch (src/routes/documented.ts and test/documented.test.ts do not exist here; api.ts still uses raw Express handlers)
 * *Date:* 2026-08-15
 * *Reviewers:* none (this doc was created after the fact, which isn't ideal)
 

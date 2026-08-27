@@ -9,8 +9,7 @@ describe('API Endpoints', () => {
         try {
             await axios.get(`${BASE_URL}/getAllPredictions`);
         } catch (error) {
-            console.error('Server is not running! Please start the server with: npm start');
-            process.exit(1);
+            throw new Error('Server is not running on :3000 - start it with: npm start');
         }
     }, 20000);
 

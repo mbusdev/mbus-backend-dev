@@ -18,18 +18,26 @@ jobs:
           export MBUS_URL=https://mbus.bustime.mock.mb.thething.fyi/
           export RIDE_URL=https://ride.bustime.mock.mb.thething.fyi/
           npm start &
-          until curl localhost:3000 > /dev/null 2>&1
-          do
-            sleep 1 # waits for initial startup
-          done
-          sleep 10
-          until curl localhost:3000 > /dev/null 2>&1
-          do
-            sleep 1 # waits for the walking cache to populate
-          done
-          sleep 10 # waits for the graph/predictions to be built
+          # The server binds and serves 404s long before its data is ready
+          # (and bare `curl` exits 0 on a 404), so poll data endpoints with
+          # -sf and content checks.
+          wait_for() {
+            for i in $(seq 1 300); do
+              if curl -sf "localhost:3000$1" | grep -q "$2"; then
+                return 0
+              fi
+              sleep 2
+            done
+            echo "Timed out waiting for $1 to contain $2"
+            return 1
+          }
+          # Stops appear once route patterns are fetched; predictions appear
+          # only after the walking transfers AND the routing graph are built
+          # (which on a cold cache also persists walkingCache.json for the
+          # test process to reuse).
+          wait_for /mbus/api/v3/getAllStops stpid
+          wait_for /mbus/api/v3/getAllPredictions vid
           npx vitest run test
-          # npm test
         working-directory: ${{ github.workspace }}
 
   Typecheck:
@@ -37,14 +45,13 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
-      # - name: Placeholder
-      #   run: echo hi
-      #   working-directory: ${{ github.workspace }}
       - name: NPM Install
         run: npm i
         working-directory: ${{ github.workspace }}
       - name: Typecheck
-        run: tsc --noEmit
+        # npx: use the project-pinned TypeScript, not whatever the runner
+        # image happens to ship globally.
+        run: npx tsc --noEmit
         working-directory: ${{ github.workspace }}
 
   Typedoc:
@@ -59,6 +66,9 @@ jobs:
         run: npx typedoc --entryPointStrategy expand ./src --treatWarningsAsErrors
         working-directory: ${{ github.workspace }}
       - name: Sync files
+        # Deploy only from pushes to main: fork PRs have no secrets (the step
+        # would always fail), and unreviewed branches must not publish docs.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}

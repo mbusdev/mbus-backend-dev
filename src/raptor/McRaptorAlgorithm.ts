@@ -44,8 +44,22 @@ export class McRaptorAlgorithm {
     private stops: StopID[];
     private routes: Record<string, Trip[]>;
     private routeStops: Record<string, StopID[]>;
+    private stopToRoutes: Record<StopID, string[]>;
 
     private walkingPenalty: number = 1;
+
+    /**
+     * Route index (FIFO chains + inverted stop index) per trips array.
+     * planJourney passes the same cached trips array for every request between
+     * graph rebuilds, so the index is built once per rebuild instead of once
+     * per request. Keyed by array identity: callers must not mutate a trips
+     * array after first constructing an algorithm with it.
+     */
+    private static indexCache = new WeakMap<Trip[], {
+        routes: Record<string, Trip[]>,
+        routeStops: Record<string, StopID[]>,
+        stopToRoutes: Record<StopID, string[]>,
+    }>();
 
     /**
      * Initializes the routing engine with transit data.
@@ -63,21 +77,82 @@ export class McRaptorAlgorithm {
         this.interchange = interchange;
         this.stops = Object.keys(interchange);
 
+        const cached = McRaptorAlgorithm.indexCache.get(trips);
+        if (cached) {
+            this.routes = cached.routes;
+            this.routeStops = cached.routeStops;
+            this.stopToRoutes = cached.stopToRoutes;
+            return;
+        }
+
         this.routes = {};
         this.routeStops = {};
+        this.stopToRoutes = {};
 
+        const tripsBySeq: Record<string, Trip[]> = {};
         for (const trip of trips) {
             const stopSeq = trip.stopTimes.map(st => st.stop).join(',');
-            if (!this.routes[stopSeq]) {
-                this.routes[stopSeq] = [];
-                this.routeStops[stopSeq] = trip.stopTimes.map(st => st.stop);
-            }
-            this.routes[stopSeq].push(trip);
+            if (!tripsBySeq[stopSeq]) tripsBySeq[stopSeq] = [];
+            tripsBySeq[stopSeq].push(trip);
         }
 
-        for (const routeId in this.routes) {
-            this.routes[routeId].sort((a, b) => a.stopTimes[0].departureTime - b.stopTimes[0].departureTime);
+        // RAPTOR requires that within a route, trips never overtake each other
+        // (otherwise the earliest catchable trip is not always the best one).
+        // Split each stop sequence into FIFO-ordered chains of trips.
+        for (const stopSeq in tripsBySeq) {
+            const sorted = tripsBySeq[stopSeq].sort((a, b) => a.stopTimes[0].departureTime - b.stopTimes[0].departureTime);
+
+            const chains: Trip[][] = [];
+            for (const trip of sorted) {
+                const chain = chains.find(c => McRaptorAlgorithm.followsFifo(c[c.length - 1], trip));
+                if (chain) chain.push(trip);
+                else chains.push([trip]);
+            }
+
+            chains.forEach((chain, i) => {
+                const routeId = `${stopSeq}#${i}`;
+                this.routes[routeId] = chain;
+                this.routeStops[routeId] = chain[0].stopTimes.map(st => st.stop);
+            });
         }
+
+        // Inverted index so route scans are O(markedStops) instead of scanning
+        // every route's stop list per marked stop per round.
+        for (const [routeId, stops] of Object.entries(this.routeStops)) {
+            for (const stop of new Set(stops)) {
+                if (!this.stopToRoutes[stop]) this.stopToRoutes[stop] = [];
+                this.stopToRoutes[stop].push(routeId);
+            }
+        }
+
+        McRaptorAlgorithm.indexCache.set(trips, {
+            routes: this.routes,
+            routeStops: this.routeStops,
+            stopToRoutes: this.stopToRoutes,
+        });
+    }
+
+    /**
+     * Returns true if `later` departs and arrives STRICTLY later than `earlier`
+     * at every stop and offers the same pickUp/dropOff availability. Only then
+     * is boarding the earliest catchable trip of a chain always optimal.
+     *
+     * Strictness matters: if two trips tie at one stop but diverge afterwards,
+     * on-board labels of the slower trip can tie-dominate boardings of the
+     * faster one inside the shared route bag and lose Pareto-optimal journeys
+     * (ties are common in production because countdowns are quantized to whole
+     * minutes). Tied trips are simply scanned as separate chains.
+     */
+    private static followsFifo(earlier: Trip, later: Trip): boolean {
+        for (let i = 0; i < earlier.stopTimes.length; i++) {
+            const a = earlier.stopTimes[i];
+            const b = later.stopTimes[i];
+            if (b.departureTime <= a.departureTime) return false;
+            if (b.arrivalTime <= a.arrivalTime) return false;
+            if ((a.pickUp ?? true) !== (b.pickUp ?? true)) return false;
+            if ((a.dropOff ?? true) !== (b.dropOff ?? true)) return false;
+        }
+        return true;
     }
 
     /**
@@ -126,6 +201,7 @@ export class McRaptorAlgorithm {
                     if (!bags[0][dest]) bags[0][dest] = new Bag();
 
                     for (const label of stopBag.labels) {
+                        if (label.arrivalTime < transfer.startTime || label.arrivalTime > transfer.endTime) continue;
                         const arrTime = label.arrivalTime + walkTime;
                         const totalWalk = label.walkingDistance + walkCost;
 
@@ -156,10 +232,8 @@ export class McRaptorAlgorithm {
 
             const routesToVisit = new Set<string>();
             for (const stop of markedStops) {
-                for (const [routeId, stops] of Object.entries(this.routeStops)) {
-                    if (stops.includes(stop)) {
-                        routesToVisit.add(routeId);
-                    }
+                for (const routeId of this.stopToRoutes[stop] ?? []) {
+                    routesToVisit.add(routeId);
                 }
             }
 
@@ -177,10 +251,24 @@ export class McRaptorAlgorithm {
                     const stop = stops[i];
                     if (!bags[k][stop]) bags[k][stop] = new Bag();
 
+                    // Advance on-board labels to this stop so dominance compares
+                    // positions along the route rather than boarding times; a trip
+                    // boarded later upstream may still be ahead here.
+                    if (i > 0 && !routeBag.isEmpty()) {
+                        const advanced = new Bag();
+                        for (const label of routeBag.labels) {
+                            if (!label.trip) continue;
+                            const moved = label.clone();
+                            moved.arrivalTime = label.trip.stopTimes[i].departureTime;
+                            advanced.add(moved);
+                        }
+                        routeBag = advanced;
+                    }
+
                     for (const label of routeBag.labels) {
                         if (!label.trip) continue;
                         const stopTime = label.trip.stopTimes[i];
-                        if (!stopTime.dropOff && stopTime.dropOff !== undefined) continue;
+                        if (stopTime.dropOff === false) continue;
                         const arrivalTime = stopTime.arrivalTime;
                         const newLabel = new Label(
                             arrivalTime,
@@ -206,8 +294,6 @@ export class McRaptorAlgorithm {
                             const catchTrip = this.findEarliestTrip(trips, i, label.arrivalTime + buffer);
 
                             if (catchTrip) {
-                                if (catchTrip.stopTimes[i].pickUp === false) continue;
-
                                 const departureTime = catchTrip.stopTimes[i].departureTime;
                                 const onBoardLabel = new Label(
                                     departureTime,
@@ -229,10 +315,17 @@ export class McRaptorAlgorithm {
 
             const footPathMarked = new Set<StopID>();
 
+            // Snapshot the trip-arrival labels before relaxing footpaths so a
+            // walk label added at one stop is not walked onward from another
+            // stop in the same pass (walks must not chain).
+            const footPathSources = new Map<StopID, Label[]>();
             for (const stop of newMarkedStops) {
                 const stopBag = bags[k][stop];
                 if (!stopBag || stopBag.isEmpty()) continue;
+                footPathSources.set(stop, [...stopBag.labels]);
+            }
 
+            for (const [stop, sourceLabels] of footPathSources) {
                 const transfers = this.transfers[stop] || [];
 
                 for (const transfer of transfers) {
@@ -242,7 +335,8 @@ export class McRaptorAlgorithm {
 
                     if (!bags[k][dest]) bags[k][dest] = new Bag();
 
-                    for (const label of stopBag.labels) {
+                    for (const label of sourceLabels) {
+                        if (label.arrivalTime < transfer.startTime || label.arrivalTime > transfer.endTime) continue;
                         const arrTime = label.arrivalTime + walkTime;
                         const totalWalk = label.walkingDistance + walkCost;
 
@@ -282,7 +376,9 @@ export class McRaptorAlgorithm {
 
     private findEarliestTrip(trips: Trip[], stopIndex: number, minTime: number): Trip | null {
         for (const trip of trips) {
-            if (trip.stopTimes[stopIndex].departureTime >= minTime) {
+            const stopTime = trip.stopTimes[stopIndex];
+            if (stopTime.pickUp === false) continue;
+            if (stopTime.departureTime >= minTime) {
                 return trip;
             }
         }
@@ -329,23 +425,38 @@ export class McRaptorAlgorithm {
 
         const significantTimes = new Set<number>();
         significantTimes.add(startTime);
+        // Always sample the window end too: a bus whose latest-catchable seed
+        // falls just past endTime can be the ONLY option for riders departing
+        // in the window's tail, and no interior seed would surface it once an
+        // earlier faster bus dominates those runs.
+        significantTimes.add(endTime);
 
-        const startStops = [origin, ...(this.transfers[origin] || []).map(t => t.destination)];
+        // A seed is the LATEST origin departure that can still catch a trip:
+        // the trip's departure minus the walk to the stop and that stop's
+        // interchange buffer. Seeding raw departure times would start runs
+        // that arrive after their own trip has left.
+        const reachable: { stop: StopID, cost: number }[] = [
+            { stop: origin, cost: this.interchange[origin] || 0 },
+            ...(this.transfers[origin] || []).map(t => ({
+                stop: t.destination,
+                cost: t.duration + (this.interchange[t.destination] || 0),
+            })),
+        ];
 
-        for (const stop of startStops) {
-            for (const routeId in this.routeStops) {
-                if (this.routeStops[routeId].includes(stop)) {
-                    const params = this.routes[routeId];
-                    for (const trip of params) {
-                        const stopTime = trip.stopTimes.find(st => st.stop === stop);
-                        if (stopTime && stopTime.departureTime >= startTime && stopTime.departureTime <= endTime) {
-                            significantTimes.add(stopTime.departureTime);
-                        }
+        for (const { stop, cost } of reachable) {
+            for (const routeId of this.stopToRoutes[stop] ?? []) {
+                for (const trip of this.routes[routeId]) {
+                    for (const stopTime of trip.stopTimes) {
+                        if (stopTime.stop !== stop) continue;
+                        const seed = stopTime.departureTime - cost;
+                        if (seed >= startTime && seed <= endTime) significantTimes.add(seed);
                     }
                 }
             }
         }
 
+        // Latest-first, so when two seeds yield the same journey criteria the
+        // latest-departure variant is the one that survives dedup.
         const sortedTimes = Array.from(significantTimes).sort((a, b) => b - a);
 
         for (const depTime of sortedTimes) {
@@ -355,41 +466,45 @@ export class McRaptorAlgorithm {
                 allJourneys.push(j);
             }
         }
-        const bestJourneysBySignature = new Map<string, Journey>();
+
+        // Identity-based trip keys: tripId can legitimately be undefined
+        // (vid-only feed rows), and joining undefined yields '' which would
+        // misclassify bus journeys as walking-only.
+        let anonCounter = 0;
+        const tripKeys = new Map<Trip, string>();
+        const keyOf = (trip: Trip): string => {
+            let key = tripKeys.get(trip);
+            if (key === undefined) {
+                key = trip.tripId ?? trip.vid ?? `anon_${anonCounter++}`;
+                tripKeys.set(trip, key);
+            }
+            return key;
+        };
+
+        const dominatesOrEqual = (a: Journey, b: Journey) =>
+            a.criteria.arrivalTime <= b.criteria.arrivalTime &&
+            a.criteria.walkingDistance <= b.criteria.walkingDistance &&
+            a.criteria.transferCount <= b.criteria.transferCount;
+
+        // Keep the full Pareto set per trip signature: journeys on the same
+        // trips can still trade arrival time against walking distance.
+        const journeysBySignature = new Map<string, Journey[]>();
         const walkingJourneys: Journey[] = [];
 
         for (const j of allJourneys) {
-            const tripsSignature = j.legs
-                .filter(l => l.type === 'Trip' && l.trip)
-                .map(l => l.trip!.tripId)
-                .join('|');
-
-            if (!tripsSignature) {
+            const busLegs = j.legs.filter(l => l.type === 'Trip' && l.trip);
+            if (busLegs.length === 0) {
                 walkingJourneys.push(j);
                 continue;
             }
+            const signature = busLegs.map(l => keyOf(l.trip!)).join('|');
 
-            if (!bestJourneysBySignature.has(tripsSignature)) {
-                bestJourneysBySignature.set(tripsSignature, j);
-            } else {
-                const existing = bestJourneysBySignature.get(tripsSignature)!;
-
-                let better = false;
-                if (j.criteria.arrivalTime < existing.criteria.arrivalTime) better = true;
-                else if (j.criteria.arrivalTime === existing.criteria.arrivalTime) {
-                    if (j.criteria.walkingDistance < existing.criteria.walkingDistance) better = true;
-                    else if (j.criteria.walkingDistance === existing.criteria.walkingDistance) {
-                        if (j.criteria.transferCount < existing.criteria.transferCount) better = true;
-                    }
-                }
-
-                if (better) {
-                    bestJourneysBySignature.set(tripsSignature, j);
-                }
-            }
+            const group = journeysBySignature.get(signature) ?? [];
+            if (group.some(existing => dominatesOrEqual(existing, j))) continue;
+            journeysBySignature.set(signature, [...group.filter(existing => !dominatesOrEqual(j, existing)), j]);
         }
 
-        const uniqueJourneys: Journey[] = Array.from(bestJourneysBySignature.values());
+        const uniqueJourneys: Journey[] = Array.from(journeysBySignature.values()).flat();
 
         if (walkingJourneys.length > 0) {
             walkingJourneys.sort((a, b) => a.criteria.arrivalTime - b.criteria.arrivalTime);

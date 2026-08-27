@@ -5,7 +5,10 @@ import { Transfer, Trip, StopID, Time, StopTime } from "./types";
  */
 export type Criteria = {
     arrivalTime: number;
+    /** Penalty-weighted walking time: seconds of walking x walkingPenalty
+     *  (NOT meters). With penalty 0 this is 0 regardless of walk length. */
     walkingDistance: number;
+    /** Number of boardings (a direct ride counts as 1). */
     transferCount: number;
 };
 
@@ -16,8 +19,8 @@ export type Criteria = {
 export class Label {
     /**
      * @param arrivalTime - Time of arrival at this stop.
-     * @param walkingDistance - Cumulative walking distance in meters.
-     * @param transferCount - Number of transfers taken so far.
+     * @param walkingDistance - Cumulative penalty-weighted walking time (seconds x walkingPenalty, not meters).
+     * @param transferCount - Number of boardings taken so far.
      * @param parent - The previous label in the chain (used for backtracking).
      * @param trip - The trip taken to reach this state (if applicable).
      * @param transfer - The transfer used to reach this state (if applicable).

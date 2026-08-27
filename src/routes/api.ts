@@ -1,5 +1,6 @@
 import express from "express";
 import * as path from "path";
+import { fileURLToPath } from "url";
 import * as process from "node:process";
 import axios from "axios";
 import * as z from "zod";
@@ -17,7 +18,37 @@ import { startBackgroundJobs } from '../jobs';
 const router = express.Router();
 const API_KEY = process.env.MBUS_API_KEY;
 
-startBackgroundJobs();
+// Under vitest, tests import the handlers directly and must not spin up the
+// polling loops (network fetches, Firebase init).
+if (process.env.VITEST !== 'true') {
+    startBackgroundJobs();
+}
+
+// Assets resolve relative to this module, not process.cwd(), so the server
+// works regardless of the directory it is launched from.
+const ASSETS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../assets');
+
+/** Parses a request body against a zod schema, answering 400 on failure. */
+function parseBody<S extends z.ZodTypeAny>(schema: S, req: express.Request, res: express.Response): z.infer<S> | null {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+        res.status(400).send(result.error.message);
+        return null;
+    }
+    return result.data;
+}
+
+/** Answers a route-lookup miss. When either feed's route set is still empty
+ *  (startup window, a single-feed outage, or DEV_CACHE mode) an unknown rtid
+ *  cannot be distinguished from a not-yet-loaded one, so signal a retryable
+ *  503; only with both feeds loaded is it a genuine 400. */
+function respondUnknownRoute(rtid: string, res: express.Response): void {
+    if (state.validRoutes.size === 0 || state.validRideRoutes.size === 0) {
+        res.status(503).send(`Route data for ${rtid} is unavailable right now; retry shortly`);
+    } else {
+        res.status(400).send(`Invalid route ${rtid}`);
+    }
+}
 
 /**
  * Returns static route metadata including names, images, and colors.
@@ -129,11 +160,15 @@ router.get('/getFrontendData', getFrontendData);
  */
 export function getVehicleImage(req: express.Request, res: express.Response) {
     const { route } = req.params;
-    const assetPath = path.resolve(process.cwd(), 'src/assets/main2025');
+    const assetPath = path.join(ASSETS_DIR, 'main2025');
 
     const image = meta.getRouteImage(route);
     if (!image) {
-        res.status(400).sendFile(path.join(assetPath, 'bus_CN.png'));
+        // 200, not 400: image loaders discard the body of a non-2xx response,
+        // so the fallback icon would never render.
+        res.status(200).sendFile(path.join(assetPath, 'bus_CN.png'), (err) => {
+            if (err && !res.headersSent) res.status(404).send('Image file not found.');
+        });
         return;
     }
     res.sendFile(path.join(assetPath, image), (err) => {
@@ -149,7 +184,7 @@ router.get('/getVehicleImage/:route', getVehicleImage);
  * @returns JSON file containing building data.
  */
 export function getBuildingLocations(req: express.Request, res: express.Response) {
-    res.sendFile(path.resolve(process.cwd(), 'src/assets/building-data.json'));
+    res.sendFile(path.join(ASSETS_DIR, 'building-data.json'));
 }
 router.get('/getBuildingLocations', getBuildingLocations);
 
@@ -251,8 +286,20 @@ router.get('/getRidePredictions/:busId', getRidePredictions);
  * @param res - Express response
  */
 export function getBusPredictionsLegacy(req: express.Request, res: express.Response) {
-    const url = `https://mbus.ltp.umich.edu/bustime/api/v3/getpredictions?requestType=getpredictions&locale=en&vid=${req.params.busId}&top=4&tmres=s&rtpidatafeed=bustime&key=${API_KEY}&format=json&xtime=1626028950462`;
-    axios.get(url).then(apiRes => {
+    // Params go through URLSearchParams: the path param is user-controlled and
+    // must not be interpolated into a query string that carries the API key.
+    const base = process.env.MBUS_URL || 'https://mbus.ltp.umich.edu/bustime/api/v3/';
+    const params = new URLSearchParams({
+        requestType: 'getpredictions',
+        locale: 'en',
+        vid: req.params.busId,
+        top: '4',
+        tmres: 's',
+        rtpidatafeed: 'bustime',
+        key: API_KEY ?? '',
+        format: 'json',
+    });
+    axios.get(`${base.replace(/\/$/, '')}/getpredictions?${params.toString()}`).then(apiRes => {
         res.send(apiRes.data);
     }).catch(err => {
         console.log(err);
@@ -292,8 +339,9 @@ router.get('/getRideStopPredictions/:stopId', getRideStopPredictions);
  * @returns JSON array of objects, each with `vid` and `stops` (predictions).
  */
 export function getAllPredictions(req: express.Request, res: express.Response) {
-    const now = new Date();
-    const currentTime = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+    // Use the graph's own time frame so countdowns stay correct in the window
+    // after 00:00 UTC while the cached graph still holds pre-midnight times.
+    const currentTime = graphBuilder.currentGraphTimeSeconds();
 
     const reconstructed = state.cachedGraph.trips
         .filter(t => t.vid)
@@ -353,7 +401,8 @@ export function getNearestStops(req: express.Request, res: express.Response) {
         const { lat, lon, k = '2' } = req.query;
         const originLat = parseFloat(lat as string);
         const originLon = parseFloat(lon as string);
-        const numStops = parseInt(k as string);
+        const parsedK = parseInt(k as string);
+        const numStops = Number.isFinite(parsedK) && parsedK > 0 ? parsedK : 2;
 
         const nearest = graphBuilder.findNearestStops(originLat, originLon, numStops);
         res.json({ nearestStops: nearest });
@@ -379,17 +428,34 @@ export async function planJourney(req: express.Request, res: express.Response) {
             return;
         }
 
-        const now = new Date();
-        const secondsSinceMidnight = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+        const oLat = parseFloat(originLat as string);
+        const oLon = parseFloat(originLon as string);
+        const dLat = parseFloat(destLat as string);
+        const dLon = parseFloat(destLon as string);
+        if (![oLat, oLon, dLat, dLon].every(Number.isFinite)) {
+            res.status(400).json({ error: 'coordinates must be numeric' });
+            return;
+        }
+
+        const penalty = walkingPenalty !== undefined ? parseFloat(walkingPenalty as string) : undefined;
+        if (penalty !== undefined && (!Number.isFinite(penalty) || penalty < 0)) {
+            res.status(400).json({ error: 'walkingPenalty must be a non-negative number' });
+            return;
+        }
+
+        const rangeSeconds = range !== undefined ? parseInt(range as string) : undefined;
+        if (rangeSeconds !== undefined && (!Number.isFinite(rangeSeconds) || rangeSeconds < 0)) {
+            res.status(400).json({ error: 'range must be a non-negative number of seconds' });
+            return;
+        }
+
+        // Time in the cached graph's frame (see currentGraphTimeSeconds).
+        const secondsSinceMidnight = graphBuilder.currentGraphTimeSeconds();
 
         const results = await journeyService.planJourney(
-            parseFloat(originLat as string), parseFloat(originLon as string),
-            parseFloat(destLat as string), parseFloat(destLon as string),
+            oLat, oLon, dLat, dLon,
             secondsSinceMidnight,
-            {
-                walkingPenalty: walkingPenalty ? parseFloat(walkingPenalty as string) : undefined,
-                range: range ? parseInt(range as string) : undefined
-            }
+            { walkingPenalty: penalty, range: rangeSeconds }
         );
 
         res.json({ journeys: results });
@@ -429,7 +495,8 @@ router.get('/save-graph', saveGraph);
  */
 export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
-        min_supported_version: "2.0.0",
+        // Matches main: 2.0.2 locks out client versions with a shipped bug.
+        min_supported_version: "2.0.2",
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
         persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
@@ -486,35 +553,33 @@ router.get('/get-key-stops', getKeyStops);
 
 // Notifications / Reminders
 
-const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
+// thresh is minutes: unbounded values (negative, 0, absurd) create reminders
+// whose trigger condition can never be satisfied.
+const ReminderThresh = z.number().min(1).max(120);
+const SetReminderBody = z.object({ token: z.string(), stpid: z.string().min(1), rtid: z.string().min(1), thresh: ReminderThresh });
 /**
  * @param req - Express request, expects `SetReminderBody` in the body
  * @param res - Express response, error message as string if error occurs
  */
 export function setReminder(req: express.Request, res: express.Response) {
-    const result = SetReminderBody.safeParse(req.body);
-    if (!result.success) {
-        res.status(400);
-        res.send(result.error.message);
-    } else {
-        const { token, stpid, rtid, thresh } = result.data;
-        const info = reminderService.infoToUseForRoute(rtid);
-        if (info === null) {
-            res.status(400);
-            res.send(`Invalid route ${rtid}`);
-            return;
-        }
-        const { reminderSubscriptions, predsByStopId } = info;
-        reminderSubscriptions.add(
-            reminderService.baseEvent({ stpid, rtid }),
-            thresh,
-            reminderService.registrationToken(token),
-            predsByStopId,
-            Date.now(),
-        );
-        res.sendStatus(200);
-    }
+    const body = parseBody(SetReminderBody, req, res);
+    if (body === null) return;
 
+    const { token, stpid, rtid, thresh } = body;
+    const info = reminderService.infoToUseForRoute(rtid);
+    if (info === null) {
+        respondUnknownRoute(rtid, res);
+        return;
+    }
+    const { reminderSubscriptions, predsByStopId } = info;
+    reminderSubscriptions.add(
+        reminderService.baseEvent({ stpid, rtid }),
+        thresh,
+        reminderService.registrationToken(token),
+        predsByStopId,
+        Date.now(),
+    );
+    res.sendStatus(200);
 }
 router.post('/setReminder', setReminder);
 
@@ -524,24 +589,20 @@ const UnsetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid:
  * @param res - Express response, error message as string if error occurs
  */
 export function unsetReminder(req: express.Request, res: express.Response) {
-    const result = UnsetReminderBody.safeParse(req.body);
-    if (!result.success) {
-        res.status(400);
-        res.send(result.error.message);
-    } else {
-        const { token ,stpid, rtid } = result.data;
-        const info = reminderService.infoToUseForRoute(rtid);
-        if (info === null) {
-            res.status(400);
-            res.send(`Invalid route ${rtid}`);
-            return;
-        }
-        const { reminderSubscriptions } = info;
-        reminderSubscriptions.remove(
-            reminderService.baseEvent({ stpid, rtid }), reminderService.registrationToken(token)
-        );
-        res.sendStatus(200);
+    const body = parseBody(UnsetReminderBody, req, res);
+    if (body === null) return;
+
+    const { token, stpid, rtid } = body;
+    const info = reminderService.infoToUseForRoute(rtid);
+    if (info === null) {
+        respondUnknownRoute(rtid, res);
+        return;
     }
+    const { reminderSubscriptions } = info;
+    reminderSubscriptions.remove(
+        reminderService.baseEvent({ stpid, rtid }), reminderService.registrationToken(token)
+    );
+    res.sendStatus(200);
 }
 router.post('/unsetReminder', unsetReminder);
 
@@ -554,16 +615,15 @@ const SwapTokenBody = z.object({ oldTok: z.string(), newTok: z.string() });
  * will need the new token
  */
 export function swapToken(req: express.Request, res: express.Response) {
-    const result = SwapTokenBody.safeParse(req.body)
-    if (!result.success) {
-        res.status(400);
-        res.send(result.error.message);
-    } else {
-        const { oldTok, newTok } = req.body;
-        reminderService.universityReminderSubscriptions.swapToken(oldTok, newTok);
-        reminderService.rideReminderSubscriptions.swapToken(oldTok, newTok);
-        res.sendStatus(200);
-    }
+    const body = parseBody(SwapTokenBody, req, res);
+    if (body === null) return;
+
+    // From the validated data, not the raw req.body.
+    const from = reminderService.registrationToken(body.oldTok);
+    const to = reminderService.registrationToken(body.newTok);
+    reminderService.universityReminderSubscriptions.swapToken(from, to);
+    reminderService.rideReminderSubscriptions.swapToken(from, to);
+    res.sendStatus(200);
 }
 router.post('/swapToken', swapToken);
 
@@ -613,7 +673,7 @@ const ModifyRemindersBody = z.object({
     token: z.string(),
     modifications: z.array(
         z.union([
-            z.object({ action: z.literal("set"), stpid: z.string(), rtid: z.string(), thresh: z.number() }),
+            z.object({ action: z.literal("set"), stpid: z.string().min(1), rtid: z.string().min(1), thresh: ReminderThresh }),
             z.object({ action: z.literal("unset"), stpid: z.string(), rtid: z.string() })
         ])
     )
@@ -623,21 +683,22 @@ const ModifyRemindersBody = z.object({
  *  @param res - Express response
  */
 export function modifyReminders(req: express.Request, res: express.Response) {
-    const result = ModifyRemindersBody.safeParse(req.body);
-    if (!result.success) {
-        res.status(400);
-        res.send(result.error.message);
-    } else {
-        const { token, modifications } = result.data;
-        for (const modification of modifications) {
+    const parsed = parseBody(ModifyRemindersBody, req, res);
+    if (parsed === null) return;
+    {
+        const { token, modifications } = parsed;
+        // Validate every route before applying anything, so a bad entry cannot
+        // leave the batch half-applied.
+        const infos = modifications.map(m => reminderService.infoToUseForRoute(m.rtid));
+        const badIndex = infos.findIndex(info => info === null);
+        if (badIndex !== -1) {
+            respondUnknownRoute(modifications[badIndex].rtid, res);
+            return;
+        }
+        for (let i = 0; i < modifications.length; i++) {
+            const modification = modifications[i];
             const event = reminderService.baseEvent({ stpid: modification.stpid, rtid: modification.rtid });
-            const info = reminderService.infoToUseForRoute(modification.rtid);
-            if (info === null) {
-                res.status(400);
-                res.send(`Invalid route ${modification.rtid}`);
-                return;
-            }
-            const { reminderSubscriptions, predsByStopId } = info;
+            const { reminderSubscriptions, predsByStopId } = infos[i]!;
             if (modification.action == "set") {
                 reminderSubscriptions.add(
                     event,
@@ -664,14 +725,16 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
     if (registrationToken === undefined) {
         console.log("got request with no token");
         console.log(req.body);
-        res.send("registration token missing");
-        res.status(400);
+        // status must be set before send: send() flushes the response.
+        res.status(400).send("registration token missing");
         return;
     }
     setTimeout(() => {
         console.log(`sending test push notification to ${registrationToken}`);
         reminderService.sendNotifToAll({ title: "hi", body: "hello world!"}, new Set([registrationToken]));
-    }, 0);
+        // 10s so the tester can background/close the app first: the endpoint
+        // exists to exercise background push delivery.
+    }, 10_000);
     res.sendStatus(200);
 }
 router.post('/notifyMeLater', notifyMeLater);

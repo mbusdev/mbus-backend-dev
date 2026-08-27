@@ -10,8 +10,9 @@ describe('API Endpoints', () => {
             const response = await axios.get(`${BASE_URL}/getBusPositions`);
             console.log(`Server responded to /getBusPositions with status: ${response.status}`);
         } catch (error) {
-            console.error('Server is not running! Please start the server with: `npm start` (or your equivalent command).');
-            process.exit(1); // Exit if the server isn't reachable
+            // throw, not process.exit: exiting kills the whole vitest worker
+            // and silently masks the results of other queued test files.
+            throw new Error('Server is not running on :3000 - start it with: npm start');
         }
     });
 

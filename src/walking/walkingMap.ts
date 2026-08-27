@@ -1,9 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { writeFileSync, readFileSync, existsSync } from "fs";
+import { fileURLToPath } from 'url';
+import { readFileSync, existsSync } from "fs";
 import { GraphMLNode, GraphMLEdge, LandmarkDef } from './types';
-import { haversine, loadMap } from './loadMap';
-import { LRUCache } from 'lru-cache'; 
+import { haversine, loadMap, MAP_FILE } from './loadMap';
+import { MinPriorityQueue } from '@datastructures-js/priority-queue';
+import { LRUCache } from 'lru-cache';
 
 /**
  * Standard response for a single point-to-point walking query.
@@ -29,9 +31,12 @@ export interface BatchWalkingResult {
     nodeDistances: Map<string, number>;
 }
 
-const CACHE_FILE = path.resolve(process.cwd(), 'src/assets/landmark_dist.json');
+// Resolve assets relative to this module, not process.cwd(): the server must
+// work no matter which directory it is launched from.
+const ASSETS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../assets');
+const CACHE_FILE = path.join(ASSETS_DIR, 'landmark_dist.json');
 const WALKING_SPEED_M_S = 5000 / 3600;
-const WALKING_CACHE_PATH = "src/assets/walkingCache.json";
+const WALKING_CACHE_PATH = path.join(ASSETS_DIR, 'walkingCache.json');
 const DEBUG = false;
 const LANDMARK_DISTANCES = new Map<string, Map<string, number>>();
 const LANDMARKS: LandmarkDef[] = [
@@ -50,8 +55,13 @@ let relevantStopNodes = new Set<string>();
 
 let walkingCache: { [key: string]: WalkingResponse } = {};
 
+// Bounded by total retained MAP ENTRIES, not map count: a single Dijkstra
+// result can cover ~99% of the ~52k-node street graph (~2.6 MB retained), so
+// a count-only bound would permit multi-GB heap growth and an eventual OOM.
 const networkDistanceCache = new LRUCache<string, Map<string, number>>({
-    max: 5000,
+    max: 500,
+    maxSize: 2_000_000,
+    sizeCalculation: (distances) => Math.max(1, distances.size),
 });
 
 /**
@@ -86,16 +96,9 @@ function reconstructPath(cameFrom: Map<string, string>, current: string) {
     return total.reverse();
 }
 
-/**
- * Minimal MinHeap implementation for priority queueing in A* and Dijkstra.
- */
-class MinHeap {
-    private arr: { id: string; f: number }[] = [];
-    push(item: { id: string; f: number }) { this.arr.push(item); this._siftUp(); }
-    pop() { if (this.arr.length === 0) return null; const top = this.arr[0]; const last = this.arr.pop()!; if (this.arr.length) { this.arr[0] = last; this._siftDown(); } return top; }
-    size() { return this.arr.length; }
-    private _siftUp() { let i = this.arr.length - 1; while (i > 0) { const p = Math.floor((i - 1) / 2); if (this.arr[i].f >= this.arr[p].f) break;[this.arr[i], this.arr[p]] = [this.arr[p], this.arr[i]]; i = p; } }
-    private _siftDown() { let i = 0; const n = this.arr.length; while (true) { const l = 2 * i + 1; const r = 2 * i + 2; let smallest = i; if (l < n && this.arr[l].f < this.arr[smallest].f) smallest = l; if (r < n && this.arr[r].f < this.arr[smallest].f) smallest = r; if (smallest === i) break;[this.arr[i], this.arr[smallest]] = [this.arr[smallest], this.arr[i]]; i = smallest; } }
+/** Min-heap over {id, f} entries, backed by the shared priority-queue dependency. */
+function makeMinHeap() {
+    return new MinPriorityQueue<{ id: string; f: number }>((item) => item.f);
 }
 
 /**
@@ -107,16 +110,16 @@ class MinHeap {
  */
 function computeDijkstraAll(startId: string, targets?: Set<string>): Map<string, number> {
     const distances = new Map<string, number>();
-    const minHeap = new MinHeap();
+    const minHeap = makeMinHeap();
 
     let targetsFound = 0;
     const totalTargets = targets ? targets.size : 0;
 
     distances.set(startId, 0);
-    minHeap.push({ id: startId, f: 0 });
+    minHeap.enqueue({ id: startId, f: 0 });
 
     while (minHeap.size() > 0) {
-        const { id: u, f: d } = minHeap.pop()!;
+        const { id: u, f: d } = minHeap.dequeue()!;
         if (d > (distances.get(u) ?? Infinity)) continue;
         if (targets && targets.has(u)) {
             targetsFound++;
@@ -129,7 +132,7 @@ function computeDijkstraAll(startId: string, targets?: Set<string>): Map<string,
             const newDist = d + edge.dist;
             if (newDist < (distances.get(edge.to) ?? Infinity)) {
                 distances.set(edge.to, newDist);
-                minHeap.push({ id: edge.to, f: newDist });
+                minHeap.enqueue({ id: edge.to, f: newDist });
             }
         }
     }
@@ -143,10 +146,9 @@ function computeDijkstraAll(startId: string, targets?: Set<string>): Map<string,
  * @returns Path details or null if no path exists.
  */
 async function aStar(startId: string, goalId: string) {
-    const openHeap = new MinHeap();
+    const openHeap = makeMinHeap();
     const gScore = new Map<string, number>();
     const fScore = new Map<string, number>();
-    const inOpen = new Set<string>();
     const cameFrom = new Map<string, string>();
     let explored = 0;
 
@@ -172,13 +174,16 @@ async function aStar(startId: string, goalId: string) {
 
     const initialH = getHeuristic(startId);
     fScore.set(startId, initialH);
-    openHeap.push({ id: startId, f: initialH });
-    inOpen.add(startId);
+    openHeap.enqueue({ id: startId, f: initialH });
 
     while (openHeap.size() > 0) {
         explored++;
-        const cur = openHeap.pop()!;
+        const cur = openHeap.dequeue()!;
         const current = cur.id;
+
+        // Stale heap entry: this node was re-pushed with a better score after
+        // this entry was queued (the heap has no decrease-key).
+        if (cur.f > (fScore.get(current) ?? Infinity)) continue;
 
         if (current === goalId) {
             const pathIds = reconstructPath(cameFrom, current);
@@ -192,7 +197,6 @@ async function aStar(startId: string, goalId: string) {
             return { pathIds, totalDist, explored };
         }
 
-        inOpen.delete(current);
         const neighbors = graphAdjacency.get(current) ?? [];
         for (const edge of neighbors) {
             const tentative_g = (gScore.get(current) ?? Infinity) + edge.dist;
@@ -204,10 +208,8 @@ async function aStar(startId: string, goalId: string) {
                 const f = tentative_g + h;
 
                 fScore.set(edge.to, f);
-                if (!inOpen.has(edge.to)) {
-                    openHeap.push({ id: edge.to, f });
-                    inOpen.add(edge.to);
-                }
+                // Always re-push on improvement; stale entries are skipped on pop.
+                openHeap.enqueue({ id: edge.to, f });
             }
         }
     }
@@ -226,7 +228,11 @@ function saveLandmarkDistances(data: Map<string, Map<string, number>>) {
         }
         output[landmarkId] = distObj;
     }
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(output));
+    // Temp-file + rename so a crash mid-write can never leave a truncated
+    // cache that would fail to parse on the next boot.
+    const tmpPath = `${CACHE_FILE}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(output));
+    fs.renameSync(tmpPath, CACHE_FILE);
     console.log(`Saved cache to ${CACHE_FILE}`);
 }
 
@@ -257,11 +263,27 @@ function initializeGraph() {
     graphAdjacency = graph;
     console.log(`Graph initialized with ${graphNodes.size} nodes.`);
 
-    if (fs.existsSync(CACHE_FILE)) {
+    // The landmark cache is only valid for the graph it was computed from: a
+    // stale cache makes the ALT heuristic inadmissible (A* silently returns
+    // non-shortest paths), so recompute whenever the map file is newer.
+    const landmarksFresh = fs.existsSync(CACHE_FILE)
+        && fs.statSync(CACHE_FILE).mtimeMs >= fs.statSync(MAP_FILE).mtimeMs;
+
+    let landmarksLoaded = false;
+    if (landmarksFresh) {
         console.log('--- Cache Found: Loading Precomputed Distances ---');
-        loadLandmarkDistances();
-    } else {
-        console.log('--- No Cache Found: Starting Computation ---');
+        // A corrupt cache must never prevent boot: fall through to recompute.
+        try {
+            loadLandmarkDistances();
+            landmarksLoaded = true;
+        } catch (err) {
+            console.error('landmark_dist.json is corrupt — recomputing', err instanceof Error ? err.message : err);
+        }
+    }
+    if (!landmarksLoaded) {
+        console.log(fs.existsSync(CACHE_FILE)
+            ? '--- Landmark cache is stale or corrupt: Recomputing ---'
+            : '--- No Cache Found: Starting Computation ---');
         const t0 = performance.now();
 
         for (const lm of LANDMARKS) {
@@ -285,11 +307,27 @@ function initializeGraph() {
  * This optimizes future lookups by caching the StopID -> NodeID relationship.
  * @param locations - A map of StopID to {lat, lon}.
  */
+let stopNodeMapSignature: string | null = null;
+
 export function buildStopNodeMap(locations: Record<string, { lat: number, lon: number }>) {
     if (graphNodes.size === 0) initializeGraph();
 
+    // The stop->node mapping is a pure function of (locations, static graph):
+    // skip the O(stops x nodes) rebuild AND the Dijkstra cache wipe when the
+    // stop set hasn't changed (initializeRoutes calls this every 60s).
+    const signature = Object.keys(locations).sort()
+        .map(id => `${id}:${locations[id].lat},${locations[id].lon}`).join(';');
+    // Only short-circuit on a non-empty prior mapping: recomputing an empty
+    // one is free, and this avoids preserving an empty map across an
+    // in-process graph re-initialization.
+    if (signature === stopNodeMapSignature && Object.keys(stopNodeMap).length > 0) return;
+    stopNodeMapSignature = signature;
+
     stopNodeMap = {};
     relevantStopNodes.clear();
+    // Cached Dijkstra results were computed with early exit against the old
+    // target set and may lack distances for stops added by this rebuild.
+    networkDistanceCache.clear();
     let mappedCount = 0;
     Object.entries(locations).forEach(([stopId, loc]) => {
         const nearest = nearestNode(graphNodes, loc.lat, loc.lon);
@@ -476,52 +514,57 @@ export async function ensureCacheForStops(
     stopIds: Set<string>,
     stopLocations: Record<string, { lat: number, lon: number }>
 ): Promise<void> {
-
-    const fetchPromises: Promise<void>[] = [];
-    let cacheWasUpdated = false;
-
     console.log(`Verifying cache for ${stopIds.size} stops...`);
 
+    const missing: Array<{ cacheKey: string, loc1: { lat: number, lon: number }, loc2: { lat: number, lon: number } }> = [];
     for (const id1 of stopIds) {
         for (const id2 of stopIds) {
             if (id1 === id2) continue;
-
             const cacheKey = `${id1}_TO_${id2}`;
-
-            if (!walkingCache[cacheKey]) {
-                const loc1 = stopLocations[id1];
-                const loc2 = stopLocations[id2];
-
-                if (loc1 && loc2) {
-                    cacheWasUpdated = true;
-
-                    const p = (async () => {
-                        try {
-                            const data = await getWalkingResponse(loc1.lat, loc1.lon, loc2.lat, loc2.lon);
-                            walkingCache[cacheKey] = data;
-                        } catch (err) {
-                            walkingCache[cacheKey] = { duration: 60000, distance: 0, path_coords: [] };
-                        }
-                    })();
-
-                    fetchPromises.push(p);
-                }
-            }
+            if (walkingCache[cacheKey]) continue;
+            const loc1 = stopLocations[id1];
+            const loc2 = stopLocations[id2];
+            if (loc1 && loc2) missing.push({ cacheKey, loc1, loc2 });
         }
     }
 
-    if (fetchPromises.length > 0) {
-        console.log(`Computing ${fetchPromises.length} new paths...`);
-        await Promise.all(fetchPromises);
-    }
+    if (missing.length === 0) return;
+    console.log(`Computing ${missing.length} new paths...`);
 
-    if (cacheWasUpdated) {
+    let computed = 0;
+    for (let i = 0; i < missing.length; i++) {
+        const { cacheKey, loc1, loc2 } = missing[i];
         try {
-            writeFileSync(WALKING_CACHE_PATH, JSON.stringify(walkingCache, null, 2));
-            console.log(`WalkingManager: Cache updated on disk. Total entries: ${Object.keys(walkingCache).length}`);
+            walkingCache[cacheKey] = await getWalkingResponse(loc1.lat, loc1.lon, loc2.lat, loc2.lon);
+            computed++;
         } catch (err) {
-            console.error("WalkingManager: Failed to write cache to disk", err);
+            // Leave the pair uncached so it is retried on the next cycle; a
+            // poisoned sentinel would otherwise be persisted forever.
+            console.warn(`WalkingManager: failed to compute ${cacheKey}, will retry later`);
         }
+        // The path searches are pure CPU: yield to the event loop regularly so
+        // HTTP requests and interval jobs are not starved for minutes when the
+        // cache is cold.
+        if ((i + 1) % 20 === 0) await new Promise(resolve => setImmediate(resolve));
+    }
+
+    if (computed > 0) await persistWalkingCache();
+}
+
+async function persistWalkingCache(): Promise<void> {
+    // Never write from tests: a plain `npm test` must not dirty the tracked
+    // cache file.
+    if (process.env.VITEST === 'true') return;
+    try {
+        // Compact JSON (the file is hundreds of MB) written to a temp file and
+        // renamed, so a crash mid-write can never leave a truncated cache that
+        // would fail to parse on the next boot.
+        const tmpPath = `${WALKING_CACHE_PATH}.tmp`;
+        await fs.promises.writeFile(tmpPath, JSON.stringify(walkingCache));
+        await fs.promises.rename(tmpPath, WALKING_CACHE_PATH);
+        console.log(`WalkingManager: cache persisted (${Object.keys(walkingCache).length} entries)`);
+    } catch (err) {
+        console.error("WalkingManager: failed to write cache to disk", err);
     }
 }
 
@@ -537,9 +580,25 @@ export function getCachedWalk(originId: string, destId: string): WalkingResponse
 
 initializeGraph();
 if (existsSync(WALKING_CACHE_PATH)) {
-    const file = readFileSync(WALKING_CACHE_PATH, "utf8");
-    Object.assign(walkingCache, JSON.parse(file));
-    console.log("Loaded walkingCache.json");
+    // A corrupt cache must never prevent boot (this runs at module import);
+    // fall back to an empty cache and let it rebuild.
+    try {
+        const file = readFileSync(WALKING_CACHE_PATH, "utf8");
+        const loaded: Record<string, WalkingResponse> = JSON.parse(file);
+        // Drop entries poisoned by the old error sentinel or otherwise invalid so
+        // they get recomputed instead of routing around a 16-hour "walk".
+        let dropped = 0;
+        for (const [key, value] of Object.entries(loaded)) {
+            if (!Number.isFinite(value?.duration) || value.duration >= 60000) {
+                dropped++;
+                continue;
+            }
+            walkingCache[key] = value;
+        }
+        console.log(`Loaded walkingCache.json${dropped > 0 ? ` (dropped ${dropped} invalid entries)` : ''}`);
+    } catch (err) {
+        console.error("walkingCache.json is corrupt — starting with an empty cache and rebuilding", err instanceof Error ? err.message : err);
+    }
 } else {
     console.log("walkingCache.json does not exist — using empty cache");
 }
