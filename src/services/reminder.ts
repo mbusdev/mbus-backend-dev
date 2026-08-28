@@ -9,8 +9,10 @@ export * from "./reminderTypes";
 
 dotenv.config()
 
-// Initialize Firebase
-initializeApp({ credential: applicationDefault() });
+export function initializeReminders() {
+    // Initialize Firebase
+    initializeApp({ credential: applicationDefault() });
+}
 
 /** Waiting for a prediction of the right `event` to have a arrival timestamp that is at or after `mustBeAfter` and an
  *  arrival time less than `thresh`. A bus is xx minutes from the stop notification is then sent. To handle delayed and
@@ -61,7 +63,7 @@ function prdctdnToNum(prdctdn: string): number {
 }
 
 /** result of ReminderSubscriptons.process */
-type RemindersToTrigger = {
+export type RemindersToTrigger = {
     /** can be sent in bulk based off of route, stop, and threshold (or route, stop, and prdctdn) */
     reminder: Map<Key<ThresholdEvent>, Set<RegistrationToken>>,
     /** can be sent in bulk based off of what route and stop */
@@ -74,12 +76,15 @@ type RemindersToTrigger = {
 };
 
 /** Subscriptions go through a pipeline, see types above for details. */
-class ReminderSubscriptions {
+export class ReminderSubscriptions {
     subscriptions: Array<{
         token: RegistrationToken, subscription: PreThreshold | PostThreshold
-    }>
+    }>;
+    pure: boolean;
 
-    constructor() {
+    /** set mock to true for tests that don't involve firebase */
+    constructor(options: { mock: boolean }) {
+        this.pure = options.mock;
         this.subscriptions = [];
     }
 
@@ -87,7 +92,14 @@ class ReminderSubscriptions {
         event and token are removed.
         REQUIRES: `predsByStopId` has predictions sorted by arrival timestamp
     */
-    add(event: BaseEvent, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
+    add(
+        event: BaseEvent,
+        thresh: number,
+        token: RegistrationToken,
+        predsByStopId: Record<string, state.Prediction[]>,
+        now: number,
+        options?: { noUpdate: boolean },
+    ) {
         console.log("Adding a reminder subscription");
         const predictions = predsByStopId[event.stpid];
         const subscription = preThreshold(event, thresh, null, now);
@@ -103,18 +115,19 @@ class ReminderSubscriptions {
             }
         }
         // remove existing
-        this.remove(event, token, true);
+        this.remove(event, token, { noUpdate: true });
         this.subscriptions.push({ token, subscription });
+        if (options?.noUpdate || this.pure) return;
         sendReminderUpdateToAll(new Set([token]));
     }
 
     /** removes all subscriptions that involve both `event` and `token` */
-    remove(event: BaseEvent, token: RegistrationToken, noUpdate?: boolean) {
+    remove(event: BaseEvent, token: RegistrationToken, options?: { noUpdate: boolean }) {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
             .filter((s) => s.token != token || !eventsEqual(s.subscription.event, event))
-        if (!noUpdate)
-            sendReminderUpdateToAll(new Set([token]));
+        if (options?.noUpdate || this.pure) return;
+        sendReminderUpdateToAll(new Set([token]));
     }
 
     /**  updates the status of all registrations, returning an object representing the
@@ -323,8 +336,8 @@ class ReminderSubscriptions {
     }
 }
 
-export const universityReminderSubscriptions = new ReminderSubscriptions();
-export const rideReminderSubscriptions = new ReminderSubscriptions();
+export const universityReminderSubscriptions = new ReminderSubscriptions({ mock: false});
+export const rideReminderSubscriptions = new ReminderSubscriptions({ mock: false});
 
 export function processUniversityReminders() {
     try {
@@ -365,7 +378,7 @@ function processRemindersHelper(
     reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
     predsByVid: Record<string, state.Prediction[] | undefined>,
-    stopIdToName: Record<string, string>
+    stopIdToName: Record<string, string>,
 ) {
     const notifications = reminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {

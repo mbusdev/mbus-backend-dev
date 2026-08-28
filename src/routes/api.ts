@@ -430,8 +430,8 @@ router.get('/save-graph', saveGraph);
 export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
         min_supported_version: "2.0.0",
-        why_update_message: { title: "New Update Available", subtitle: "Please update to the latest version." },
-        persistant_message: { title: "", subtitle: "" },
+        why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
+        persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
         bus_image_version: "1",
     });
@@ -567,7 +567,12 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-type ActiveReminderInfo = { stpid: string, rtid: string, thresh: number | null, eta: number | null };
+export interface ActiveReminderInfo {
+    stpid: string
+    rtid: string
+    thresh: number | null
+    eta: number | null
+};
 
 /**
  * @param req - Express request, token is path encoded

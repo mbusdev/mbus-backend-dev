@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const RIDE_API_KEY = process.env.RIDE_API_KEY;
-const BASE_URL = 'https://rt.theride.org/bustime/api/v3/';
+const BASE_URL = process.env.RIDE_URL || 'https://rt.theride.org/bustime/api/v3/';
 
 const client = axios.create({
     baseURL: BASE_URL,

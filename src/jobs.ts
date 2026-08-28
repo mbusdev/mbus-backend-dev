@@ -1,11 +1,12 @@
 import { updateBusPositions, initializeRoutes, rebuildGraph } from './services/graphBuilder';
-import { processRideReminders, processUniversityReminders } from './services/reminder';
+import { initializeReminders, processRideReminders, processUniversityReminders } from './services/reminder';
 
 /**
  * Starts background jobs for updating bus positions, initializing routes, and rebuilding the graph.
  */
 export function startBackgroundJobs() {
     return;
+    initializeReminders();
     initializeRoutes().then(() => {
         console.log("Routes initialized. Building initial graph...");
         rebuildGraph();
