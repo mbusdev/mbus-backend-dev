@@ -120,8 +120,12 @@ const FormattedLegBusSchema = z.object({
             .meta({ id: 'FormattedLegBusPathRouteSegment' })
     ),
     stopCoords: z.array(
-        z.object({ rt: z.nullable(z.string()), location: LatLonSchema })
-            .meta({ id: 'FormattedLegBusStopCoord' })
+        z.object({
+            rt: z.nullable(z.string()),
+            location: LatLonSchema,
+            segmentIdx: z.number(),
+            idxInSegment: z.number()
+        }).meta({ id: 'FormattedLegBusStopCoord' })
     ),
     mode: z.literal('bus'),
     stopTimes: z.array(StopTimeSchema),
@@ -172,7 +176,7 @@ async function processJourneys(
         if (!isWalk) {
             // fallback to route of the first stop or the route associated with the trip id
             const rt: string | undefined = leg.rt || leg.trip.stopTimes[0].rt || state.tatripidToRt[leg.trip.tripId];
-            const { paths, stops } = getBusLegPolyline(leg);
+            const { segments, stops } = getBusLegPolyline(leg);
             formattedLeg = {
                 ...formattedLegCommon,
                 mode: 'bus',
@@ -181,7 +185,7 @@ async function processJourneys(
                 tripId: leg.trip.tripId,
                 vid: leg.trip.vid,
                 rt: rt ?? 'UNKNOWN',
-                busPathSegments: paths,
+                busPathSegments: segments,
                 stopCoords: stops,
             };
         } else {
@@ -232,8 +236,8 @@ async function processJourneys(
 }
 
 function getBusLegPolyline(leg: JourneyLegTrip): {
-    paths: Array<{ rt: string | null, path: LatLon[] }>,
-    stops: Array<{ rt: string | null, location: LatLon }>
+    segments: Array<{ rt: string | null, path: LatLon[] }>,
+    stops: Array<{ rt: string | null, location: LatLon, segmentIdx: number, idxInSegment: number }>
 } {
     // the + 1 is in case the use of rounding w/ dep/arr times ever does something in the future
     // (should all be whole numbers currently)
@@ -250,9 +254,19 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
 
     const fallback = (() => {
         const fallbackStopPoints = relevantSts
-            .map((st) => { return { rt: st.rt ?? null, location: state.cachedStopLocations[st.stop] }; });
+            .map((st, i) => {
+                return {
+                    rt: st.rt ?? null,
+                    location: state.cachedStopLocations[st.stop],
+                    segmentIdx: i, // first (and only) point of each segment
+                    idxInSegment: 0,
+                };
+            });
         // the whole path should get rendered with the transfer route style if falling back
-        return { paths: fallbackStopPoints.map((x) => { return { rt: x.rt, path: [x.location] }; }), stops: fallbackStopPoints };
+        return {
+            segments: fallbackStopPoints.map((x) => { return { rt: x.rt, path: [x.location] }; }),
+            stops: fallbackStopPoints,
+        };
     })();
     // debug: show fallback
     // return fallback;
@@ -289,20 +303,37 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
         .filter((x) => x !== null);
 
     return pathEdges.reduce<ReturnType<typeof getBusLegPolyline>>(
-        ({ paths, stops }, edge) => {
-            if (!paths.length || paths[paths.length - 1].rt !== edge.rt) {
-                if (edge.path.length > 0)
-                    stops.push({ rt: edge.rt, location: edge.path[0] });
-                if (edge.path.length > 1)
-                    stops.push({ rt: edge.rt, location: edge.path[edge.path.length - 1] });
-                paths.push(edge);
-                return { paths, stops };
+        ({ segments, stops }, edge) => {
+            // start a new segment
+            if (!segments.length || segments[segments.length - 1].rt !== edge.rt) {
+                // add both stops of `edge` if present
+                const edgeStart = edge.path.length > 0
+                    ? [{ rt: edge.rt, location: edge.path[0], segmentIdx: segments.length, idxInSegment: 0 }]
+                    : [];
+                const edgeEnd = edge.path.length > 1
+                    ? [{
+                        rt: edge.rt,
+                        location: edge.path[edge.path.length - 1],
+                        segmentIdx: segments.length,
+                        idxInSegment: edge.path.length - 1,
+                    }]
+                    : [];
+                return { segments: [...segments, edge], stops: [...stops, ...edgeStart, ...edgeEnd]};
             }
-            paths[paths.length - 1].path.push(...edge.path.slice(1));
-            if (edge.path.length > 1)
-                stops.push({ rt: edge.rt, location: edge.path[edge.path.length - 1] });
-            return { paths, stops };
+            // extend the existing segment
+            // starting point is already included in previously added edge
+            segments[segments.length - 1].path.push(...edge.path.slice(1)); 
+            // add ending stop of `edge`
+            const edgeEnd = edge.path.length > 1
+                ? [{
+                    rt: edge.rt,
+                    location: edge.path[edge.path.length - 1],
+                    segmentIdx: segments.length - 1,
+                    idxInSegment: segments[segments.length - 1].path.length - 1,
+                }]
+                : [];
+            return { segments, stops: [...stops, ...edgeEnd] };
         },
-        { paths: [], stops: [] },
+        { segments: [], stops: [] },
     );
 }
