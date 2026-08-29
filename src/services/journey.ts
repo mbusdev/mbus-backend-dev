@@ -239,7 +239,7 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
     segments: Array<{ rt: string | null, path: LatLon[] }>,
     stops: Array<{ rt: string | null, location: LatLon, segmentIdx: number, idxInSegment: number }>
 } {
-    // the + 1 is in case the use of rounding w/ dep/arr times ever does something in the future
+    // the - 1 is in case the use of rounding w/ dep/arr times ever does something in the future
     // (should all be whole numbers currently)
     const relevantSts = (() => {
         // debug: see whole trip
@@ -247,9 +247,9 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
 
         // find the subset of the trip that will actually be ridden on
         const sts = leg.trip.stopTimes;
-        const relevantStart = sts.findIndex((st) => st.departureTime <= leg.startTime + 1 && st.stop === leg.originID);
+        const relevantStart = sts.findIndex((st) => st.departureTime >= leg.startTime - 1 && st.stop === leg.originID);
         const relevantEnd = sts.findIndex((st, i) => i > relevantStart && st.stop === leg.destinationID);
-        return relevantStart != -1 && relevantEnd != -1 ? sts.slice(relevantStart, relevantEnd) : sts;
+        return relevantStart != -1 && relevantEnd != -1 ? sts.slice(relevantStart, relevantEnd + 1) : sts;
     })();
 
     const fallback = (() => {
