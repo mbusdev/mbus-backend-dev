@@ -15,6 +15,7 @@ jobs:
         working-directory: ${{ github.workspace }}
       - name: Test Suite
         run: |
+          export DOCUMENTED=1
           export MBUS_URL=https://mbus.bustime.mock.mb.thething.fyi/
           export RIDE_URL=https://ride.bustime.mock.mb.thething.fyi/
           npm start &
@@ -58,7 +59,7 @@ jobs:
       - name: Build Docs
         run: npx typedoc --entryPointStrategy expand ./src --treatWarningsAsErrors
         working-directory: ${{ github.workspace }}
-      - name: Sync files
+      - name: Sync Files
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -67,3 +68,30 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ${{ github.workspace }}/docs/
           server-dir: ${{ github.ref }}/typedoc/
+
+  OpenAPI:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+      - name: NPM Install
+        run: npm i
+        working-directory: ${{ github.workspace }}
+      - name: Build Spec
+        run: |
+          export DOCUMENTED=1
+          export DOCUMENTED_OUTPUT_FILE=openapi/spec.json
+          export DOCUMENTED_EXIT_ON_OUTPUT=1
+          mkdir openapi
+          npm start
+        working-directory: ${{ github.workspace }}
+      - name: Sync Files
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          port: ${{ secrets.FTP_PORT }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ github.workspace }}/openapi/
+          server-dir: ${{ github.ref }}/openapi/
+    
