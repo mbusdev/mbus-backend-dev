@@ -4,6 +4,7 @@ import { writeFileSync, readFileSync, existsSync } from "fs";
 import { GraphMLNode, GraphMLEdge, LandmarkDef } from './types';
 import { haversine, loadMap } from './loadMap';
 import { LRUCache } from 'lru-cache'; 
+import { faker } from '@faker-js/faker';
 
 /**
  * Standard response for a single point-to-point walking query.
@@ -336,6 +337,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
     const result = await aStar(nearestStart.id, nearestGoal.id);
 
     let pathCoords: { lat: number, lon: number }[] = [];
+    let directions: WalkingResponse['directions'] = [];
     let meters: number;
     let seconds: number;
 
@@ -356,10 +358,23 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
 
         pathCoords.push({ lat: originLat, lon: originLon });
 
+        const addDirection = () => {
+            if (Math.random() < 0.1) {
+                directions.push({
+                    path_index: pathCoords.length - 1,
+                    turn: {
+                        degrees: Math.random() * 360 - 180,
+                        landmark: faker.location.street()
+                    }
+                })
+            }
+        };
+
         if (result.pathIds.length > 0) {
             // Add start node
             const startNode = graphNodes.get(result.pathIds[0])!;
             pathCoords.push({ lat: startNode.lat, lon: startNode.lon });
+            addDirection();
 
             for (let i = 0; i < result.pathIds.length - 1; i++) {
                 const currId = result.pathIds[i];
@@ -371,11 +386,13 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
                 if (edge && edge.geometry && edge.geometry.length > 0) {
                     for (let k = 1; k < edge.geometry.length; k++) {
                         pathCoords.push(edge.geometry[k]);
+                        addDirection();
                     }
                 } else {
                     // draw line to next node
                     const nextNode = graphNodes.get(nextId)!;
                     pathCoords.push({ lat: nextNode.lat, lon: nextNode.lon });
+                    addDirection();
                 }
             }
         }
@@ -387,6 +404,7 @@ export async function getWalkingResponse(originLat: number, originLon: number, d
         distance: meters,
         duration: seconds,
         path_coords: pathCoords,
+        directions,
     };
 }
 
@@ -508,7 +526,9 @@ export async function ensureCacheForStops(
                             const data = await getWalkingResponse(loc1.lat, loc1.lon, loc2.lat, loc2.lon);
                             walkingCache[cacheKey] = data;
                         } catch (err) {
-                            walkingCache[cacheKey] = { duration: 60000, distance: 0, path_coords: [] };
+                            walkingCache[cacheKey] = {
+                                duration: 60000, distance: 0, path_coords: [], directions: []
+                            };
                         }
                     })();
 
