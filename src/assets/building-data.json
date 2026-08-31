@@ -2356,5 +2356,23 @@
     "address": "201 Observatory St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
+  },
+  {
+    "buildingName": "Hadley Family Recreation and Well-being Center",
+    "abbrev": "HFRWC",
+    "lat": 42.27819050742687, 
+    "long": -83.73262719446947,
+    "address": "401 Washtenaw Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Wolverine Village",
+    "abbrev": "",
+    "lat": 42.26962296435815, 
+    "long": -83.7452066241159, 
+    "address": "355 Hill St, Ann Arbor, MI 48104",
+    "altName": "",
+    "plusCode": ""
   }
 ]
