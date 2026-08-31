@@ -189,27 +189,15 @@ export function getRidePositions(req: express.Request, res: express.Response) {
 }
 router.get('/getRidePositions', getRidePositions);
 
-/**
- * Returns all cached route patterns.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `routes` mapping route IDs to patterns.
- */
-export function getAllRoutes(req: express.Request, res: express.Response) {
-    res.json({ routes: state.cachedRoutes });
-}
-router.get('/getAllRoutes', getAllRoutes);
+// remove when mb2 support is dropped
+router.get('/getAllRoutes', (_, res) => {
+    res.json({ routes: state.cachedRoutesLegacy })
+});
 
-/**
- * Returns all cached ride route patterns.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `routes` mapping route IDs to patterns.
- */
-export function getAllRideRoutes(req: express.Request, res: express.Response) {
-    res.json({ routes: state.cachedRideRoutes });
-}
-router.get('/getAllRideRoutes', getAllRideRoutes);
+// remove when mb2 support is dropped
+router.get('/getAllRideRoutes', (_, res) => {
+    res.json({ routes: state.cachedRideRoutesLegacy });
+});
 
 /**
  * Returns the route timing cache used for extrapolation.
@@ -382,7 +370,7 @@ documented.addGetRoute(
                 .transform((x) => x === undefined ? undefined : parseInt(x))
                 .pipe(z.optional(z.number())),
         }),
-        resBody: z.any(),
+        resBody: z.object({ journeys: z.array(journeyService.ProcessedJourneySchema) }),
     },
     async (_, { originLat, originLon, destLat, destLon, walkingPenalty, range }) => {
         try {
