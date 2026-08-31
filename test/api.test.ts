@@ -207,6 +207,7 @@ describe('API Endpoints', () => {
                 expect(error.response.status).toBe(400);
                 expect(error.response.data).toHaveProperty('error');
                 expect(error.response.data.error).toContain('invalid query params');
+                expect(error.response.data.error).toContain('destLat: Invalid input');
                 console.log('GET /plan-journey (missing params): Correctly returned 400.');
             } else {
                 throw error;
