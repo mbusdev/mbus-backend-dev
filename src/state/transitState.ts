@@ -7,6 +7,7 @@ export const curBusPositions = { buses: [] as any[] };
 /** Current positions of all ride buses. */
 export const curRidePositions = { buses: [] as any[] };
 /** Cache of route patterns and static data. */
+// TODO: rename to cachedMbusRoutes
 export const cachedRoutes: Record<string, bustime.BusRouteLine[]> = {};
 /** Cache of route patterns and static data for the ride. */
 export const cachedRideRoutes: Record<string, bustime.BusRouteLine[]> = {};
