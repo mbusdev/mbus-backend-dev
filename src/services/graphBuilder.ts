@@ -217,12 +217,13 @@ function buildStopToStopPaths() {
                     const to = rt.stops[i];
                     const key = toKey({ rt: rtId, from: from.stop.id, to: to.stop.id });
                     if (data.has(key)) continue;
-                    data.set(key, rt.points.slice(from.index, to.index));
+                    data.set(key, rt.points.slice(from.index, to.index + 1));
                 }
             }
         }
     }
 }
+
 
 /**
  * Processes raw prediction chunks into a structured format.

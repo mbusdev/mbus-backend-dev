@@ -271,21 +271,6 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
     // debug: show fallback
     // return fallback;
 
-    // relevant portion should always be one route in practice but trips do often contain multiple (e.g. CN->CS)
-    // and this remains supported
-    const lines = (() => {
-        const routes = new Set<string>();
-        relevantSts
-            .map((st) => st.rt)
-            .filter((rt) => rt !== undefined)
-            .forEach((rt) => routes.add(rt));
-        return Array.from(routes).flatMap((r) => state.cachedRoutes[r]);
-    })();
-    if (!lines.length) {
-        console.warn('getBusLegPolyline had to use fallback: no route info');
-        return fallback;
-    }
-
     if (!relevantSts.length) {
         console.warn('getBusLegPolyline had to use fallback: no relevant stop times');
         return fallback;
@@ -294,10 +279,16 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
     const pathEdges = relevantSts
         .slice(1)
         .map(({ rt, stop: to }, i) => {
-            if (!rt) return null;
+            if (!rt) {
+                console.log(`NO ROUTE (for link to ${to})`)
+                return null;
+            }
             const from = relevantSts[i].stop;
             const path = state.cachedStopToStopPaths.get(toKey({ rt: rt, from, to }));
-            if (!path) return null;
+            if (!path) {
+                console.log(`NO PATH FOUND from ${from} to ${to}`);
+                return null;
+            }
             return { rt, path };
         })
         .filter((x) => x !== null);
@@ -305,7 +296,12 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
     return pathEdges.reduce<ReturnType<typeof getBusLegPolyline>>(
         ({ segments, stops }, edge) => {
             // start a new segment
-            if (!segments.length || segments[segments.length - 1].rt !== edge.rt) {
+            const lastSegment = segments.at(-1);
+            const existingEnd = lastSegment?.path.at(-1);
+            const newStart = edge.path[0];
+            if (!segments.length || lastSegment!.rt !== edge.rt
+                || existingEnd!.lat !== newStart.lat || existingEnd!.lon !== newStart.lon
+            ) {
                 // add both stops of `edge` if present
                 const edgeStart = edge.path.length > 0
                     ? [{ rt: edge.rt, location: edge.path[0], segmentIdx: segments.length, idxInSegment: 0 }]
@@ -313,7 +309,7 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
                 const edgeEnd = edge.path.length > 1
                     ? [{
                         rt: edge.rt,
-                        location: edge.path[edge.path.length - 1],
+                        location: edge.path.at(-1)!,
                         segmentIdx: segments.length,
                         idxInSegment: edge.path.length - 1,
                     }]
@@ -322,17 +318,18 @@ function getBusLegPolyline(leg: JourneyLegTrip): {
             }
             // extend the existing segment
             // starting point is already included in previously added edge
-            segments[segments.length - 1].path.push(...edge.path.slice(1)); 
+            const newSegments = segments
+                .with(-1, { rt: lastSegment!.rt, path: [...lastSegment!.path, ...edge.path.slice(1)] });
             // add ending stop of `edge`
             const edgeEnd = edge.path.length > 1
                 ? [{
                     rt: edge.rt,
-                    location: edge.path[edge.path.length - 1],
-                    segmentIdx: segments.length - 1,
-                    idxInSegment: segments[segments.length - 1].path.length - 1,
+                    location: edge.path.at(-1)!,
+                    segmentIdx: newSegments.length - 1,
+                    idxInSegment: newSegments.at(-1)!.path.length - 1,
                 }]
                 : [];
-            return { segments, stops: [...stops, ...edgeEnd] };
+            return { segments: newSegments, stops: [...stops, ...edgeEnd] };
         },
         { segments: [], stops: [] },
     );
