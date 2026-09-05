@@ -433,6 +433,7 @@ export function getStartupInfo(req: express.Request, res: express.Response) {
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
         persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
+        banner_message: { url: "", shortTitle: "", latitude: 0.0, longitude: 0.0 },
         bus_image_version: "1",
     });
 }
