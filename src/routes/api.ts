@@ -434,7 +434,7 @@ export function getStartupInfo(req: express.Request, res: express.Response) {
         persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
         // lat/lon specify a pin to show on the map, showTime/endTime should be either empty or in ISO format
-        banner_message: { url: "", shortTitle: "", latitude: 0.0, longitude: 0.0, showTime: "", endTime: "" },
+        banner_message: { url: "https://www.maizebus.com/#/banner", shortTitle: "JOIN", latitude: 42.292930691849016, longitude:-83.71724869801525, showTime: "2026-09-16T03:40:00Z", endTime: "2026-09-17T00:00:00Z" },
         bus_image_version: "1",
     });
 }
