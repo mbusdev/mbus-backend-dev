@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2020",
+        "lib": ["es2020"],
         "module": "esnext",
         "moduleResolution": "Node",
         "esModuleInterop": true,
@@ -13,7 +14,8 @@
             "@/*": [
                 "./src/*"
             ]
-        }
+        },
+        "types": ["node"]
     },
     "exclude": [
         "src/legacy"

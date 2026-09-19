@@ -1,0 +1,778 @@
+[
+  {
+    "ID": "695043656",
+    "lat": "42.2783675",
+    "long": "-83.7483939",
+    "buildingName": "Real Seafood Company",
+    "address": "341 South Main Street"
+  },
+  {
+    "ID": "1828938332",
+    "lat": "42.2786688",
+    "long": "-83.7484752",
+    "buildingName": "Mir's Oriental Rugs",
+    "address": "331 South Main Street"
+  },
+  {
+    "ID": "2344584598",
+    "lat": "42.2804201",
+    "long": "-83.7494254",
+    "buildingName": "The Earle",
+    "address": "121 West Washington Street"
+  },
+  {
+    "ID": "2344584607",
+    "lat": "42.2801125",
+    "long": "-83.7483445",
+    "buildingName": "The Ravens Club",
+    "address": "207 South Main Street"
+  },
+  {
+    "ID": "2344584611",
+    "lat": "42.2804042",
+    "long": "-83.7493436",
+    "buildingName": "Logan",
+    "address": "115 West Washington Street"
+  },
+  {
+    "ID": "2758567958",
+    "lat": "42.2806364",
+    "long": "-83.7496376",
+    "buildingName": "Grizzly Peak Brewing Company",
+    "address": "120 West Washington Street"
+  },
+  {
+    "ID": "2758567965",
+    "lat": "42.2808164",
+    "long": "-83.7496447",
+    "buildingName": "Old German",
+    "address": "117 South Ashley Street"
+  },
+  {
+    "ID": "2760098963",
+    "lat": "42.2796856",
+    "long": "-83.7484035",
+    "buildingName": "Cherry Republic",
+    "address": "223 South Main Street"
+  },
+  {
+    "ID": "2760098965",
+    "lat": "42.2791598",
+    "long": "-83.7484551",
+    "buildingName": "Jolly Pumpkin",
+    "address": "311 South Main Street"
+  },
+  {
+    "ID": "2760098967",
+    "lat": "42.2792743",
+    "long": "-83.7484555",
+    "buildingName": "Shalimar",
+    "address": "307 South Main Street"
+  },
+  {
+    "ID": "2760098968",
+    "lat": "42.2793785",
+    "long": "-83.7484345",
+    "buildingName": "Ten Thousand Villages",
+    "address": "303 South Main Street"
+  },
+  {
+    "ID": "2760098969",
+    "lat": "42.2794671",
+    "long": "-83.7487946",
+    "address": "300 South Main Street"
+  },
+  {
+    "ID": "2760098970",
+    "lat": "42.2774895",
+    "long": "-83.7489299",
+    "buildingName": "The Jagged Fork",
+    "address": "414 South Main Street"
+  },
+  {
+    "ID": "2760098971",
+    "lat": "42.2777520",
+    "long": "-83.7490459",
+    "buildingName": "Mobil",
+    "address": "402 South Main Street"
+  },
+  {
+    "ID": "2760098972",
+    "lat": "42.2777083",
+    "long": "-83.7491881",
+    "buildingName": "Main Street Convenience",
+    "address": "402 South Main Street"
+  },
+  {
+    "ID": "2760098973",
+    "lat": "42.2782782",
+    "long": "-83.7484439",
+    "buildingName": "Palio",
+    "address": "347 South Main Street"
+  },
+  {
+    "ID": "2760098974",
+    "lat": "42.2794195",
+    "long": "-83.7487949",
+    "buildingName": "The Black Pearl",
+    "address": "302 South Main Street"
+  },
+  {
+    "ID": "2760098975",
+    "lat": "42.2791092",
+    "long": "-83.7488112",
+    "buildingName": "dessous",
+    "address": "312 South Main Street"
+  },
+  {
+    "ID": "2760098976",
+    "lat": "42.2790561",
+    "long": "-83.7488120",
+    "buildingName": "The Ark",
+    "address": "316 South Main Street"
+  },
+  {
+    "ID": "2760098977",
+    "lat": "42.2789126",
+    "long": "-83.7488378",
+    "buildingName": "Connor O'Neils",
+    "address": "318 South Main Street"
+  },
+  {
+    "ID": "2760098978",
+    "lat": "42.2787150",
+    "long": "-83.7488315",
+    "buildingName": "Gratzi",
+    "address": "326 South Main Street"
+  },
+  {
+    "ID": "2760098979",
+    "lat": "42.2786281",
+    "long": "-83.7488341",
+    "buildingName": "Milk & Froth Ice Cream",
+    "address": "328 South Main Street"
+  },
+  {
+    "ID": "3074088120",
+    "lat": "42.2800262",
+    "long": "-83.7487534",
+    "buildingName": "Espresso Royale",
+    "address": "214 South Main Street"
+  },
+  {
+    "ID": "4353344866",
+    "lat": "42.2797301",
+    "long": "-83.7497079",
+    "buildingName": "Old Town Tavern",
+    "address": "122 West Liberty Street"
+  },
+  {
+    "ID": "4675478273",
+    "lat": "42.2758266",
+    "long": "-83.7553299",
+    "buildingName": "The Jefferson Market",
+    "address": "609 West Jefferson Street"
+  },
+  {
+    "ID": "4771591637",
+    "lat": "42.2725041",
+    "long": "-83.7497523",
+    "buildingName": "7-Eleven",
+    "address": "704 South Main Street"
+  },
+  {
+    "ID": "4771591638",
+    "lat": "42.2725041",
+    "long": "-83.7500796",
+    "buildingName": "Herbana",
+    "address": "702 South Main Street"
+  },
+  {
+    "ID": "4783793776",
+    "lat": "42.2737121",
+    "long": "-83.7513059",
+    "address": "606 South First Street"
+  },
+  {
+    "ID": "4783793777",
+    "lat": "42.2736585",
+    "long": "-83.7512952",
+    "address": "608 South First Street"
+  },
+  {
+    "ID": "4787322460",
+    "lat": "42.2804063",
+    "long": "-83.7493606",
+    "buildingName": "Frita Batidos",
+    "address": "117 West Washington Street"
+  },
+  {
+    "ID": "4787322461",
+    "lat": "42.2803706",
+    "long": "-83.7487718",
+    "buildingName": "Echelon Kitchen & Bar",
+    "address": "200 South Main Street"
+  },
+  {
+    "ID": "4787322462",
+    "lat": "42.2802490",
+    "long": "-83.7487584",
+    "buildingName": "Cafe Felix",
+    "address": "204 South Main Street"
+  },
+  {
+    "ID": "4787322469",
+    "lat": "42.2797286",
+    "long": "-83.7487993",
+    "buildingName": "Pretzel Bell",
+    "address": "226 South Main Street"
+  },
+  {
+    "ID": "4787322472",
+    "lat": "42.2798378",
+    "long": "-83.7487698",
+    "buildingName": "Paint and Pour",
+    "address": "220 South Main Street"
+  },
+  {
+    "ID": "4787322473",
+    "lat": "42.2799588",
+    "long": "-83.7487618",
+    "buildingName": "Rock Paper Scissors",
+    "address": "216 South Main Street"
+  },
+  {
+    "ID": "4787322474",
+    "lat": "42.2799117",
+    "long": "-83.7487571",
+    "buildingName": "The Himalayan Bazaar",
+    "address": "218 South Main Street"
+  },
+  {
+    "ID": "4787322475",
+    "lat": "42.2800769",
+    "long": "-83.7487396",
+    "buildingName": "Verizon",
+    "address": "212 South Main Street"
+  },
+  {
+    "ID": "4787322476",
+    "lat": "42.2801186",
+    "long": "-83.7487470",
+    "address": "210 South Main Street"
+  },
+  {
+    "ID": "4787322477",
+    "lat": "42.2801617",
+    "long": "-83.7487510",
+    "buildingName": "Schlanderer & Sons",
+    "address": "208 South Main Street"
+  },
+  {
+    "ID": "4787322480",
+    "lat": "42.2804167",
+    "long": "-83.7496616",
+    "buildingName": "Sweetwaters",
+    "address": "123 West Washington Street"
+  },
+  {
+    "ID": "4787322481",
+    "lat": "42.2797182",
+    "long": "-83.7492861",
+    "buildingName": "Alley Bar",
+    "address": "112 West Liberty Street"
+  },
+  {
+    "ID": "4787322482",
+    "lat": "42.2797217",
+    "long": "-83.7493847",
+    "buildingName": "Pacific Rim",
+    "address": "114 West Liberty Street"
+  },
+  {
+    "ID": "4787322483",
+    "lat": "42.2797207",
+    "long": "-83.7494580",
+    "buildingName": "Grange Kitchen and Bar",
+    "address": "118 West Liberty Street"
+  },
+  {
+    "ID": "4787322484",
+    "lat": "42.2797232",
+    "long": "-83.7495168",
+    "buildingName": "The West End Grill",
+    "address": "120 West Liberty Street"
+  },
+  {
+    "ID": "4787322485",
+    "lat": "42.2799653",
+    "long": "-83.7496942",
+    "buildingName": "Three Chairs",
+    "address": "215 South Ashley Street"
+  },
+  {
+    "ID": "4789130840",
+    "lat": "42.2743995",
+    "long": "-83.7498991",
+    "address": "557 South Ashley Street"
+  },
+  {
+    "ID": "4789130841",
+    "lat": "42.2742774",
+    "long": "-83.7499279",
+    "address": "561 South Ashley Street"
+  },
+  {
+    "ID": "4789130842",
+    "lat": "42.2742040",
+    "long": "-83.7499205",
+    "address": "563 South Ashley Street"
+  },
+  {
+    "ID": "4809566529",
+    "lat": "42.2798184",
+    "long": "-83.7483999",
+    "buildingName": "Vault of Midnight",
+    "address": "219 South Main Street"
+  },
+  {
+    "ID": "4811828091",
+    "lat": "42.2776830",
+    "long": "-83.7545686",
+    "buildingName": "Argus Museum",
+    "address": "525 West William Street"
+  },
+  {
+    "ID": "4812477787",
+    "lat": "42.2738941",
+    "long": "-83.7488717",
+    "buildingName": "Amoco",
+    "address": "601 South Main Street"
+  },
+  {
+    "ID": "4814253113",
+    "lat": "42.2721826",
+    "long": "-83.7519613",
+    "address": "312 Koch Avenue"
+  },
+  {
+    "ID": "4835372003",
+    "lat": "42.2734866",
+    "long": "-83.7530152",
+    "address": "613 Third Street"
+  },
+  {
+    "ID": "4854332757",
+    "lat": "42.2741933",
+    "long": "-83.7491462",
+    "buildingName": "The Bouma Group",
+    "address": "564 South Main Street"
+  },
+  {
+    "ID": "4854332795",
+    "lat": "42.2794616",
+    "long": "-83.7484296",
+    "buildingName": "Shinola",
+    "address": "301 South Main Street"
+  },
+  {
+    "ID": "4854332800",
+    "lat": "42.2793381",
+    "long": "-83.7484393",
+    "address": "305 South Main Street"
+  },
+  {
+    "ID": "4854332819",
+    "lat": "42.2788284",
+    "long": "-83.7488471",
+    "buildingName": "The Chop House",
+    "address": "322 South Main Street"
+  },
+  {
+    "ID": "4854334122",
+    "lat": "42.2793674",
+    "long": "-83.7487996",
+    "buildingName": "Life is Good",
+    "address": "304 South Main Street"
+  },
+  {
+    "ID": "4854334139",
+    "lat": "42.2786216",
+    "long": "-83.7484727",
+    "buildingName": "Moka and Co",
+    "address": "333 South Main Street"
+  },
+  {
+    "ID": "4854334140",
+    "lat": "42.2784878",
+    "long": "-83.7484677",
+    "buildingName": "Alex Gulko Custom Jewelry",
+    "address": "337 South Main Street"
+  },
+  {
+    "ID": "4854334141",
+    "lat": "42.2785478",
+    "long": "-83.7484628",
+    "buildingName": "Pangborn Design Collection",
+    "address": "335 South Main Street"
+  },
+  {
+    "ID": "4854334147",
+    "lat": "42.2789256",
+    "long": "-83.7484484",
+    "buildingName": "Roeda Studio",
+    "address": "319 South Main Street"
+  },
+  {
+    "ID": "4854334148",
+    "lat": "42.2788525",
+    "long": "-83.7484577",
+    "buildingName": "Ayla ^ Co",
+    "address": "323 South Main Street"
+  },
+  {
+    "ID": "4854334149",
+    "lat": "42.2787982",
+    "long": "-83.7484740",
+    "address": "327 South Main Street"
+  },
+  {
+    "ID": "4854334157",
+    "lat": "42.2787356",
+    "long": "-83.7484680",
+    "buildingName": "Underground Printing",
+    "address": "329 South Main Street"
+  },
+  {
+    "ID": "4919630428",
+    "lat": "42.2806374",
+    "long": "-83.7483500",
+    "buildingName": "Chase",
+    "address": "125 South Main Street"
+  },
+  {
+    "ID": "4919630429",
+    "lat": "42.2803636",
+    "long": "-83.7483648",
+    "buildingName": "Old National Bank",
+    "address": "201 South Main Street"
+  },
+  {
+    "ID": "4919630430",
+    "lat": "42.2806245",
+    "long": "-83.7487403",
+    "buildingName": "Hooper Hathaway",
+    "address": "126 South Main Street"
+  },
+  {
+    "ID": "4919630431",
+    "lat": "42.2806374",
+    "long": "-83.7493143",
+    "buildingName": "Cafe Zola",
+    "address": "112 West Washington Street"
+  },
+  {
+    "ID": "4919630437",
+    "lat": "42.2808026",
+    "long": "-83.7487249",
+    "buildingName": "Workantile",
+    "address": "118 South Main Street"
+  },
+  {
+    "ID": "4919630438",
+    "lat": "42.2807481",
+    "long": "-83.7487242",
+    "buildingName": "Beloved Bridal",
+    "address": "122 South Main Street"
+  },
+  {
+    "ID": "4934264038",
+    "lat": "42.2781527",
+    "long": "-83.7503194",
+    "address": "208 West William Street"
+  },
+  {
+    "ID": "4934264039",
+    "lat": "42.2781572",
+    "long": "-83.7503857",
+    "address": "210 West William Street"
+  },
+  {
+    "ID": "4934264040",
+    "lat": "42.2781586",
+    "long": "-83.7504515",
+    "address": "212 West William Street"
+  },
+  {
+    "ID": "4934264041",
+    "lat": "42.2781606",
+    "long": "-83.7505138",
+    "address": "214 West William Street"
+  },
+  {
+    "ID": "4934264074",
+    "lat": "42.2777260",
+    "long": "-83.7493048",
+    "buildingName": "The Little Store",
+    "address": "402 South Main Street"
+  },
+  {
+    "ID": "4936047878",
+    "lat": "42.2773086",
+    "long": "-83.7575510",
+    "address": "5 Keppler Court"
+  },
+  {
+    "ID": "4936116495",
+    "lat": "42.2758047",
+    "long": "-83.7569712",
+    "address": "719 West Jefferson Street"
+  },
+  {
+    "ID": "4936116496",
+    "lat": "42.2758062",
+    "long": "-83.7568921",
+    "address": "717 West Jefferson Street"
+  },
+  {
+    "ID": "4936116518",
+    "lat": "42.2767176",
+    "long": "-83.7562940",
+    "address": "436 Fifth Street"
+  },
+  {
+    "ID": "4948833828",
+    "lat": "42.2724936",
+    "long": "-83.7551062",
+    "address": "639 Turner Park Court"
+  },
+  {
+    "ID": "4949873881",
+    "lat": "42.2728159",
+    "long": "-83.7554700",
+    "address": "635 Turner Park Court"
+  },
+  {
+    "ID": "4949873902",
+    "lat": "42.2735641",
+    "long": "-83.7557114",
+    "address": "613 Fifth Street"
+  },
+  {
+    "ID": "4960495787",
+    "lat": "42.2786847",
+    "long": "-83.7540811",
+    "address": "509 West Liberty Street"
+  },
+  {
+    "ID": "4998442528",
+    "lat": "42.2758322",
+    "long": "-83.7551950",
+    "address": "605 West Jefferson Street"
+  },
+  {
+    "ID": "4998442539",
+    "lat": "42.2758317",
+    "long": "-83.7555551",
+    "address": "617 West Jefferson Street"
+  },
+  {
+    "ID": "4998442540",
+    "lat": "42.2758341",
+    "long": "-83.7554800",
+    "address": "615 West Jefferson Street"
+  },
+  {
+    "ID": "5301097521",
+    "lat": "42.2809149",
+    "long": "-83.7483659",
+    "buildingName": "Fjällräven",
+    "address": "213 South Main Street"
+  },
+  {
+    "ID": "5446624862",
+    "lat": "42.2794841",
+    "long": "-83.7496787",
+    "buildingName": "The Grotto - Watering Hole",
+    "address": "303 South Ashley Street"
+  },
+  {
+    "ID": "5919363489",
+    "lat": "42.2784895",
+    "long": "-83.7500656",
+    "buildingName": "Muse Atelier Vintage",
+    "address": "336 South Ashley Street"
+  },
+  {
+    "ID": "5919367985",
+    "lat": "42.2799422",
+    "long": "-83.7500194",
+    "buildingName": "Downtown Home and Garden",
+    "address": "210 South Ashley Street"
+  },
+  {
+    "ID": "5919367986",
+    "lat": "42.2801178",
+    "long": "-83.7499888",
+    "buildingName": "Carhartt",
+    "address": "210 South Ashley Street"
+  },
+  {
+    "ID": "5919368087",
+    "lat": "42.2793366",
+    "long": "-83.7500219",
+    "buildingName": "Kosmo's BopShop",
+    "address": "308 South Ashley Street"
+  },
+  {
+    "ID": "6203679050",
+    "lat": "42.2786456",
+    "long": "-83.7488276",
+    "buildingName": "Main Street Massage Therapy",
+    "address": "328 South Main Street"
+  },
+  {
+    "ID": "6404964086",
+    "lat": "42.2797236",
+    "long": "-83.7496004",
+    "buildingName": "Grizzly Peak Brewing Co.",
+    "address": "120 West Washington Street"
+  },
+  {
+    "ID": "8777849667",
+    "lat": "42.2761201",
+    "long": "-83.7490294",
+    "buildingName": "JP Commercial Real Estate",
+    "address": "500 South Main Street"
+  },
+  {
+    "ID": "9018638843",
+    "lat": "42.2794629",
+    "long": "-83.7480911",
+    "buildingName": "TAQ | Taqueria Restaurant & Bar",
+    "address": "106 East Liberty Street"
+  },
+  {
+    "ID": "9654398264",
+    "lat": "42.2802059",
+    "long": "-83.7512169",
+    "buildingName": "The Blind Pig / 8 Ball Saloon",
+    "address": "208 South First Street"
+  },
+  {
+    "ID": "9783589518",
+    "lat": "42.2794953",
+    "long": "-83.7493189",
+    "buildingName": "West Side Book Shop",
+    "address": "113 West Liberty Street"
+  },
+  {
+    "ID": "9915460327",
+    "lat": "42.2795014",
+    "long": "-83.7491770",
+    "buildingName": "Hyperion Coffee",
+    "address": "111 West Liberty Street"
+  },
+  {
+    "ID": "9962310693",
+    "lat": "42.2796883",
+    "long": "-83.7480543",
+    "address": "107 East Liberty Street"
+  },
+  {
+    "ID": "10182087917",
+    "lat": "42.2801350",
+    "long": "-83.7496913",
+    "buildingName": "Ann Arbor Running Company",
+    "address": "209 South Ashley Street"
+  },
+  {
+    "ID": "10268450829",
+    "lat": "42.2745730",
+    "long": "-83.7482167",
+    "buildingName": "Union Rec",
+    "address": "545 South Main Street"
+  },
+  {
+    "ID": "10539909343",
+    "lat": "42.2800296",
+    "long": "-83.7508705",
+    "buildingName": "First & Washington Public Parking",
+    "address": "201 South First Street"
+  },
+  {
+    "ID": "11209242908",
+    "lat": "42.2800529",
+    "long": "-83.7483477",
+    "buildingName": "Four Directions by Geoscape Rock Shop",
+    "address": "207 South Main Street"
+  },
+  {
+    "ID": "11780807708",
+    "lat": "42.2808171",
+    "long": "-83.7544633",
+    "buildingName": "Nathan G. Frazier",
+    "address": "516 West Washington Street"
+  },
+  {
+    "ID": "11881265130",
+    "lat": "42.2784829",
+    "long": "-83.7488465",
+    "buildingName": "Eat Thai",
+    "address": "332 South Main Street"
+  },
+  {
+    "ID": "12487604836",
+    "lat": "42.2727087",
+    "long": "-83.7485328",
+    "address": "117 East Mosley Street"
+  },
+  {
+    "ID": "12487604837",
+    "lat": "42.2727090",
+    "long": "-83.7485989",
+    "address": "115 East Mosley Street"
+  },
+  {
+    "ID": "13270998001",
+    "lat": "42.2791315",
+    "long": "-83.7515368",
+    "buildingName": "Taubman College Liberty Research Annex",
+    "address": "305 West Liberty Street"
+  },
+  {
+    "ID": "13298141033",
+    "lat": "42.2802231",
+    "long": "-83.7501090",
+    "buildingName": "Recess Cafe",
+    "address": "208 South Ashley Street"
+  },
+  {
+    "ID": "13550863983",
+    "lat": "42.2803622",
+    "long": "-83.7481291",
+    "buildingName": "Cannelle",
+    "address": "110 East Washington Street"
+  },
+  {
+    "ID": "13550883540",
+    "lat": "42.2790436",
+    "long": "-83.7484377",
+    "buildingName": "Rally House",
+    "address": "315 South Main Street"
+  },
+  {
+    "ID": "13550897515",
+    "lat": "42.2791831",
+    "long": "-83.7488182",
+    "buildingName": "Rocket Fizz",
+    "address": "306 South Main Street"
+  },
+  {
+    "ID": "13550898542",
+    "lat": "42.2800028",
+    "long": "-83.7483853",
+    "buildingName": "Fjällräven",
+    "address": "213 South Main Street"
+  }
+]

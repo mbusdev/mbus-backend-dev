@@ -3,3 +3,10 @@ package-lock.json
 .env
 .vscode/
 src/assets/walkingCache.json
+# local runtime db
+.jac/
+
+# raw OSM downloads (regenerated weekly by building_checker)
+osm_data/
+src/assets/buildings/box*.json
+!src/assets/buildings/box*-complete.json

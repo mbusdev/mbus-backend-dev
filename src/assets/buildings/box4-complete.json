@@ -1,0 +1,249 @@
+[
+  {
+    "ID": "542783623",
+    "lat": "42.2825365",
+    "long": "-83.7487208",
+    "buildingName": "Main Street Party Store",
+    "address": "201 North Main Street"
+  },
+  {
+    "ID": "2623065827",
+    "lat": "42.2830245",
+    "long": "-83.7485810",
+    "buildingName": "Mighty Good Coffee",
+    "address": "217 North Main Street"
+  },
+  {
+    "ID": "2623067551",
+    "lat": "42.2831282",
+    "long": "-83.7485749",
+    "buildingName": "The Broken Egg",
+    "address": "221 North Main Street"
+  },
+  {
+    "ID": "3049875843",
+    "lat": "42.2817203",
+    "long": "-83.7516358",
+    "buildingName": "Delonis Center",
+    "address": "312 West Huron Street"
+  },
+  {
+    "ID": "4919630424",
+    "lat": "42.2812982",
+    "long": "-83.7489529",
+    "buildingName": "Ann Arbor Area Chamber of Commerce",
+    "address": "115 West Huron Street"
+  },
+  {
+    "ID": "4919630426",
+    "lat": "42.2812655",
+    "long": "-83.7483044",
+    "buildingName": "PNC Bank",
+    "address": "101 South Main Street"
+  },
+  {
+    "ID": "4919630427",
+    "lat": "42.2812635",
+    "long": "-83.7487148",
+    "buildingName": "KeyBank",
+    "address": "100 South Main Street"
+  },
+  {
+    "ID": "4919630435",
+    "lat": "42.2810378",
+    "long": "-83.7487121",
+    "buildingName": "Vinology",
+    "address": "110 South Main Street"
+  },
+  {
+    "ID": "4936280365",
+    "lat": "42.2825729",
+    "long": "-83.7504640",
+    "address": "216 West Ann Street"
+  },
+  {
+    "ID": "4936280366",
+    "lat": "42.2825768",
+    "long": "-83.7503943",
+    "address": "214 West Ann Street"
+  },
+  {
+    "ID": "4936280367",
+    "lat": "42.2834936",
+    "long": "-83.7510299",
+    "buildingName": "Vis-a-Vis",
+    "address": "320 Miller Avenue"
+  },
+  {
+    "ID": "4936280376",
+    "lat": "42.2829707",
+    "long": "-83.7498940",
+    "address": "217 North Ashley Street"
+  },
+  {
+    "ID": "4936280377",
+    "lat": "42.2829251",
+    "long": "-83.7498954",
+    "address": "215 North Ashley Street"
+  },
+  {
+    "ID": "4951551943",
+    "lat": "42.2826209",
+    "long": "-83.7546619",
+    "address": "5 Parkview Place"
+  },
+  {
+    "ID": "4953780502",
+    "lat": "42.2818897",
+    "long": "-83.7579279",
+    "address": "830 West Huron Street"
+  },
+  {
+    "ID": "4953780503",
+    "lat": "42.2818902",
+    "long": "-83.7578695",
+    "buildingName": "Robert Stevenson, DDS",
+    "address": "828 West Huron Street"
+  },
+  {
+    "ID": "4955566725",
+    "lat": "42.2812131",
+    "long": "-83.7540718",
+    "address": "108 Third Street"
+  },
+  {
+    "ID": "4961795618",
+    "lat": "42.2815970",
+    "long": "-83.7487366",
+    "buildingName": "Comerica Bank",
+    "address": "101 North Main Street"
+  },
+  {
+    "ID": "4995646687",
+    "lat": "42.2855585",
+    "long": "-83.7535745",
+    "address": "524 Cherry Street"
+  },
+  {
+    "ID": "4995646688",
+    "lat": "42.2855610",
+    "long": "-83.7533751",
+    "address": "520 Cherry Street"
+  },
+  {
+    "ID": "4995646770",
+    "lat": "42.2848991",
+    "long": "-83.7537441",
+    "address": "412 Fountain Street"
+  },
+  {
+    "ID": "4995646828",
+    "lat": "42.2837602",
+    "long": "-83.7527801",
+    "buildingName": "Holman Surveillance Systems",
+    "address": "433 Miller Avenue"
+  },
+  {
+    "ID": "4995646829",
+    "lat": "42.2836204",
+    "long": "-83.7526406",
+    "address": "429 Miller Avenue"
+  },
+  {
+    "ID": "4995646830",
+    "lat": "42.2835894",
+    "long": "-83.7524814",
+    "buildingName": "Bloom City Club",
+    "address": "423 Miller Avenue"
+  },
+  {
+    "ID": "5000344903",
+    "lat": "42.2821981",
+    "long": "-83.7539372",
+    "address": "115 Chapin Street"
+  },
+  {
+    "ID": "5823159054",
+    "lat": "42.2819013",
+    "long": "-83.7541562",
+    "buildingName": "Language Link LLC",
+    "address": "416 West Huron Street"
+  },
+  {
+    "ID": "6799621779",
+    "lat": "42.2811548",
+    "long": "-83.7486962",
+    "buildingName": "First Bite",
+    "address": "108 South Main Street"
+  },
+  {
+    "ID": "7015913462",
+    "lat": "42.2813657",
+    "long": "-83.7514387",
+    "buildingName": "The Last Word",
+    "address": "301 West Huron Street"
+  },
+  {
+    "ID": "8343711768",
+    "lat": "42.2811141",
+    "long": "-83.7486955",
+    "buildingName": "Om of Medicine",
+    "address": "111 South Main Street"
+  },
+  {
+    "ID": "8441897386",
+    "lat": "42.2834428",
+    "long": "-83.7481416",
+    "buildingName": "BP",
+    "address": "300 North Main Street"
+  },
+  {
+    "ID": "8441897387",
+    "lat": "42.2834755",
+    "long": "-83.7480135",
+    "buildingName": "University Fuel Mart",
+    "address": "300 North Main Street"
+  },
+  {
+    "ID": "10176126666",
+    "lat": "42.2819217",
+    "long": "-83.7529025",
+    "buildingName": "Common Cycle",
+    "address": "416 West Huron Street"
+  },
+  {
+    "ID": "10537871409",
+    "lat": "42.2839522",
+    "long": "-83.7511939",
+    "buildingName": "Human Electric Hybrids",
+    "address": "320 Miller Avenue"
+  },
+  {
+    "ID": "10537871410",
+    "lat": "42.2826017",
+    "long": "-83.7486244",
+    "buildingName": "Bao Space",
+    "address": "205 North Main Street"
+  },
+  {
+    "ID": "12896029117",
+    "lat": "42.2827916",
+    "long": "-83.7486365",
+    "buildingName": "Chapala Mexican Restaurant",
+    "address": "211 North Main Street"
+  },
+  {
+    "ID": "12896035327",
+    "lat": "42.2828938",
+    "long": "-83.7486484",
+    "buildingName": "Heidelberg Restaurant",
+    "address": "215 North Main Street"
+  },
+  {
+    "ID": "13321266099",
+    "lat": "42.2820355",
+    "long": "-83.7558926",
+    "buildingName": "Ann Arbor Family Medicine Clinic",
+    "address": "704 West Huron Street"
+  }
+]
