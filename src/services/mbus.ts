@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const API_KEY = process.env.MBUS_API_KEY;
-const BASE_URL = 'https://mbus.ltp.umich.edu/bustime/api/v3/';
+const BASE_URL = process.env.MBUS_URL || 'https://mbus.ltp.umich.edu/bustime/api/v3/';
 
 const client = axios.create({
     baseURL: BASE_URL,
