@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: NPM Install
-        run: npm i
+        run: |
+          npm i -g npm@latest
+          npm i
         working-directory: ${{ github.workspace }}
       - name: Test Suite
         run: |
@@ -41,7 +43,9 @@ jobs:
       #   run: echo hi
       #   working-directory: ${{ github.workspace }}
       - name: NPM Install
-        run: npm i
+        run: |
+          npm i -g npm@latest
+          npm i
         working-directory: ${{ github.workspace }}
       - name: Typecheck
         run: tsc --noEmit
