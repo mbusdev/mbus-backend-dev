@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: NPM Install
-        run: npm i
+        run: |
+          npm i -g npm@latest
+          npm i
         working-directory: ${{ github.workspace }}
       - name: Test Suite
         run: |
@@ -29,23 +31,18 @@ jobs:
           done
           sleep 10 # waits for the graph/predictions to be built
           npx vitest run test
-          # npm test
-        working-directory: ${{ github.workspace }}
 
   Typecheck:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
-      # - name: Placeholder
-      #   run: echo hi
-      #   working-directory: ${{ github.workspace }}
       - name: NPM Install
-        run: npm i
-        working-directory: ${{ github.workspace }}
+        run: |
+          npm i -g npm@latest
+          npm i
       - name: Typecheck
         run: tsc --noEmit
-        working-directory: ${{ github.workspace }}
 
   Typedoc:
     runs-on: ubuntu-latest
@@ -53,11 +50,11 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v6
       - name: NPM Install
-        run: npm i
-        working-directory: ${{ github.workspace }}
+        run: |
+          npm i -g npm@latest
+          npm i
       - name: Build Docs
         run: npx typedoc --entryPointStrategy expand ./src --treatWarningsAsErrors
-        working-directory: ${{ github.workspace }}
       - name: Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
