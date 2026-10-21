@@ -15,6 +15,14 @@ export interface WalkingResponse {
     distance: number;
     /** Ordered list of coordinates representing the walking path geometry. */
     path_coords: { lat: number, lon: number }[];
+    /** Turn by turn directions. */
+    directions: { path_index: number, turn: Turn }[];
+}
+
+export interface Turn {
+    /** [-180, 180]ish range, a positive number represents a left turn */
+    degrees: number,
+    landmark: string,    
 }
 
 /**
