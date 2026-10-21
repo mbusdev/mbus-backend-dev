@@ -1,6 +1,5 @@
 import express from "express";
 
-import "@/services/observability";
 import mbus from "./routes/api"
 
 const app = express();

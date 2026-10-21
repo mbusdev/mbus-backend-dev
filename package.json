@@ -5,7 +5,7 @@
     "type": "module",
     "main": "src/app.ts",
     "scripts": {
-        "start": "tsx --env-file=.env src/app.ts",
+        "start": "tsx --env-file=.env --experimental-loader=@opentelemetry/instrumentation/hook.mjs --import src/services/observability.ts src/app.ts",
         "test": "vitest run test",
         "stress-test": "vitest run test/search-stress.test.ts",
         "docs": "typedoc --entryPointStrategy expand ./src --exclude \"**/legacy/**\""
@@ -15,6 +15,7 @@
     "dependencies": {
         "@datastructures-js/priority-queue": "^6.3.3",
         "@hyperdx/node-opentelemetry": "^0.11.0",
+        "@opentelemetry/host-metrics": "^0.40.0",
         "axios": "^1.7.2",
         "dotenv": "^16.4.5",
         "express": "^4.19.2",

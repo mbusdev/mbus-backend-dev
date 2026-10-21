@@ -5,8 +5,6 @@ import { applicationDefault, initializeApp } from "firebase-admin/app";
 import * as state from "@/state/transitState";
 import { BaseEvent, DelayEvent, eventsEqual, toKey, Key, RegistrationToken, ThresholdEvent, fromKey, delayEvent, thresholdEvent } from "./reminderTypes";
 
-export * from "./reminderTypes";
-
 dotenv.config()
 
 // Initialize Firebase
