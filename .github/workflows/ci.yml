@@ -1,0 +1,67 @@
+name: CI
+on:
+  push:
+    branches-ignore:
+      - "tools/*"
+  pull_request:
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+      - name: NPM Install
+        run: |
+          npm i -g npm@latest
+          npm i
+        working-directory: ${{ github.workspace }}
+      - name: Test Suite
+        run: |
+          touch .env
+          export MBUS_URL=https://mbus.bustime.mock.mb.thething.fyi/
+          export RIDE_URL=https://ride.bustime.mock.mb.thething.fyi/
+          npm start &
+          until curl localhost:3000 > /dev/null 2>&1
+          do
+            sleep 1 # waits for initial startup
+          done
+          sleep 10
+          until curl localhost:3000 > /dev/null 2>&1
+          do
+            sleep 1 # waits for the walking cache to populate
+          done
+          sleep 10 # waits for the graph/predictions to be built
+          npx vitest run test
+
+  Typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+      - name: NPM Install
+        run: |
+          npm i -g npm@latest
+          npm i
+      - name: Typecheck
+        run: tsc --noEmit
+
+  Typedoc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+      - name: NPM Install
+        run: |
+          npm i -g npm@latest
+          npm i
+      - name: Build Docs
+        run: npx typedoc --entryPointStrategy expand ./src --treatWarningsAsErrors
+      - name: Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          port: ${{ secrets.FTP_PORT }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ github.workspace }}/docs/
+          server-dir: ${{ github.ref }}/typedoc/

@@ -429,10 +429,12 @@ router.get('/save-graph', saveGraph);
  */
 export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
-        min_supported_version: "2.0.0",
-        why_update_message: { title: "New Update Available", subtitle: "Please update to the latest version." },
-        persistant_message: { title: "", subtitle: "" },
+        min_supported_version: "2.0.2",
+        why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
+        persistant_message: { title: "", subtitle: ""},
         one_time_message: { title: "", subtitle: "" },
+        // lat/lon specify a pin to show on the map, showTime/endTime should be either empty or in ISO format
+        banner_message: { url: "https://www.maizebus.com/#/banner", shortTitle: "JOIN", latitude: 0.0, longitude:0.0, showTime: "2026-09-16T03:40:00Z", endTime: "2026-09-17T00:00:00Z" },
         bus_image_version: "1",
     });
 }
@@ -567,7 +569,12 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-type ActiveReminderInfo = { stpid: string, rtid: string, thresh: number | null, eta: number | null };
+export interface ActiveReminderInfo {
+    stpid: string
+    rtid: string
+    thresh: number | null
+    eta: number | null
+};
 
 /**
  * @param req - Express request, token is path encoded

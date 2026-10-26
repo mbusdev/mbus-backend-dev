@@ -1,5 +1,5 @@
 import { updateBusPositions, initializeRoutes, rebuildGraph } from './services/graphBuilder';
-import { processRideReminders, processUniversityReminders } from './services/reminder';
+import { initializeReminders, processRideReminders, processUniversityReminders } from './services/reminder';
 import { updateBuildings } from './services/building_checker';
 import { mergeBuildings } from './services/merge_buildings';
 import cron from 'node-cron';
@@ -7,6 +7,7 @@ import cron from 'node-cron';
  * Starts background jobs for updating bus positions, initializing routes, and rebuilding the graph.
  */
 export function startBackgroundJobs() {
+    initializeReminders();
     initializeRoutes().then(() => {
         console.log("Routes initialized. Building initial graph...");
         rebuildGraph();

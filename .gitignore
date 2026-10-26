@@ -3,6 +3,7 @@ package-lock.json
 .env
 .vscode/
 src/assets/walkingCache.json
+/docs/
 # local runtime db
 .jac/
 
@@ -10,3 +11,5 @@ src/assets/walkingCache.json
 osm_data/
 src/assets/buildings/box*.json
 !src/assets/buildings/box*-complete.json
+
+
