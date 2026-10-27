@@ -4,9 +4,9 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-// Copy a real OSM asset to a temp file so processOsmBuildings doesn't
-// overwrite the checked-in -complete.json.
-const BOX3_SRC = path.resolve('./src/assets/buildings/box3.json');
+// Trimmed copy of the raw box3 OSM download (the full file is gitignored).
+// Copied to a temp file so processOsmBuildings writes its output there.
+const BOX3_SRC = path.resolve('./test/fixtures/box3-osm.json');
 const tmpInput = path.join(os.tmpdir(), `box3-test-${Date.now()}.json`);
 const tmpOutput = tmpInput.replace('.json', '-complete.json');
 
