@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 import fs from 'fs';
-import cron from 'node-cron';
 import path from 'path';
 
 const parser = new XMLParser({
@@ -364,37 +363,3 @@ export function processOsmBuildings(inputFilePath: string): void {
 
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
 }
-
-
-// Keep the process running
-process.on('SIGINT', () => {
-  process.exit(0);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
