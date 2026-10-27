@@ -9,52 +9,37 @@ const parser = new XMLParser({
   attributeNamePrefix: '@_'
 });
 
-// API endpoints for OSM data
-const box4Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.758000,42.281000,-83.748000,42.288000';
-const box3Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.748000,42.281000,-83.737000,42.288000';
-const box5Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.758000,42.272000,-83.748000,42.281000';
-const box2Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.748000,42.272000,-83.737000,42.281000';
-const box11aUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.840304,42.281000,-83.799152,42.311535';
-const box11bUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.799152,42.281000,-83.758000,42.311535';
-const box6aUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.840304,42.215454,-83.799152,42.281000';
-const box6bUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.799152,42.215454,-83.758000,42.281000';
-const box10Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.758000,42.298000,-83.675000,42.311535';
-const box8aUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.758000,42.288000,-83.737000,42.298000';
-const box8bUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.737000,42.281000,-83.700000,42.298000';
-const box9Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.700000,42.281000,-83.675000,42.298000';
-const box7aUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.758000,42.215454,-83.7475,42.272000';
-const box7cUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.7475,42.215454,-83.737000,42.272000';
-const box7bUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.737000,42.215454,-83.706,42.281000';
-const box7dUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.706,42.215454,-83.675000,42.281000';
-const box12Url = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.675000,42.235000,-83.645000,42.275000';
-const box14aUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.645000,42.235000,-83.59208,42.275000';
-const box14bUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.59208,42.235000,-83.539160,42.275000';
-const box13aUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.675000,42.215454,-83.60708,42.235000';
-const box13bUrl = 'https://api.openstreetmap.org/api/0.6/map?bbox=-83.60708,42.215454,-83.539160,42.235000';
+// Configurable OSM API host (e.g. a mirror or local instance)
+const osmUrl = (process.env.OSM_URL ?? 'https://api.openstreetmap.org').replace(/\/+$/, '');
 
-const urls = {
-  box4: box4Url,
-  box3: box3Url,
-  box5: box5Url,
-  box2: box2Url,
-  box11a: box11aUrl,
-  box11b: box11bUrl,
-  box6a: box6aUrl,
-  box6b: box6bUrl,
-  box10: box10Url,
-  box8a: box8aUrl,
-  box8b: box8bUrl,
-  box9: box9Url,
-  box7a: box7aUrl,
-  box7c: box7cUrl,
-  box7b: box7bUrl,
-  box7d: box7dUrl,
-  box12: box12Url,
-  box14a: box14aUrl,
-  box14b: box14bUrl,
-  box13a: box13aUrl,
-  box13b: box13bUrl,
+// Bounding boxes (minLon,minLat,maxLon,maxLat) for each area we pull buildings from
+const boxes: Record<string, string> = {
+  box4: '-83.758000,42.281000,-83.748000,42.288000',
+  box3: '-83.748000,42.281000,-83.737000,42.288000',
+  box5: '-83.758000,42.272000,-83.748000,42.281000',
+  box2: '-83.748000,42.272000,-83.737000,42.281000',
+  box11a: '-83.840304,42.281000,-83.799152,42.311535',
+  box11b: '-83.799152,42.281000,-83.758000,42.311535',
+  box6a: '-83.840304,42.215454,-83.799152,42.281000',
+  box6b: '-83.799152,42.215454,-83.758000,42.281000',
+  box10: '-83.758000,42.298000,-83.675000,42.311535',
+  box8a: '-83.758000,42.288000,-83.737000,42.298000',
+  box8b: '-83.737000,42.281000,-83.700000,42.298000',
+  box9: '-83.700000,42.281000,-83.675000,42.298000',
+  box7a: '-83.758000,42.215454,-83.7475,42.272000',
+  box7c: '-83.7475,42.215454,-83.737000,42.272000',
+  box7b: '-83.737000,42.215454,-83.706,42.281000',
+  box7d: '-83.706,42.215454,-83.675000,42.281000',
+  box12: '-83.675000,42.235000,-83.645000,42.275000',
+  box14a: '-83.645000,42.235000,-83.59208,42.275000',
+  box14b: '-83.59208,42.235000,-83.539160,42.275000',
+  box13a: '-83.675000,42.215454,-83.60708,42.235000',
+  box13b: '-83.60708,42.215454,-83.539160,42.235000',
 };
+
+const urls = Object.fromEntries(
+  Object.entries(boxes).map(([name, bbox]) => [name, `${osmUrl}/api/0.6/map?bbox=${bbox}`])
+);
 
 
 export async function updateBuildings() {
@@ -153,6 +138,7 @@ async function reverseGeocode(lat: number, lon: number): Promise<LocationAddress
 }
 
 /**
+ * NOTE: THIS FUNCTION IS CURRENTLY UNUSED.
  * Queries the Overpass API for named locations (amenity, shop, tourism, leisure, office)
  * within a bounding box. Missing address data is filled in via Nominatim reverse geocode.
  * Results are saved as a JSON array to outputPath.
