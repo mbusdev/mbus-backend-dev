@@ -42,7 +42,7 @@ jobs:
           npm i -g npm@latest
           npm i
       - name: Typecheck
-        run: tsc --noEmit
+        run: npx tsc --noEmit
 
   Typedoc:
     runs-on: ubuntu-latest
