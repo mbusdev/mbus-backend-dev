@@ -4037,6 +4037,1841 @@
     "address": "2874 Washtenaw Avenue"
   },
   {
+    "ID": "353915886",
+    "lat": "42.2303169",
+    "long": "-83.6443832",
+    "buildingName": "Ardis School",
+    "address": "2100 Ellsworth Road"
+  },
+  {
+    "ID": "3734678586",
+    "lat": "42.2212013",
+    "long": "-83.6587795",
+    "buildingName": "Shell",
+    "address": "3150 West Michigan Avenue"
+  },
+  {
+    "ID": "4760809028",
+    "lat": "42.2222520",
+    "long": "-83.6215586",
+    "address": "435 Joe Hall Drive"
+  },
+  {
+    "ID": "4760809029",
+    "lat": "42.2222238",
+    "long": "-83.6216862",
+    "buildingName": "Project 1111",
+    "address": "445 Joe Hall Drive"
+  },
+  {
+    "ID": "4760809030",
+    "lat": "42.2246308",
+    "long": "-83.6229216",
+    "buildingName": "Interclean",
+    "address": "709 James L Hart Parkway"
+  },
+  {
+    "ID": "5810085884",
+    "lat": "42.2292304",
+    "long": "-83.6471584",
+    "buildingName": "Hong Kong",
+    "address": "2339 Ellsworth Road"
+  },
+  {
+    "ID": "5873643466",
+    "lat": "42.2273779",
+    "long": "-83.6435956",
+    "address": "760 South Hewitt Road"
+  },
+  {
+    "ID": "6797649138",
+    "lat": "42.2232355",
+    "long": "-83.6201286",
+    "buildingName": "Caspian Mediterranean Grill",
+    "address": "1334 Anna J Stepp Drive"
+  },
+  {
+    "ID": "7837132777",
+    "lat": "42.2294502",
+    "long": "-83.6455460",
+    "buildingName": "Alez Market",
+    "address": "2243 Hewitt Road"
+  },
+  {
+    "ID": "7853794415",
+    "lat": "42.2300585",
+    "long": "-83.6510546",
+    "buildingName": "Cravings Dessert Lounge",
+    "address": "2643 Ellsworth Road"
+  },
+  {
+    "ID": "7923747886",
+    "lat": "42.2296562",
+    "long": "-83.6459732",
+    "buildingName": "Ypsilanti Family Pharmacy",
+    "address": "2287 Ellsworth Road"
+  },
+  {
+    "ID": "8340696012",
+    "lat": "42.2273947",
+    "long": "-83.6435361",
+    "address": "750 South Hewitt Road"
+  },
+  {
+    "ID": "8439710105",
+    "lat": "42.2285929",
+    "long": "-83.6438456",
+    "buildingName": "Speedway",
+    "address": "2190 West Michigan Avenue"
+  },
+  {
+    "ID": "9342320296",
+    "lat": "42.2301497",
+    "long": "-83.6444380",
+    "buildingName": "Dunkin'",
+    "address": "608 South Hewitt Road"
+  },
+  {
+    "ID": "9719685051",
+    "lat": "42.2300673",
+    "long": "-83.6506882",
+    "buildingName": "Blazin' Burgerz",
+    "address": "2593 Ellsworth Road"
+  },
+  {
+    "ID": "11030582310",
+    "lat": "42.2232317",
+    "long": "-83.6201447",
+    "buildingName": "Ypsilanti Nutrition",
+    "address": "1338 Anna J Stepp Drive"
+  },
+  {
+    "ID": "11030582311",
+    "lat": "42.2235318",
+    "long": "-83.6201328",
+    "buildingName": "Powerhouse Gym",
+    "address": "1326 Anna J Stepp Drive"
+  },
+  {
+    "ID": "11030582312",
+    "lat": "42.2238673",
+    "long": "-83.6201208",
+    "buildingName": "Jet's Pizza",
+    "address": "1298 Anna J Stepp Drive"
+  },
+  {
+    "ID": "11364730222",
+    "lat": "42.2239739",
+    "long": "-83.6200771",
+    "buildingName": "K&D Bistro",
+    "address": "1290 Anna J Stepp Drive"
+  },
+  {
+    "ID": "11926547546",
+    "lat": "42.2286606",
+    "long": "-83.6482901",
+    "buildingName": "Harbor Freight Tools",
+    "address": "2399 Ellsworth Road"
+  },
+  {
+    "ID": "11999603218",
+    "lat": "42.2163044",
+    "long": "-83.6646623",
+    "buildingName": "Masjid Bilal Ypsilanti",
+    "address": "4891 West Michigan Avenue"
+  },
+  {
+    "ID": "13639266938",
+    "lat": "42.2283080",
+    "long": "-83.6427860",
+    "buildingName": "Sheetz",
+    "address": "2103 West Michigan Avenue"
+  },
+  {
+    "ID": "103485556",
+    "lat": "42.2167665",
+    "long": "-83.6203828",
+    "buildingName": "USPS Post Office 48197",
+    "address": "1606 Huron Street"
+  },
+  {
+    "ID": "114869100",
+    "lat": "42.2323604",
+    "long": "-83.6235766",
+    "buildingName": "Parkridge Community Center",
+    "address": "591 Armstrong Court"
+  },
+  {
+    "ID": "179465057",
+    "lat": "42.2241747",
+    "long": "-83.6135619",
+    "buildingName": "Ann Arbor Marriott Ypsilanti at Eagle Crest",
+    "address": "1275 South Huron Street"
+  },
+  {
+    "ID": "206856476",
+    "lat": "42.2214410",
+    "long": "-83.6295794",
+    "buildingName": "Maxar",
+    "address": "1200 Joe Hall Drive"
+  },
+  {
+    "ID": "206856477",
+    "lat": "42.2250734",
+    "long": "-83.6269177",
+    "buildingName": "Kalitta Motorsports",
+    "address": "1010 James L Hart Parkway"
+  },
+  {
+    "ID": "206856478",
+    "lat": "42.2240372",
+    "long": "-83.6243341",
+    "buildingName": "Pollard Banknote",
+    "address": "775 James L Hart Parkway"
+  },
+  {
+    "ID": "206856479",
+    "lat": "42.2237810",
+    "long": "-83.6262947",
+    "buildingName": "Campbell Inc.",
+    "address": "1077 James L Hart Parkway"
+  },
+  {
+    "ID": "206856481",
+    "lat": "42.2249959",
+    "long": "-83.6188389",
+    "buildingName": "McDonald's",
+    "address": "166 James L Hart Parkway"
+  },
+  {
+    "ID": "206856483",
+    "lat": "42.2252264",
+    "long": "-83.6249842",
+    "buildingName": "Adams Outdoor Advertising",
+    "address": "880 James L Hart Parkway"
+  },
+  {
+    "ID": "206856485",
+    "lat": "42.2239014",
+    "long": "-83.6257869",
+    "buildingName": "Paws 'n Pads Pet Care",
+    "address": "989 James L Hart Parkway"
+  },
+  {
+    "ID": "206856486",
+    "lat": "42.2246641",
+    "long": "-83.6299712",
+    "buildingName": "efi",
+    "address": "1260 James L Hart Parkway"
+  },
+  {
+    "ID": "206856487",
+    "lat": "42.2259490",
+    "long": "-83.6238333",
+    "buildingName": "BankSupplies, Inc.",
+    "address": "770 James L Hart Parkway"
+  },
+  {
+    "ID": "206856488",
+    "lat": "42.2265413",
+    "long": "-83.6206721",
+    "buildingName": "LaFontaine Kia",
+    "address": "444 James L Hart Parkway"
+  },
+  {
+    "ID": "224647687",
+    "lat": "42.2304332",
+    "long": "-83.6403713",
+    "buildingName": "Mr. Goofy’s Car Wash",
+    "address": "1822 West Michigan Avenue"
+  },
+  {
+    "ID": "224648482",
+    "lat": "42.2301773",
+    "long": "-83.6478637",
+    "buildingName": "Taco Bell",
+    "address": "2351 Ellsworth Road"
+  },
+  {
+    "ID": "224648490",
+    "lat": "42.2282766",
+    "long": "-83.6502501",
+    "address": "2515 Ellsworth Road"
+  },
+  {
+    "ID": "268521821",
+    "lat": "42.2322890",
+    "long": "-83.6472200",
+    "buildingName": "Fairway Trails",
+    "address": "234 South Hewitt Road"
+  },
+  {
+    "ID": "313766281",
+    "lat": "42.2168138",
+    "long": "-83.6735375",
+    "buildingName": "Foundation Building Materials",
+    "address": "4237 Morgan Road"
+  },
+  {
+    "ID": "379033761",
+    "lat": "42.2170149",
+    "long": "-83.6180810",
+    "buildingName": "South Huron Dental",
+    "address": "1637 South Huron Street"
+  },
+  {
+    "ID": "379033772",
+    "lat": "42.2229326",
+    "long": "-83.6185575",
+    "buildingName": "Shell",
+    "address": "244 Joe Hall Drive"
+  },
+  {
+    "ID": "400238462",
+    "lat": "42.2288620",
+    "long": "-83.6311057",
+    "address": "580 South Mansfield Street"
+  },
+  {
+    "ID": "400238464",
+    "lat": "42.2317257",
+    "long": "-83.6329544",
+    "buildingName": "UPS Customer Service Center",
+    "address": "540 South Mansfield Street"
+  },
+  {
+    "ID": "400238466",
+    "lat": "42.2327576",
+    "long": "-83.6330009",
+    "buildingName": "TRUE Community Credit Union",
+    "address": "424 South Mansfield Street"
+  },
+  {
+    "ID": "400238469",
+    "lat": "42.2254595",
+    "long": "-83.6361210",
+    "buildingName": "Huron Sign Company",
+    "address": "663 South Mansfield Street"
+  },
+  {
+    "ID": "400238470",
+    "lat": "42.2275504",
+    "long": "-83.6339402",
+    "buildingName": "Mastermix",
+    "address": "612 South Mansfield Street"
+  },
+  {
+    "ID": "400238471",
+    "lat": "42.2291723",
+    "long": "-83.6313440",
+    "address": "576 South Mansfield Street"
+  },
+  {
+    "ID": "400238476",
+    "lat": "42.2272152",
+    "long": "-83.6357728",
+    "buildingName": "Pet Walton's Heating & Air Conditioning",
+    "address": "636 South Mansfield Street"
+  },
+  {
+    "ID": "400238482",
+    "lat": "42.2263340",
+    "long": "-83.6302636",
+    "buildingName": "American Broach & Machine Company",
+    "address": "575 South Mansfield Street"
+  },
+  {
+    "ID": "400238483",
+    "lat": "42.2264124",
+    "long": "-83.6332929",
+    "buildingName": "Synod Community Services",
+    "address": "615 South Mansfield Street"
+  },
+  {
+    "ID": "400238484",
+    "lat": "42.2271794",
+    "long": "-83.6346351",
+    "buildingName": "A.F. Smith Electric, Inc.",
+    "address": "624 South Mansfield Street"
+  },
+  {
+    "ID": "400238485",
+    "lat": "42.2262486",
+    "long": "-83.6344007",
+    "buildingName": "Sheriff Gosling Quality Roofing",
+    "address": "627 South Mansfield Street"
+  },
+  {
+    "ID": "400238488",
+    "lat": "42.2306773",
+    "long": "-83.6320520",
+    "buildingName": "National Testing Laboratory",
+    "address": "556 South Mansfield Street"
+  },
+  {
+    "ID": "400238489",
+    "lat": "42.2262269",
+    "long": "-83.6317646",
+    "address": "599 South Mansfield Street"
+  },
+  {
+    "ID": "400238490",
+    "lat": "42.2296174",
+    "long": "-83.6316596",
+    "buildingName": "Ann Arbor Driveshaft",
+    "address": "572 South Mansfield Street"
+  },
+  {
+    "ID": "403089936",
+    "lat": "42.2321356",
+    "long": "-83.6316689",
+    "buildingName": "American Broach & Machine Company",
+    "address": "535 South Mansfield Street"
+  },
+  {
+    "ID": "442818179",
+    "lat": "42.2299713",
+    "long": "-83.6499655",
+    "buildingName": "Chicken Shack",
+    "address": "2547 Ellsworth Rd"
+  },
+  {
+    "ID": "442818180",
+    "lat": "42.2313727",
+    "long": "-83.6449137",
+    "buildingName": "Splash N’ Dash Self Car Wash",
+    "address": "2224 Ellsworth Road"
+  },
+  {
+    "ID": "442818181",
+    "lat": "42.2309681",
+    "long": "-83.6451636",
+    "buildingName": "Victory Lane Quick Oil Change",
+    "address": "2216 Ellsworth Road"
+  },
+  {
+    "ID": "442818206",
+    "lat": "42.2309833",
+    "long": "-83.6448080",
+    "buildingName": "7-Eleven",
+    "address": "2200 Ellsworth Road"
+  },
+  {
+    "ID": "460519043",
+    "lat": "42.2338893",
+    "long": "-83.6141736",
+    "buildingName": "Joe's Market",
+    "address": "454 South Huron Street"
+  },
+  {
+    "ID": "528132622",
+    "lat": "42.2269158",
+    "long": "-83.6705709",
+    "address": "4267 Crystal Creek Drive"
+  },
+  {
+    "ID": "545779040",
+    "lat": "42.2309374",
+    "long": "-83.6220539",
+    "buildingName": "St. John Missionary Baptist Church",
+    "address": "866 Monroe Avenue"
+  },
+  {
+    "ID": "621765327",
+    "lat": "42.2300725",
+    "long": "-83.6485296",
+    "buildingName": "Popeyes",
+    "address": "2387 Ellsworth Road"
+  },
+  {
+    "ID": "632340273",
+    "lat": "42.2332604",
+    "long": "-83.6139163",
+    "buildingName": "Citgo",
+    "address": "505 South Huron Street"
+  },
+  {
+    "ID": "634277546",
+    "lat": "42.2237958",
+    "long": "-83.6184941",
+    "buildingName": "Kroger",
+    "address": "1303 Anna J Stepp Drive"
+  },
+  {
+    "ID": "692124470",
+    "lat": "42.2235183",
+    "long": "-83.6186814",
+    "buildingName": "Tim Hortons",
+    "address": "1311 Anna J Stepp Drive"
+  },
+  {
+    "ID": "743527968",
+    "lat": "42.2259203",
+    "long": "-83.6193930",
+    "buildingName": "Fairfield Inn & Suites Ann Arbor Ypsilanti",
+    "address": "326 James L Hart Parkway"
+  },
+  {
+    "ID": "908949652",
+    "lat": "42.2340080",
+    "long": "-83.6135139",
+    "buildingName": "RP Fuel",
+    "address": "445 South Huron Street"
+  },
+  {
+    "ID": "988178110",
+    "lat": "42.2284649",
+    "long": "-83.6706319",
+    "address": "4155 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178111",
+    "lat": "42.2286782",
+    "long": "-83.6706361",
+    "address": "4141 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178112",
+    "lat": "42.2296984",
+    "long": "-83.6706580",
+    "address": "4063 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178113",
+    "lat": "42.2300986",
+    "long": "-83.6706678",
+    "address": "4035 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178114",
+    "lat": "42.2276891",
+    "long": "-83.6706160",
+    "address": "4211 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178115",
+    "lat": "42.2275038",
+    "long": "-83.6706113",
+    "address": "4225 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178116",
+    "lat": "42.2280727",
+    "long": "-83.6706301",
+    "address": "4183 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178117",
+    "lat": "42.2278732",
+    "long": "-83.6706449",
+    "address": "4199 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178118",
+    "lat": "42.2282574",
+    "long": "-83.6706590",
+    "address": "4167 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178119",
+    "lat": "42.2284682",
+    "long": "-83.6713065",
+    "address": "4154 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178120",
+    "lat": "42.2282704",
+    "long": "-83.6713046",
+    "address": "4166 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178121",
+    "lat": "42.2280785",
+    "long": "-83.6712967",
+    "address": "4182 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178122",
+    "lat": "42.2278898",
+    "long": "-83.6712940",
+    "address": "4198 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178123",
+    "lat": "42.2270895",
+    "long": "-83.6712811",
+    "address": "4252 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178124",
+    "lat": "42.2274834",
+    "long": "-83.6712866",
+    "address": "4224 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178125",
+    "lat": "42.2272992",
+    "long": "-83.6712681",
+    "address": "4238 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178126",
+    "lat": "42.2293261",
+    "long": "-83.6713043",
+    "address": "4092 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178127",
+    "lat": "42.2288763",
+    "long": "-83.6706692",
+    "address": "4123 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178128",
+    "lat": "42.2290795",
+    "long": "-83.6706734",
+    "address": "4109 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178129",
+    "lat": "42.2294852",
+    "long": "-83.6706760",
+    "address": "4079 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178130",
+    "lat": "42.2293079",
+    "long": "-83.6706742",
+    "address": "4095 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178131",
+    "lat": "42.2273059",
+    "long": "-83.6706378",
+    "address": "4239 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178132",
+    "lat": "42.2271118",
+    "long": "-83.6706250",
+    "address": "4253 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178135",
+    "lat": "42.2291442",
+    "long": "-83.6713466",
+    "address": "4100 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178136",
+    "lat": "42.2289710",
+    "long": "-83.6713248",
+    "address": "4118 Crystal Creek Drive"
+  },
+  {
+    "ID": "988178137",
+    "lat": "42.2286689",
+    "long": "-83.6713170",
+    "address": "4140 Crystal Creek Drive"
+  },
+  {
+    "ID": "1063415695",
+    "lat": "42.2324884",
+    "long": "-83.6144741",
+    "buildingName": "The Patient Station",
+    "address": "539 South Huron Street"
+  },
+  {
+    "ID": "1116142400",
+    "lat": "42.2299082",
+    "long": "-83.6707098",
+    "address": "4049 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116142401",
+    "lat": "42.2301436",
+    "long": "-83.6714932",
+    "address": "4030 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116142402",
+    "lat": "42.2299064",
+    "long": "-83.6714485",
+    "address": "4046 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116142403",
+    "lat": "42.2297179",
+    "long": "-83.6713801",
+    "address": "4060 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116142404",
+    "lat": "42.2295193",
+    "long": "-83.6713184",
+    "address": "4074 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116142405",
+    "lat": "42.2276719",
+    "long": "-83.6712939",
+    "address": "4210 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116142406",
+    "lat": "42.2268964",
+    "long": "-83.6713089",
+    "address": "4266 Crystal Creek Drive"
+  },
+  {
+    "ID": "1116177614",
+    "lat": "42.2266589",
+    "long": "-83.6744065",
+    "address": "4254 Woodstream Drive"
+  },
+  {
+    "ID": "1116177615",
+    "lat": "42.2264116",
+    "long": "-83.6713010",
+    "address": "4412 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177616",
+    "lat": "42.2264294",
+    "long": "-83.6715985",
+    "address": "4396 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177617",
+    "lat": "42.2264379",
+    "long": "-83.6718957",
+    "address": "4380 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177618",
+    "lat": "42.2265110",
+    "long": "-83.6721704",
+    "address": "4366 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177619",
+    "lat": "42.2265488",
+    "long": "-83.6724057",
+    "address": "4350 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177620",
+    "lat": "42.2266197",
+    "long": "-83.6726411",
+    "address": "4342 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177621",
+    "lat": "42.2266464",
+    "long": "-83.6728962",
+    "address": "4326 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177623",
+    "lat": "42.2266810",
+    "long": "-83.6731568",
+    "address": "4318 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177624",
+    "lat": "42.2267074",
+    "long": "-83.6734343",
+    "address": "4314 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177625",
+    "lat": "42.2266946",
+    "long": "-83.6736916",
+    "address": "4310 Ridgewood Drive"
+  },
+  {
+    "ID": "1116177626",
+    "lat": "42.2264088",
+    "long": "-83.6705658",
+    "address": "4434 Woodstream Drive"
+  },
+  {
+    "ID": "1116177627",
+    "lat": "42.2262047",
+    "long": "-83.6706290",
+    "address": "4430 Woodstream Drive"
+  },
+  {
+    "ID": "1116177628",
+    "lat": "42.2259896",
+    "long": "-83.6707179",
+    "address": "4426 Woodstream Drive"
+  },
+  {
+    "ID": "1116177630",
+    "lat": "42.2258140",
+    "long": "-83.6708613",
+    "address": "4422 Woodstream Drive"
+  },
+  {
+    "ID": "1116177631",
+    "lat": "42.2256718",
+    "long": "-83.6710536",
+    "address": "4416 Woodstream Drive"
+  },
+  {
+    "ID": "1116177632",
+    "lat": "42.2255833",
+    "long": "-83.6712701",
+    "address": "4408 Woodstream Drive"
+  },
+  {
+    "ID": "1116177633",
+    "lat": "42.2254837",
+    "long": "-83.6715173",
+    "address": "4394 Woodstream Drive"
+  },
+  {
+    "ID": "1116177634",
+    "lat": "42.2254926",
+    "long": "-83.6717953",
+    "address": "4380 Woodstream Drive"
+  },
+  {
+    "ID": "1116177635",
+    "lat": "42.2255058",
+    "long": "-83.6720473",
+    "address": "4366 Woodstream Drive"
+  },
+  {
+    "ID": "1116177636",
+    "lat": "42.2254999",
+    "long": "-83.6723125",
+    "address": "4352 Woodstream Drive"
+  },
+  {
+    "ID": "1116177637",
+    "lat": "42.2254767",
+    "long": "-83.6725776",
+    "address": "4340 Woodstream Drive"
+  },
+  {
+    "ID": "1116177638",
+    "lat": "42.2254675",
+    "long": "-83.6728364",
+    "address": "4328 Woodstream Drive"
+  },
+  {
+    "ID": "1116177639",
+    "lat": "42.2255223",
+    "long": "-83.6731012",
+    "address": "4312 Woodstream Drive"
+  },
+  {
+    "ID": "1116177640",
+    "lat": "42.2255004",
+    "long": "-83.6733724",
+    "address": "4296 Woodstream Drive"
+  },
+  {
+    "ID": "1116177641",
+    "lat": "42.2255546",
+    "long": "-83.6736292",
+    "address": "4282 Woodstream Drive"
+  },
+  {
+    "ID": "1116177642",
+    "lat": "42.2256655",
+    "long": "-83.6738730",
+    "address": "4276 Woodstream Drive"
+  },
+  {
+    "ID": "1116177643",
+    "lat": "42.2258381",
+    "long": "-83.6740570",
+    "address": "4268 Woodstream Drive"
+  },
+  {
+    "ID": "1116177644",
+    "lat": "42.2260034",
+    "long": "-83.6742302",
+    "address": "4264 Woodstream Drive"
+  },
+  {
+    "ID": "1116177645",
+    "lat": "42.2261931",
+    "long": "-83.6742963",
+    "address": "4260 Woodstream Drive"
+  },
+  {
+    "ID": "1116177646",
+    "lat": "42.2264082",
+    "long": "-83.6743026",
+    "address": "4256 Woodstream Drive"
+  },
+  {
+    "ID": "1116177647",
+    "lat": "42.2263485",
+    "long": "-83.6736737",
+    "address": "4259 Woodstream Drive"
+  },
+  {
+    "ID": "1116177648",
+    "lat": "42.2261406",
+    "long": "-83.6735198",
+    "address": "4265 Woodstream Drive"
+  },
+  {
+    "ID": "1116177649",
+    "lat": "42.2260136",
+    "long": "-83.6732786",
+    "address": "4287 Woodstream Drive"
+  },
+  {
+    "ID": "1116177650",
+    "lat": "42.2260052",
+    "long": "-83.6729922",
+    "address": "4315 Woodstream Drive"
+  },
+  {
+    "ID": "1116177651",
+    "lat": "42.2259596",
+    "long": "-83.6727230",
+    "address": "4333 Woodstream Drive"
+  },
+  {
+    "ID": "1116177652",
+    "lat": "42.2259882",
+    "long": "-83.6724709",
+    "address": "4345 Woodstream Drive"
+  },
+  {
+    "ID": "1116177653",
+    "lat": "42.2259814",
+    "long": "-83.6722128",
+    "address": "4357 Woodstream Drive"
+  },
+  {
+    "ID": "1116177654",
+    "lat": "42.2259366",
+    "long": "-83.6719366",
+    "address": "4371 Woodstream Drive"
+  },
+  {
+    "ID": "1116177655",
+    "lat": "42.2259964",
+    "long": "-83.6716563",
+    "address": "4393 Woodstream Drive"
+  },
+  {
+    "ID": "1116177656",
+    "lat": "42.2260916",
+    "long": "-83.6713836",
+    "address": "4425 Woodstream Drive"
+  },
+  {
+    "ID": "1116503518",
+    "lat": "42.2279166",
+    "long": "-83.6749875",
+    "address": "4218 Woodcrest Court"
+  },
+  {
+    "ID": "1116503519",
+    "lat": "42.2276890",
+    "long": "-83.6747197",
+    "address": "4230 Woodcrest Court"
+  },
+  {
+    "ID": "1116503520",
+    "lat": "42.2276969",
+    "long": "-83.6743658",
+    "address": "4242 Woodcrest Court"
+  },
+  {
+    "ID": "1116503521",
+    "lat": "42.2278225",
+    "long": "-83.6741311",
+    "address": "4258 Woodcrest Court"
+  },
+  {
+    "ID": "1116503522",
+    "lat": "42.2280665",
+    "long": "-83.6740750",
+    "address": "4253 Woodcrest Court"
+  },
+  {
+    "ID": "1116503523",
+    "lat": "42.2282824",
+    "long": "-83.6741938",
+    "address": "4249 Woodcrest Court"
+  },
+  {
+    "ID": "1116503524",
+    "lat": "42.2284027",
+    "long": "-83.6744542",
+    "address": "4241 Woodcrest Court"
+  },
+  {
+    "ID": "1116503525",
+    "lat": "42.2284255",
+    "long": "-83.6747163",
+    "address": "4227 Woodcrest Court"
+  },
+  {
+    "ID": "1116503526",
+    "lat": "42.2283909",
+    "long": "-83.6749920",
+    "address": "4217 Woodcrest Court"
+  },
+  {
+    "ID": "1116503530",
+    "lat": "42.2296811",
+    "long": "-83.6750146",
+    "address": "4006 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503531",
+    "lat": "42.2296639",
+    "long": "-83.6747752",
+    "address": "4010 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503532",
+    "lat": "42.2296534",
+    "long": "-83.6745006",
+    "address": "4018 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503533",
+    "lat": "42.2296049",
+    "long": "-83.6740004",
+    "address": "4028 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503534",
+    "lat": "42.2296147",
+    "long": "-83.6737323",
+    "address": "4036 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503535",
+    "lat": "42.2296341",
+    "long": "-83.6734826",
+    "address": "4040 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503536",
+    "lat": "42.2295950",
+    "long": "-83.6732209",
+    "address": "4042 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503537",
+    "lat": "42.2295383",
+    "long": "-83.6729451",
+    "address": "4050 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503538",
+    "lat": "42.2293746",
+    "long": "-83.6726733",
+    "address": "4070 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503539",
+    "lat": "42.2291488",
+    "long": "-83.6726599",
+    "address": "4102 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503540",
+    "lat": "42.2289625",
+    "long": "-83.6726250",
+    "address": "4118 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503541",
+    "lat": "42.2287669",
+    "long": "-83.6726540",
+    "address": "4136 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503542",
+    "lat": "42.2285774",
+    "long": "-83.6726372",
+    "address": "4144 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503543",
+    "lat": "42.2283981",
+    "long": "-83.6726253",
+    "address": "4160 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503544",
+    "lat": "42.2282020",
+    "long": "-83.6726075",
+    "address": "4174 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503545",
+    "lat": "42.2279993",
+    "long": "-83.6726665",
+    "address": "4200 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503546",
+    "lat": "42.2278249",
+    "long": "-83.6726909",
+    "address": "4206 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503548",
+    "lat": "42.2276059",
+    "long": "-83.6727700",
+    "address": "4220 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503549",
+    "lat": "42.2274176",
+    "long": "-83.6728262",
+    "address": "4236 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503550",
+    "lat": "42.2270374",
+    "long": "-83.6722747",
+    "address": "4253 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503552",
+    "lat": "42.2301548",
+    "long": "-83.6749660",
+    "address": "4007 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503553",
+    "lat": "42.2301425",
+    "long": "-83.6746528",
+    "address": "4013 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503554",
+    "lat": "42.2301448",
+    "long": "-83.6744192",
+    "address": "4019 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503555",
+    "lat": "42.2301269",
+    "long": "-83.6741309",
+    "address": "4025 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503556",
+    "lat": "42.2300979",
+    "long": "-83.6739162",
+    "address": "4031 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503557",
+    "lat": "42.2300989",
+    "long": "-83.6736196",
+    "address": "4039 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503558",
+    "lat": "42.2300872",
+    "long": "-83.6733971",
+    "address": "4043 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503559",
+    "lat": "42.2300989",
+    "long": "-83.6731368",
+    "address": "4047 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503560",
+    "lat": "42.2300736",
+    "long": "-83.6728307",
+    "address": "4051 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503561",
+    "lat": "42.2299940",
+    "long": "-83.6725860",
+    "address": "4055 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503562",
+    "lat": "42.2298797",
+    "long": "-83.6723595",
+    "address": "4059 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503563",
+    "lat": "42.2297118",
+    "long": "-83.6722133",
+    "address": "4061 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503564",
+    "lat": "42.2295168",
+    "long": "-83.6720506",
+    "address": "4077 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503565",
+    "lat": "42.2293384",
+    "long": "-83.6720181",
+    "address": "4091 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503566",
+    "lat": "42.2291169",
+    "long": "-83.6720037",
+    "address": "4109 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503567",
+    "lat": "42.2289240",
+    "long": "-83.6720051",
+    "address": "4121 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503568",
+    "lat": "42.2286650",
+    "long": "-83.6719934",
+    "address": "4139 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503569",
+    "lat": "42.2284256",
+    "long": "-83.6719464",
+    "address": "4157 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503571",
+    "lat": "42.2281919",
+    "long": "-83.6719645",
+    "address": "4171 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503572",
+    "lat": "42.2279893",
+    "long": "-83.6720025",
+    "address": "4187 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503573",
+    "lat": "42.2277919",
+    "long": "-83.6720199",
+    "address": "4205 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503574",
+    "lat": "42.2276016",
+    "long": "-83.6721343",
+    "address": "4213 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503575",
+    "lat": "42.2274224",
+    "long": "-83.6721352",
+    "address": "4227 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503576",
+    "lat": "42.2272329",
+    "long": "-83.6722094",
+    "address": "4241 Woodcreek Drive"
+  },
+  {
+    "ID": "1116503577",
+    "lat": "42.2271702",
+    "long": "-83.6729371",
+    "address": "4321 Ridgewood Drive"
+  },
+  {
+    "ID": "1116503578",
+    "lat": "42.2272059",
+    "long": "-83.6732221",
+    "address": "4317 Ridgewood Drive"
+  },
+  {
+    "ID": "1116503579",
+    "lat": "42.2271932",
+    "long": "-83.6734971",
+    "address": "4313 Ridgewood Drive"
+  },
+  {
+    "ID": "1116503580",
+    "lat": "42.2272060",
+    "long": "-83.6737680",
+    "address": "4311 Ridgewood Drive"
+  },
+  {
+    "ID": "1117507622",
+    "lat": "42.2272042",
+    "long": "-83.6741824",
+    "address": "4305 Ridgewood Drive"
+  },
+  {
+    "ID": "1117507623",
+    "lat": "42.2271698",
+    "long": "-83.6744391",
+    "address": "4301 Ridgewood Drive"
+  },
+  {
+    "ID": "1117507624",
+    "lat": "42.2271288",
+    "long": "-83.6747002",
+    "address": "4293 Ridgewood Drive"
+  },
+  {
+    "ID": "1117507625",
+    "lat": "42.2271917",
+    "long": "-83.6749410",
+    "address": "4279 Ridgewood Drive"
+  },
+  {
+    "ID": "1117507645",
+    "lat": "42.2266667",
+    "long": "-83.6748848",
+    "address": "4286 Ridgewood Drive"
+  },
+  {
+    "ID": "1363123324",
+    "lat": "42.2273692",
+    "long": "-83.6460088",
+    "address": "2418 West Michigan Avenue"
+  },
+  {
+    "ID": "1442607315",
+    "lat": "42.2206886",
+    "long": "-83.6190343",
+    "buildingName": "Aldi",
+    "address": "1420 Huron Street"
+  },
+  {
+    "ID": "3123196137",
+    "lat": "42.2170343",
+    "long": "-83.5623655",
+    "buildingName": "Howards Hoagies",
+    "address": "2013 McCartney Avenue"
+  },
+  {
+    "ID": "7838475075",
+    "lat": "42.2324507",
+    "long": "-83.6022498",
+    "buildingName": "Siddiqui Medical & Dental Clinic",
+    "address": "428 South Grove Street"
+  },
+  {
+    "ID": "8439710161",
+    "lat": "42.2305502",
+    "long": "-83.5982351",
+    "buildingName": "Citgo",
+    "address": "745 South Grove Street"
+  },
+  {
+    "ID": "8590080330",
+    "lat": "42.2175620",
+    "long": "-83.5405505",
+    "buildingName": "Dollar General",
+    "address": "2037 Rawsonville Road"
+  },
+  {
+    "ID": "8590080332",
+    "lat": "42.2156521",
+    "long": "-83.5451111",
+    "buildingName": "Mobil Mart",
+    "address": "2120 Rawsonville Road"
+  },
+  {
+    "ID": "8832827525",
+    "lat": "42.2162494",
+    "long": "-83.5409244",
+    "buildingName": "Little Caesars",
+    "address": "2081 Rawsonville Rd"
+  },
+  {
+    "ID": "223686849",
+    "lat": "42.2323745",
+    "long": "-83.5639853",
+    "buildingName": "New Covenant Missionary Baptist",
+    "address": "2345 Tyler Road"
+  },
+  {
+    "ID": "460519017",
+    "lat": "42.2349156",
+    "long": "-83.5882660",
+    "buildingName": "BP",
+    "address": "1166 Ecorse Road"
+  },
+  {
+    "ID": "530795410",
+    "lat": "42.2169226",
+    "long": "-83.5675606",
+    "buildingName": "Domino's",
+    "address": "2121 South Grove Road"
+  },
+  {
+    "ID": "544168719",
+    "lat": "42.2156695",
+    "long": "-83.5713519",
+    "buildingName": "Lakeshore Clubhouse",
+    "address": "2500 Lakeview Drive"
+  },
+  {
+    "ID": "871538784",
+    "lat": "42.2321212",
+    "long": "-83.5699180",
+    "buildingName": "Whitehead Memorial Church of God in Christ",
+    "address": "2069 Tyler Road"
+  },
+  {
+    "ID": "871556564",
+    "lat": "42.2323020",
+    "long": "-83.5705276",
+    "buildingName": "New West Willow Neighborhood Association Community Resource Center",
+    "address": "2057 Tyler Road"
+  },
+  {
+    "ID": "896361972",
+    "lat": "42.2153525",
+    "long": "-83.5629337",
+    "address": "2375 South Grove Street"
+  },
+  {
+    "ID": "902844920",
+    "lat": "42.2289864",
+    "long": "-83.5910237",
+    "address": "1143 Georgina Drive"
+  },
+  {
+    "ID": "902845780",
+    "lat": "42.2255930",
+    "long": "-83.5927646",
+    "address": "1450 Jeffery Street"
+  },
+  {
+    "ID": "908949630",
+    "lat": "42.2347314",
+    "long": "-83.5831366",
+    "buildingName": "Mobil",
+    "address": "1396 Ecorse Road"
+  },
+  {
+    "ID": "908949632",
+    "lat": "42.2348913",
+    "long": "-83.5914947",
+    "buildingName": "Midway Sunoco",
+    "address": "1024 Ecorse Road"
+  },
+  {
+    "ID": "920182158",
+    "lat": "42.2348478",
+    "long": "-83.5863648",
+    "buildingName": "Ice Cream Time",
+    "address": "1240 Ecorse Road"
+  },
+  {
+    "ID": "920182700",
+    "lat": "42.2343504",
+    "long": "-83.5903905",
+    "buildingName": "George School",
+    "address": "1076 Ecorse Road"
+  },
+  {
+    "ID": "1057028185",
+    "lat": "42.2154081",
+    "long": "-83.5905688",
+    "address": "5030 Spinnaker Way"
+  },
+  {
+    "ID": "1057028187",
+    "lat": "42.2155350",
+    "long": "-83.5898027",
+    "address": "5010 Spinnaker Way"
+  },
+  {
+    "ID": "1057028188",
+    "lat": "42.2156169",
+    "long": "-83.5894689",
+    "address": "5000 Spinnaker Way"
+  },
+  {
+    "ID": "2141668824",
+    "lat": "42.2384196",
+    "long": "-83.5803212",
+    "buildingName": "Fran's Gas",
+    "address": "350 Ford Boulevard"
+  },
+  {
+    "ID": "2141670269",
+    "lat": "42.2385718",
+    "long": "-83.5804563",
+    "buildingName": "Pizza Perfect",
+    "address": "332 South Ford Boulevard"
+  },
+  {
+    "ID": "6797609079",
+    "lat": "42.2535019",
+    "long": "-83.5823975",
+    "buildingName": "American Grille",
+    "address": "1450 Holmes Road"
+  },
+  {
+    "ID": "7816088854",
+    "lat": "42.2540213",
+    "long": "-83.5809170",
+    "buildingName": "Boggs",
+    "address": "1507 Holmes Road"
+  },
+  {
+    "ID": "7914240704",
+    "lat": "42.2468719",
+    "long": "-83.5737534",
+    "buildingName": "Universal Engine Repair",
+    "address": "8 June"
+  },
+  {
+    "ID": "7914241043",
+    "lat": "42.2469749",
+    "long": "-83.5862732",
+    "buildingName": "Advanced Automotive Services",
+    "address": "1275 East Cross Street"
+  },
+  {
+    "ID": "7914241134",
+    "lat": "42.2437492",
+    "long": "-83.5918520",
+    "buildingName": "Auto Ave Complete Auto Repair",
+    "address": "1021 East Michigan Avenue"
+  },
+  {
+    "ID": "8121209975",
+    "lat": "42.2442187",
+    "long": "-83.5900186",
+    "buildingName": "Eastern Pharmacy Sav-Mor",
+    "address": "1159 East Michigan Avenue"
+  },
+  {
+    "ID": "8218569316",
+    "lat": "42.2546183",
+    "long": "-83.5795458",
+    "buildingName": "Shoppers Marketplace",
+    "address": "1571 Holmes Road"
+  },
+  {
+    "ID": "8439710051",
+    "lat": "42.2546142",
+    "long": "-83.5784389",
+    "buildingName": "Harvest Liquor Shop",
+    "address": "1645 Holmes Road"
+  },
+  {
+    "ID": "8439710052",
+    "lat": "42.2546569",
+    "long": "-83.5790974",
+    "buildingName": "Dollar Tree",
+    "address": "1621 Holmes Road"
+  },
+  {
+    "ID": "8439710053",
+    "lat": "42.2534260",
+    "long": "-83.5810648",
+    "buildingName": "Sunoco",
+    "address": "1526 Holmes Road"
+  },
+  {
+    "ID": "8439710054",
+    "lat": "42.2542062",
+    "long": "-83.5801072",
+    "buildingName": "Citgo",
+    "address": "1521 Holmes Road"
+  },
+  {
+    "ID": "8439710133",
+    "lat": "42.2483682",
+    "long": "-83.5746878",
+    "buildingName": "Family Dollar",
+    "address": "1821 East Michigan Avenue"
+  },
+  {
+    "ID": "8439710134",
+    "lat": "42.2541001",
+    "long": "-83.5512145",
+    "buildingName": "Exxon",
+    "address": "3025 East Michigan Avenue"
+  },
+  {
+    "ID": "8439710136",
+    "lat": "42.2457897",
+    "long": "-83.5834735",
+    "buildingName": "Speedway",
+    "address": "1395 East Michigan Avenue"
+  },
+  {
+    "ID": "12137558146",
+    "lat": "42.2523120",
+    "long": "-83.5697580",
+    "buildingName": "Ypsilanti Community Middle School",
+    "address": "235 Spencer Lane"
+  },
+  {
+    "ID": "13012079581",
+    "lat": "42.2484664",
+    "long": "-83.5752703",
+    "buildingName": "Kroger",
+    "address": "1771 East Michigan Avenue"
+  },
+  {
+    "ID": "13012079594",
+    "lat": "42.2461116",
+    "long": "-83.5820323",
+    "buildingName": "CVS Pharmacy",
+    "address": "1415 East Michigan Avenue"
+  },
+  {
+    "ID": "13626455047",
+    "lat": "42.2351459",
+    "long": "-83.5819355",
+    "buildingName": "Antojitos El Dicho Don Rogelio",
+    "address": "1425 Ecorse Road"
+  },
+  {
+    "ID": "460615574",
+    "lat": "42.2509547",
+    "long": "-83.5603428",
+    "buildingName": "New Image Beauty Supply",
+    "address": "2562 East Michigan Avenue"
+  },
+  {
+    "ID": "482935028",
+    "lat": "42.2536466",
+    "long": "-83.5482851",
+    "buildingName": "Michigan Avenue Service Center",
+    "address": "3150 Michigan Avenue"
+  },
+  {
+    "ID": "498644521",
+    "lat": "42.2500908",
+    "long": "-83.5708185",
+    "buildingName": "Core-Mark International",
+    "address": "2085 East Michigan Avenue"
+  },
+  {
+    "ID": "502987119",
+    "lat": "42.2389594",
+    "long": "-83.5793044",
+    "buildingName": "Masjid Ibraham",
+    "address": "315 South Ford Boulevard"
+  },
+  {
+    "ID": "624077408",
+    "lat": "42.2358198",
+    "long": "-83.5915515",
+    "buildingName": "Calvary Baptist Church",
+    "address": "1007 Ecorse Road"
+  },
+  {
+    "ID": "692422771",
+    "lat": "42.2378749",
+    "long": "-83.5536199",
+    "buildingName": "American Center for Mobility LGT-1",
+    "address": "2801 Airport Drive"
+  },
+  {
+    "ID": "867975927",
+    "lat": "42.2451507",
+    "long": "-83.5832459",
+    "buildingName": "Taqueria La Marqueza",
+    "address": "1396 East Michigan Avenue"
+  },
+  {
+    "ID": "871788054",
+    "lat": "42.2557477",
+    "long": "-83.5530787",
+    "buildingName": "Coleman’s Farm Markets",
+    "address": "910 Ridge Road"
+  },
+  {
+    "ID": "871914160",
+    "lat": "42.2447673",
+    "long": "-83.5843795",
+    "buildingName": "Tik Alito Restaurant",
+    "address": "1346 East Michigan Avenue"
+  },
+  {
+    "ID": "883691566",
+    "lat": "42.2415287",
+    "long": "-83.5807442",
+    "buildingName": "American Tailoring",
+    "address": "160 South Ford Boulevard"
+  },
+  {
+    "ID": "896365960",
+    "lat": "42.2355916",
+    "long": "-83.5792518",
+    "buildingName": "Long’s Automotive",
+    "address": "1525 Ecorse Road"
+  },
+  {
+    "ID": "925313133",
+    "lat": "42.2470093",
+    "long": "-83.5809490",
+    "buildingName": "Malek's Auto Care",
+    "address": "1503 East Michigan Avenue"
+  },
+  {
+    "ID": "1039169397",
+    "lat": "42.2717638",
+    "long": "-83.5912159",
+    "address": "1914 Savannah Lane"
+  },
+  {
+    "ID": "1042012045",
+    "lat": "42.2659741",
+    "long": "-83.5889402",
+    "address": "8647 Hemlock Ct"
+  },
+  {
+    "ID": "1042012046",
+    "lat": "42.2663666",
+    "long": "-83.5894112",
+    "address": "8611 Hemlock Ct"
+  },
+  {
+    "ID": "1042012047",
+    "lat": "42.2660802",
+    "long": "-83.5891018",
+    "address": "8635 Hemlock Ct"
+  },
+  {
+    "ID": "1042013243",
+    "lat": "42.2655473",
+    "long": "-83.5890951",
+    "address": "8660 Hemlock Ct"
+  },
+  {
+    "ID": "1042013244",
+    "lat": "42.2657617",
+    "long": "-83.5894726",
+    "address": "8636 Hemlock Ct"
+  },
+  {
+    "ID": "1042013245",
+    "lat": "42.2656511",
+    "long": "-83.5893055",
+    "address": "8648 Hemlock Ct"
+  },
+  {
+    "ID": "1042013246",
+    "lat": "42.2656349",
+    "long": "-83.5883793",
+    "address": "8683 Hemlock Ct"
+  },
+  {
+    "ID": "1042013247",
+    "lat": "42.2658700",
+    "long": "-83.5887735",
+    "address": "8659 Hemlock Ct"
+  },
+  {
+    "ID": "1042016477",
+    "lat": "42.2637383",
+    "long": "-83.5862626",
+    "address": "1714 Devon"
+  },
+  {
+    "ID": "1042016479",
+    "lat": "42.2634284",
+    "long": "-83.5864355",
+    "address": "1688 Devon"
+  },
+  {
+    "ID": "1042016482",
+    "lat": "42.2627967",
+    "long": "-83.5867821",
+    "address": "1632 Devon"
+  },
+  {
+    "ID": "1042018092",
+    "lat": "42.2647328",
+    "long": "-83.5848627",
+    "address": "8928 Nottingham Drive"
+  },
+  {
+    "ID": "1042018100",
+    "lat": "42.2653791",
+    "long": "-83.5855914",
+    "address": "8948 Nottingham Drive"
+  },
+  {
+    "ID": "1042018207",
+    "lat": "42.2639966",
+    "long": "-83.5859945",
+    "address": "1738 Devon"
+  },
+  {
+    "ID": "1042018209",
+    "lat": "42.2635933",
+    "long": "-83.5863347",
+    "address": "1702 Decon"
+  },
+  {
+    "ID": "1042074181",
+    "lat": "42.2652329",
+    "long": "-83.5884995",
+    "address": "8696 Hemlock Ct"
+  },
+  {
+    "ID": "1042074182",
+    "lat": "42.2656110",
+    "long": "-83.5881931",
+    "address": "8695 Hemlock Ct"
+  },
+  {
+    "ID": "1106217517",
+    "lat": "42.2652595",
+    "long": "-83.5854392",
+    "address": "8944 Nottingham Drive"
+  },
+  {
+    "ID": "1106218222",
+    "lat": "42.2650042",
+    "long": "-83.5859115",
+    "address": "8943 Nottingham Drive"
+  },
+  {
+    "ID": "1106218223",
+    "lat": "42.2651447",
+    "long": "-83.5860405",
+    "address": "8947 Nottingham Drive"
+  },
+  {
+    "ID": "1245411088",
+    "lat": "42.2635661",
+    "long": "-83.5720774",
+    "address": "1638 Greenway Drive"
+  },
+  {
+    "ID": "1304928362",
+    "lat": "42.2729828",
+    "long": "-83.5826362",
+    "buildingName": "Ypsilanti District Library — Superior",
+    "address": "1900 North Harris Road"
+  },
+  {
+    "ID": "1361784781",
+    "lat": "42.2727326",
+    "long": "-83.5714773",
+    "address": "1859 Beechlawn"
+  },
+  {
     "ID": "748964467",
     "lat": "42.2779705",
     "long": "-83.7411190",

@@ -1,0 +1,433 @@
+[
+  {
+    "ID": "2141668824",
+    "lat": "42.2384196",
+    "long": "-83.5803212",
+    "buildingName": "Fran's Gas",
+    "address": "350 Ford Boulevard"
+  },
+  {
+    "ID": "2141670269",
+    "lat": "42.2385718",
+    "long": "-83.5804563",
+    "buildingName": "Pizza Perfect",
+    "address": "332 South Ford Boulevard"
+  },
+  {
+    "ID": "6797609079",
+    "lat": "42.2535019",
+    "long": "-83.5823975",
+    "buildingName": "American Grille",
+    "address": "1450 Holmes Road"
+  },
+  {
+    "ID": "7816088854",
+    "lat": "42.2540213",
+    "long": "-83.5809170",
+    "buildingName": "Boggs",
+    "address": "1507 Holmes Road"
+  },
+  {
+    "ID": "7914240704",
+    "lat": "42.2468719",
+    "long": "-83.5737534",
+    "buildingName": "Universal Engine Repair",
+    "address": "8 June"
+  },
+  {
+    "ID": "7914241043",
+    "lat": "42.2469749",
+    "long": "-83.5862732",
+    "buildingName": "Advanced Automotive Services",
+    "address": "1275 East Cross Street"
+  },
+  {
+    "ID": "7914241134",
+    "lat": "42.2437492",
+    "long": "-83.5918520",
+    "buildingName": "Auto Ave Complete Auto Repair",
+    "address": "1021 East Michigan Avenue"
+  },
+  {
+    "ID": "8121209975",
+    "lat": "42.2442187",
+    "long": "-83.5900186",
+    "buildingName": "Eastern Pharmacy Sav-Mor",
+    "address": "1159 East Michigan Avenue"
+  },
+  {
+    "ID": "8218569316",
+    "lat": "42.2546183",
+    "long": "-83.5795458",
+    "buildingName": "Shoppers Marketplace",
+    "address": "1571 Holmes Road"
+  },
+  {
+    "ID": "8439710031",
+    "lat": "42.2383343",
+    "long": "-83.5804420",
+    "buildingName": "Fran's Gas",
+    "address": "350 Ford Boulevard"
+  },
+  {
+    "ID": "8439710051",
+    "lat": "42.2546142",
+    "long": "-83.5784389",
+    "buildingName": "Harvest Liquor Shop",
+    "address": "1645 Holmes Road"
+  },
+  {
+    "ID": "8439710052",
+    "lat": "42.2546569",
+    "long": "-83.5790974",
+    "buildingName": "Dollar Tree",
+    "address": "1621 Holmes Road"
+  },
+  {
+    "ID": "8439710053",
+    "lat": "42.2534260",
+    "long": "-83.5810648",
+    "buildingName": "Sunoco",
+    "address": "1526 Holmes Road"
+  },
+  {
+    "ID": "8439710054",
+    "lat": "42.2542062",
+    "long": "-83.5801072",
+    "buildingName": "Citgo",
+    "address": "1521 Holmes Road"
+  },
+  {
+    "ID": "8439710055",
+    "lat": "42.2541278",
+    "long": "-83.5810930",
+    "buildingName": "Boggs",
+    "address": "1507 Holmes Road"
+  },
+  {
+    "ID": "8439710056",
+    "lat": "42.2535631",
+    "long": "-83.5810798",
+    "buildingName": "Sunoco",
+    "address": "1526 Holmes Road"
+  },
+  {
+    "ID": "8439710057",
+    "lat": "42.2540347",
+    "long": "-83.5802266",
+    "buildingName": "Citgo",
+    "address": "1521 Holmes Road"
+  },
+  {
+    "ID": "8439710133",
+    "lat": "42.2483682",
+    "long": "-83.5746878",
+    "buildingName": "Family Dollar",
+    "address": "1821 East Michigan Avenue"
+  },
+  {
+    "ID": "8439710134",
+    "lat": "42.2541001",
+    "long": "-83.5512145",
+    "buildingName": "Exxon",
+    "address": "3025 East Michigan Avenue"
+  },
+  {
+    "ID": "8439710136",
+    "lat": "42.2457897",
+    "long": "-83.5834735",
+    "buildingName": "Speedway",
+    "address": "1395 East Michigan Avenue"
+  },
+  {
+    "ID": "8439710138",
+    "lat": "42.2460274",
+    "long": "-83.5835234",
+    "buildingName": "Speedway",
+    "address": "1395 East Michigan Avenue"
+  },
+  {
+    "ID": "12137558146",
+    "lat": "42.2523120",
+    "long": "-83.5697580",
+    "buildingName": "Ypsilanti Community Middle School",
+    "address": "235 Spencer Lane"
+  },
+  {
+    "ID": "13012079581",
+    "lat": "42.2484664",
+    "long": "-83.5752703",
+    "buildingName": "Kroger",
+    "address": "1771 East Michigan Avenue"
+  },
+  {
+    "ID": "13012079594",
+    "lat": "42.2461116",
+    "long": "-83.5820323",
+    "buildingName": "CVS Pharmacy",
+    "address": "1415 East Michigan Avenue"
+  },
+  {
+    "ID": "13626455047",
+    "lat": "42.2351459",
+    "long": "-83.5819355",
+    "buildingName": "Antojitos El Dicho Don Rogelio",
+    "address": "1425 Ecorse Road"
+  },
+  {
+    "ID": "442810708",
+    "lat": "42.2443503",
+    "long": "-83.5899711",
+    "address": "1159 East Michigan Avenue"
+  },
+  {
+    "ID": "460567289",
+    "lat": "42.2540885",
+    "long": "-83.5514831",
+    "buildingName": "Beydoun Service",
+    "address": "3025 East Michigan Avenue"
+  },
+  {
+    "ID": "460615574",
+    "lat": "42.2509547",
+    "long": "-83.5603428",
+    "buildingName": "New Image Beauty Supply",
+    "address": "2562 East Michigan Avenue"
+  },
+  {
+    "ID": "482935028",
+    "lat": "42.2536466",
+    "long": "-83.5482851",
+    "buildingName": "Michigan Avenue Service Center",
+    "address": "3150 Michigan Avenue"
+  },
+  {
+    "ID": "498644521",
+    "lat": "42.2500908",
+    "long": "-83.5708185",
+    "buildingName": "Core-Mark International",
+    "address": "2085 East Michigan Avenue"
+  },
+  {
+    "ID": "502987119",
+    "lat": "42.2389594",
+    "long": "-83.5793044",
+    "buildingName": "Masjid Ibraham",
+    "address": "315 South Ford Boulevard"
+  },
+  {
+    "ID": "624077408",
+    "lat": "42.2358198",
+    "long": "-83.5915515",
+    "buildingName": "Calvary Baptist Church",
+    "address": "1007 Ecorse Road"
+  },
+  {
+    "ID": "624077410",
+    "lat": "42.2461281",
+    "long": "-83.5823334",
+    "buildingName": "CVS Pharmacy",
+    "address": "1415 East Michigan Avenue"
+  },
+  {
+    "ID": "692422771",
+    "lat": "42.2378749",
+    "long": "-83.5536199",
+    "buildingName": "American Center for Mobility LGT-1",
+    "address": "2801 Airport Drive"
+  },
+  {
+    "ID": "867975927",
+    "lat": "42.2451507",
+    "long": "-83.5832459",
+    "buildingName": "Taqueria La Marqueza",
+    "address": "1396 East Michigan Avenue"
+  },
+  {
+    "ID": "871788054",
+    "lat": "42.2557477",
+    "long": "-83.5530787",
+    "buildingName": "Coleman’s Farm Markets",
+    "address": "910 Ridge Road"
+  },
+  {
+    "ID": "871914160",
+    "lat": "42.2447673",
+    "long": "-83.5843795",
+    "buildingName": "Tik Alito Restaurant",
+    "address": "1346 East Michigan Avenue"
+  },
+  {
+    "ID": "883691566",
+    "lat": "42.2415287",
+    "long": "-83.5807442",
+    "buildingName": "American Tailoring",
+    "address": "160 South Ford Boulevard"
+  },
+  {
+    "ID": "896365960",
+    "lat": "42.2355916",
+    "long": "-83.5792518",
+    "buildingName": "Long’s Automotive",
+    "address": "1525 Ecorse Road"
+  },
+  {
+    "ID": "908949633",
+    "lat": "42.2350292",
+    "long": "-83.5915915",
+    "buildingName": "Sunoco",
+    "address": "1024 Ecorse Road"
+  },
+  {
+    "ID": "925313133",
+    "lat": "42.2470093",
+    "long": "-83.5809490",
+    "buildingName": "Malek's Auto Care",
+    "address": "1503 East Michigan Avenue"
+  },
+  {
+    "ID": "1039169397",
+    "lat": "42.2717638",
+    "long": "-83.5912159",
+    "address": "1914 Savannah Lane"
+  },
+  {
+    "ID": "1042012045",
+    "lat": "42.2659741",
+    "long": "-83.5889402",
+    "address": "8647 Hemlock Ct"
+  },
+  {
+    "ID": "1042012046",
+    "lat": "42.2663666",
+    "long": "-83.5894112",
+    "address": "8611 Hemlock Ct"
+  },
+  {
+    "ID": "1042012047",
+    "lat": "42.2660802",
+    "long": "-83.5891018",
+    "address": "8635 Hemlock Ct"
+  },
+  {
+    "ID": "1042013243",
+    "lat": "42.2655473",
+    "long": "-83.5890951",
+    "address": "8660 Hemlock Ct"
+  },
+  {
+    "ID": "1042013244",
+    "lat": "42.2657617",
+    "long": "-83.5894726",
+    "address": "8636 Hemlock Ct"
+  },
+  {
+    "ID": "1042013245",
+    "lat": "42.2656511",
+    "long": "-83.5893055",
+    "address": "8648 Hemlock Ct"
+  },
+  {
+    "ID": "1042013246",
+    "lat": "42.2656349",
+    "long": "-83.5883793",
+    "address": "8683 Hemlock Ct"
+  },
+  {
+    "ID": "1042013247",
+    "lat": "42.2658700",
+    "long": "-83.5887735",
+    "address": "8659 Hemlock Ct"
+  },
+  {
+    "ID": "1042016477",
+    "lat": "42.2637383",
+    "long": "-83.5862626",
+    "address": "1714 Devon"
+  },
+  {
+    "ID": "1042016479",
+    "lat": "42.2634284",
+    "long": "-83.5864355",
+    "address": "1688 Devon"
+  },
+  {
+    "ID": "1042016482",
+    "lat": "42.2627967",
+    "long": "-83.5867821",
+    "address": "1632 Devon"
+  },
+  {
+    "ID": "1042018092",
+    "lat": "42.2647328",
+    "long": "-83.5848627",
+    "address": "8928 Nottingham Drive"
+  },
+  {
+    "ID": "1042018100",
+    "lat": "42.2653791",
+    "long": "-83.5855914",
+    "address": "8948 Nottingham Drive"
+  },
+  {
+    "ID": "1042018207",
+    "lat": "42.2639966",
+    "long": "-83.5859945",
+    "address": "1738 Devon"
+  },
+  {
+    "ID": "1042018209",
+    "lat": "42.2635933",
+    "long": "-83.5863347",
+    "address": "1702 Decon"
+  },
+  {
+    "ID": "1042074181",
+    "lat": "42.2652329",
+    "long": "-83.5884995",
+    "address": "8696 Hemlock Ct"
+  },
+  {
+    "ID": "1042074182",
+    "lat": "42.2656110",
+    "long": "-83.5881931",
+    "address": "8695 Hemlock Ct"
+  },
+  {
+    "ID": "1106217517",
+    "lat": "42.2652595",
+    "long": "-83.5854392",
+    "address": "8944 Nottingham Drive"
+  },
+  {
+    "ID": "1106218222",
+    "lat": "42.2650042",
+    "long": "-83.5859115",
+    "address": "8943 Nottingham Drive"
+  },
+  {
+    "ID": "1106218223",
+    "lat": "42.2651447",
+    "long": "-83.5860405",
+    "address": "8947 Nottingham Drive"
+  },
+  {
+    "ID": "1245411088",
+    "lat": "42.2635661",
+    "long": "-83.5720774",
+    "address": "1638 Greenway Drive"
+  },
+  {
+    "ID": "1304928362",
+    "lat": "42.2729828",
+    "long": "-83.5826362",
+    "buildingName": "Ypsilanti District Library — Superior",
+    "address": "1900 North Harris Road"
+  },
+  {
+    "ID": "1361784781",
+    "lat": "42.2727326",
+    "long": "-83.5714773",
+    "address": "1859 Beechlawn"
+  }
+]
