@@ -9,8 +9,6 @@ describe('makeBusRouteLines', () => {
         ];
         const pattern = makePattern(0, 0, '', pointsSingleStop, '', pointsSingleStop);
         const lines = makeBusRouteLines('', pattern, false);
-        expect(lines.length).toBe(2);
-        expect(lines[0]).toEqual(lines[1]);
         const line = lines[0];
         expect(line.points).toEqual([{ lat: 45.0, lon: 46.0 }]);
         const stop = line.stops[0].stop;
@@ -38,7 +36,7 @@ describe('makeBusRouteLines', () => {
         }
     });
 
-    it('should handle both route and detour', () => {
+    it('should handle both route and detour by ignoring the original route in the dtr field', () => {
         const points1: Pattern['pt'] = [
             makeStop(0, 45.0, 46.0, 'C1', 'Central'),
             makeWaypoint(1, 45.1, 45.9),
@@ -57,8 +55,8 @@ describe('makeBusRouteLines', () => {
         for (const [points, detourPts] of [[points1, points2], [points2, points1]]) {
             const pattern = makePattern(0, 0, '', points, '', detourPts);
             const lines = makeBusRouteLines('', pattern, false);
+            expect(lines.length).toEqual(1);
             expect(lines[0].points).toEqual(positions(points));
-            expect(lines[1].points).toEqual(positions(detourPts));
         }
     });
 });

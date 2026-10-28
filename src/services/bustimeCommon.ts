@@ -65,28 +65,10 @@ export function makeBusRouteLines(rt: string, pattern: Pattern, isRide: boolean)
         const stops = [];
         for (let i = 0; i < pointList.length; i++) {
             const point = pointList[i];
-            const isLast = i == pointList.length - 1; // bool to check if last
             points.push({ lat: point.lat, lon: point.lon });
             if (point.typ === 'S') {
                 // get rotation of stop
-                let stopRotation;
-                if (isLast) {
-                    // use the previous 2 points to calculate rotation
-                    stopRotation = pointRotation(
-                        pointList[i - 2]?.lat ?? 0,
-                        pointList[i - 2]?.lon ?? 0,
-                        pointList[i - 1]?.lat ?? 0,
-                        pointList[i - 1]?.lon ?? 0,
-                    );
-                } else {
-                    // use the next 2 points to calculate rotation
-                    stopRotation = pointRotation(
-                        pointList[i + 1]?.lat ?? 0,
-                        pointList[i + 1]?.lon ?? 0,
-                        pointList[i + 2]?.lat ?? 0,
-                        pointList[i + 2]?.lon ?? 0,
-                    );
-                }
+                const stopRotation = routeStopRotation(pointList, i);
                 stops.push({
                     index: i,
                     stop : makeBusStop(
@@ -105,14 +87,54 @@ export function makeBusRouteLines(rt: string, pattern: Pattern, isRide: boolean)
         lines.push({ routeId: rt, points, stops, routeDirection: pattern.rtdir });
     }
 
-    // Handle detour points if present
-    if (pattern.dtrpt) {
-        const { points, stops } = process(pattern.dtrpt);
-        lines.push({ routeId: rt, points, stops, routeDirection: pattern.rtdir });
-    }
+    // if we wanted to show orignal routes again:
+    // if (pattern.dtrpt) {
+    //     const { points, stops } = process(pattern.dtrpt);
+    //     lines.push({ routeId: rt, points, stops, routeDirection: pattern.rtdir });
+    // }
 
     return lines;
 }
+
+function routeStopRotation(points: BusRouteLine['points'], stopIndex: number) {
+    const currentStop = points[stopIndex];
+
+    const averageLocation = (points: BusRouteLine['points']): [number, number] => {
+        const locations = points.length === 0 ? [currentStop] : points;
+        // find sum of lat/lng and divide by the amount to get average
+        const latitude = locations.reduce((sum, stop) => sum + stop.lat, 0) / locations.length;
+        const longitude = locations.reduce((sum, stop) => sum + stop.lon, 0) / locations.length;
+        return [latitude, longitude];
+    }
+
+    // deal with edge cases at start/end of list by reading next four or previous four points
+    if (stopIndex >= points.length - 2) {
+        const prevTwo = averageLocation(points.slice(stopIndex - 2, stopIndex));
+        const prevFour = averageLocation(points.slice(stopIndex - 4, stopIndex - 2));
+        return pointRotation(prevTwo[0], prevTwo[1], prevFour[0], prevFour[1]);
+    } else if (stopIndex <= 2) {
+        const nextTwo = averageLocation(points.slice(stopIndex + 1, stopIndex + 3));
+        const nextFour = averageLocation(points.slice(stopIndex + 3, stopIndex + 5));
+        return pointRotation(nextTwo[0], nextTwo[1], nextFour[0], nextFour[1]);
+    }
+
+    const stopsRange = 2;
+
+    // get rotation from the average of the previous stopsRange stops to the average location of the next 3 stops
+    const previousStops = points
+        .slice(0, stopIndex)
+        .reverse()
+        .slice(0, stopsRange);
+    const nextStops = points
+        .slice(stopIndex + 1)
+        .slice(0, stopsRange);
+
+    const previous = averageLocation(previousStops);
+    const next = averageLocation(nextStops);
+
+    return pointRotation(previous[0], previous[1], next[0], next[1]);
+}
+
 
 /**
  * Function to calculate rotation angle between two geographical points
