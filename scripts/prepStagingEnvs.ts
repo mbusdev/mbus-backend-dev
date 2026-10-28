@@ -47,6 +47,7 @@ const staging2: Config = {
         merge('origin/hadley-wv-hotfix'),
         merge('origin/turn-by-turn-and-walk-rerouting'),
         merge('origin/plan-journey-field-removal'),
+        merge('origin/grant-2'),
     ]
 }
 
