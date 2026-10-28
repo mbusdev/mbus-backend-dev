@@ -79,6 +79,7 @@ jobs:
         working-directory: ${{ github.workspace }}
       - name: Build Spec
         run: |
+          touch .env
           export DOCUMENTED=1
           export DOCUMENTED_OUTPUT_FILE=openapi/spec.json
           export DOCUMENTED_EXIT_ON_OUTPUT=1
