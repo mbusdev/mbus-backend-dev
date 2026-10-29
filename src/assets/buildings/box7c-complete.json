@@ -1,0 +1,349 @@
+[
+  {
+    "ID": "367813168",
+    "lat": "42.2427127",
+    "long": "-83.7442174",
+    "buildingName": "Briarwood Medical Group",
+    "address": "375 Briarwood Circle"
+  },
+  {
+    "ID": "1280282570",
+    "lat": "42.2449557",
+    "long": "-83.7409857",
+    "address": "455 East Eisenhower Parkway"
+  },
+  {
+    "ID": "2758425143",
+    "lat": "42.2288252",
+    "long": "-83.7379727",
+    "buildingName": "Speedway",
+    "address": "4001 South State Street"
+  },
+  {
+    "ID": "2832728523",
+    "lat": "42.2428226",
+    "long": "-83.7377261",
+    "buildingName": "Comerica Bank",
+    "address": "3001 South State Street"
+  },
+  {
+    "ID": "2873280170",
+    "lat": "42.2344373",
+    "long": "-83.7383251",
+    "buildingName": "U-Haul",
+    "address": "3655 South State Street"
+  },
+  {
+    "ID": "2873280171",
+    "lat": "42.2586786",
+    "long": "-83.7401110",
+    "buildingName": "Biercamp",
+    "address": "1643 South State Street"
+  },
+  {
+    "ID": "2903475920",
+    "lat": "42.2433010",
+    "long": "-83.7400641",
+    "buildingName": "Fidelity Investments",
+    "address": "500 East Eisenhower Parkway"
+  },
+  {
+    "ID": "2906054423",
+    "lat": "42.2443149",
+    "long": "-83.7417749",
+    "buildingName": "Anna's House",
+    "address": "445 East Eisenhower Parkway"
+  },
+  {
+    "ID": "2906600228",
+    "lat": "42.2428796",
+    "long": "-83.7443274",
+    "buildingName": "M Labs",
+    "address": "375 Briarwood Circle"
+  },
+  {
+    "ID": "3407102034",
+    "lat": "42.2717852",
+    "long": "-83.7407664",
+    "buildingName": "Pizza Bob's",
+    "address": "800 South State Street"
+  },
+  {
+    "ID": "3407105678",
+    "lat": "42.2716111",
+    "long": "-83.7407659",
+    "buildingName": "Mister Spots",
+    "address": "808 South State Street"
+  },
+  {
+    "ID": "3475907227",
+    "lat": "42.2585733",
+    "long": "-83.7376745",
+    "buildingName": "Benny's Family Dining",
+    "address": "1952 South Industrial Highway"
+  },
+  {
+    "ID": "4781784132",
+    "lat": "42.2712923",
+    "long": "-83.7408011",
+    "buildingName": "Campus Corner",
+    "address": "818 South State Street"
+  },
+  {
+    "ID": "4781784134",
+    "lat": "42.2716289",
+    "long": "-83.7407662",
+    "buildingName": "Coach & Four Barber Shop",
+    "address": "804 South State Street"
+  },
+  {
+    "ID": "4781784135",
+    "lat": "42.2715227",
+    "long": "-83.7407632",
+    "buildingName": "Rod's Diner",
+    "address": "812 South State Street"
+  },
+  {
+    "ID": "4781784136",
+    "lat": "42.2715667",
+    "long": "-83.7407923",
+    "buildingName": "BTB Burrito",
+    "address": "810 South State Street"
+  },
+  {
+    "ID": "4781816003",
+    "lat": "42.2714613",
+    "long": "-83.7407624",
+    "buildingName": "State Street Barbershop",
+    "address": "816 South State Street"
+  },
+  {
+    "ID": "4781816018",
+    "lat": "42.2691608",
+    "long": "-83.7423106",
+    "buildingName": "Pastry Peddler",
+    "address": "619 Packard Street"
+  },
+  {
+    "ID": "4794244056",
+    "lat": "42.2585485",
+    "long": "-83.7378612",
+    "buildingName": "By The Pound",
+    "address": "1952 South Industrial Highway"
+  },
+  {
+    "ID": "4856507602",
+    "lat": "42.2708246",
+    "long": "-83.7407886",
+    "buildingName": "Subway",
+    "address": "902 South State Street"
+  },
+  {
+    "ID": "4856507603",
+    "lat": "42.2709139",
+    "long": "-83.7408422",
+    "buildingName": "Craft Breww City",
+    "address": "640 Packard Street"
+  },
+  {
+    "ID": "4925292515",
+    "lat": "42.2681349",
+    "long": "-83.7395481",
+    "address": "1128 White Street"
+  },
+  {
+    "ID": "4925292516",
+    "lat": "42.2682179",
+    "long": "-83.7395588",
+    "address": "1122 White Street"
+  },
+  {
+    "ID": "4933208502",
+    "lat": "42.2460415",
+    "long": "-83.7405292",
+    "buildingName": "Integrative Healthcare Providers",
+    "address": "2800 South State Street"
+  },
+  {
+    "ID": "5000904218",
+    "lat": "42.2585370",
+    "long": "-83.7384148",
+    "buildingName": "Salon Seventeen",
+    "address": "1952 South Industrial Highway"
+  },
+  {
+    "ID": "5000907324",
+    "lat": "42.2579365",
+    "long": "-83.7379830",
+    "buildingName": "Two Songs Bakery & Cafe",
+    "address": "1958 South Industrial Highway"
+  },
+  {
+    "ID": "5000907325",
+    "lat": "42.2579861",
+    "long": "-83.7378033",
+    "buildingName": "Skymint",
+    "address": "1958 South Industrial Highway"
+  },
+  {
+    "ID": "5000907326",
+    "lat": "42.2580377",
+    "long": "-83.7375217",
+    "buildingName": "Stadium Deli & Liquor",
+    "address": "1956 South Industrial Highway"
+  },
+  {
+    "ID": "5691761421",
+    "lat": "42.2707402",
+    "long": "-83.7401974",
+    "buildingName": "GrillCheezerie Sandwich Shoppe",
+    "address": "709 Packard Street"
+  },
+  {
+    "ID": "5691761422",
+    "lat": "42.2708604",
+    "long": "-83.7403418",
+    "buildingName": "Blue Front Ann Arbor",
+    "address": "700 Packard Street"
+  },
+  {
+    "ID": "5810085885",
+    "lat": "42.2348457",
+    "long": "-83.7397731",
+    "buildingName": "Subway",
+    "address": "3650 South State Street"
+  },
+  {
+    "ID": "6474160485",
+    "lat": "42.2707756",
+    "long": "-83.7402549",
+    "buildingName": "Get Some Burritos",
+    "address": "707 Packard Street"
+  },
+  {
+    "ID": "8441975841",
+    "lat": "42.2401201",
+    "long": "-83.7397322",
+    "buildingName": "BP Shop",
+    "address": "3230 South State Street"
+  },
+  {
+    "ID": "8441975846",
+    "lat": "42.2399840",
+    "long": "-83.7396732",
+    "buildingName": "BP",
+    "address": "3230 South State Street"
+  },
+  {
+    "ID": "8441975850",
+    "lat": "42.2444428",
+    "long": "-83.7389410",
+    "buildingName": "Shell",
+    "address": "2991 South State Street"
+  },
+  {
+    "ID": "8441975851",
+    "lat": "42.2444548",
+    "long": "-83.7386191",
+    "buildingName": "A2 State Gate",
+    "address": "2991 South State Street"
+  },
+  {
+    "ID": "8441975865",
+    "lat": "42.2347286",
+    "long": "-83.7397952",
+    "buildingName": "State Petro",
+    "address": "3650 South State Street"
+  },
+  {
+    "ID": "8441975866",
+    "lat": "42.2347176",
+    "long": "-83.7395257",
+    "buildingName": "Citgo",
+    "address": "3650 South State Street"
+  },
+  {
+    "ID": "8645692319",
+    "lat": "42.2585601",
+    "long": "-83.7382843",
+    "buildingName": "3N1 Fitness Revolution",
+    "address": "1952 South Industrial Highway"
+  },
+  {
+    "ID": "8775043747",
+    "lat": "42.2445548",
+    "long": "-83.7386185",
+    "buildingName": "Shawarma Shop",
+    "address": "2993 South State Street"
+  },
+  {
+    "ID": "8777945403",
+    "lat": "42.2354188",
+    "long": "-83.7370615",
+    "buildingName": "Michigan Medicine Laboratories",
+    "address": "3621 South State Street"
+  },
+  {
+    "ID": "9049500379",
+    "lat": "42.2353731",
+    "long": "-83.7377071",
+    "buildingName": "Michigan Medicine Main Entrance",
+    "address": "3621 South State Street"
+  },
+  {
+    "ID": "9049500380",
+    "lat": "42.2352360",
+    "long": "-83.7378898",
+    "buildingName": "U of M Vaccination Clinic Entrance",
+    "address": "3621 South State Street"
+  },
+  {
+    "ID": "9049500384",
+    "lat": "42.2356510",
+    "long": "-83.7384323",
+    "buildingName": "Ann Arbor Meals on Wheels",
+    "address": "3621 South State Street"
+  },
+  {
+    "ID": "9282163773",
+    "lat": "42.2704119",
+    "long": "-83.7403621",
+    "buildingName": "Domino's",
+    "address": "716 Packard Street"
+  },
+  {
+    "ID": "12571634428",
+    "lat": "42.2433279",
+    "long": "-83.7408949",
+    "buildingName": "Reinhart Realtors",
+    "address": "500 East Eisenhower Parkway"
+  },
+  {
+    "ID": "12572453529",
+    "lat": "42.2433011",
+    "long": "-83.7403813",
+    "buildingName": "Next Services",
+    "address": "500 East Eisenhower Parkway"
+  },
+  {
+    "ID": "12975359201",
+    "lat": "42.2289081",
+    "long": "-83.7417286",
+    "buildingName": "Mothfire Brewing Co.",
+    "address": "713 West Ellsworth Road"
+  },
+  {
+    "ID": "13352508802",
+    "lat": "42.2691242",
+    "long": "-83.7472270",
+    "buildingName": "Administrative Services Building, ASB, University of Michigan ITS",
+    "address": "10009 Greene Street"
+  },
+  {
+    "ID": "13479872086",
+    "lat": "42.2447168",
+    "long": "-83.7411535",
+    "buildingName": "Water Extraction Pros",
+    "address": "455 East Eisenhower Parkway"
+  }
+]

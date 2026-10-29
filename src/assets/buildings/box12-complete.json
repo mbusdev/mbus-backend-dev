@@ -1,0 +1,401 @@
+[
+  {
+    "ID": "6177968185",
+    "lat": "42.2562304",
+    "long": "-83.6635786",
+    "buildingName": "Art By Walt Griggs",
+    "address": "2224 Golfside Rd"
+  },
+  {
+    "ID": "6238073299",
+    "lat": "42.2522894",
+    "long": "-83.6690399",
+    "buildingName": "Haifa Falafel",
+    "address": "4585 Washtenaw Avenue"
+  },
+  {
+    "ID": "6727532442",
+    "lat": "42.2443088",
+    "long": "-83.6464691",
+    "buildingName": "ACTech High School",
+    "address": "2095 Packard Road"
+  },
+  {
+    "ID": "6727532443",
+    "lat": "42.2440229",
+    "long": "-83.6459756",
+    "buildingName": "Ypsilanti STEMM Middle College",
+    "address": "2095 Packard Road"
+  },
+  {
+    "ID": "6845024399",
+    "lat": "42.2522828",
+    "long": "-83.6697846",
+    "buildingName": "Prognify Urgent Care of Ann Arbor",
+    "address": "4563 Washtenaw Avenue"
+  },
+  {
+    "ID": "7552870861",
+    "lat": "42.2410370",
+    "long": "-83.6474478",
+    "buildingName": "Grace Romanian Church",
+    "address": "272 North Hewitt Road"
+  },
+  {
+    "ID": "7839902323",
+    "lat": "42.2584157",
+    "long": "-83.6606016",
+    "buildingName": "Busters Mini-Mart",
+    "address": "2065 Golfside Road"
+  },
+  {
+    "ID": "7930408119",
+    "lat": "42.2488518",
+    "long": "-83.6455002",
+    "buildingName": "State Farm",
+    "address": "2140 Washtenaw Avenue"
+  },
+  {
+    "ID": "8058194989",
+    "lat": "42.2607427",
+    "long": "-83.6475073",
+    "buildingName": "The Farm at Trinity Health - Ann Arbor",
+    "address": "5557 McAuley Drive"
+  },
+  {
+    "ID": "8090462301",
+    "lat": "42.2510279",
+    "long": "-83.6534676",
+    "buildingName": "Shish Palace",
+    "address": "2722 Washtenaw Ave"
+  },
+  {
+    "ID": "8441975858",
+    "lat": "42.2498534",
+    "long": "-83.6615445",
+    "buildingName": "Washtenaw Marathon",
+    "address": "4970 Washtenaw Avenue"
+  },
+  {
+    "ID": "8441975859",
+    "lat": "42.2499804",
+    "long": "-83.6614881",
+    "buildingName": "Marathon",
+    "address": "4970 Washtenaw Avenue"
+  },
+  {
+    "ID": "8441975860",
+    "lat": "42.2505870",
+    "long": "-83.6614372",
+    "buildingName": "Washtenaw Food and Gas",
+    "address": "4975 Washtenaw Avenue"
+  },
+  {
+    "ID": "8441975861",
+    "lat": "42.2504083",
+    "long": "-83.6613929",
+    "buildingName": "BP",
+    "address": "4975 Washtenaw Avenue"
+  },
+  {
+    "ID": "8441975862",
+    "lat": "42.2530066",
+    "long": "-83.6673985",
+    "buildingName": "Dollar General",
+    "address": "4719 Washtenaw Avenue"
+  },
+  {
+    "ID": "8778036959",
+    "lat": "42.2583023",
+    "long": "-83.6640155",
+    "buildingName": "Pain Recovery Solutions",
+    "address": "4870 West Clark Road"
+  },
+  {
+    "ID": "8860910131",
+    "lat": "42.2649570",
+    "long": "-83.6551497",
+    "buildingName": "Imaging Center",
+    "address": "5303 E. Huron River Dr."
+  },
+  {
+    "ID": "9201417821",
+    "lat": "42.2504435",
+    "long": "-83.6653253",
+    "buildingName": "Goin' Postal",
+    "address": "4860 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959637",
+    "lat": "42.2490361",
+    "long": "-83.6480508",
+    "buildingName": "Tim Hortons",
+    "address": "2220 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959647",
+    "lat": "42.2489852",
+    "long": "-83.6483142",
+    "buildingName": "Pho House",
+    "address": "2224 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959652",
+    "lat": "42.2487762",
+    "long": "-83.6508472",
+    "buildingName": "Tuffy",
+    "address": "2441 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959653",
+    "lat": "42.2487055",
+    "long": "-83.6503293",
+    "buildingName": "Cottage Inn",
+    "address": "2407 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959659",
+    "lat": "42.2483376",
+    "long": "-83.6480207",
+    "buildingName": "KeyBank",
+    "address": "2225 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959686",
+    "lat": "42.2493372",
+    "long": "-83.6541662",
+    "buildingName": "Marcum Insurance",
+    "address": "2701 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959687",
+    "lat": "42.2492965",
+    "long": "-83.6545053",
+    "buildingName": "Wendy's",
+    "address": "2735 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959693",
+    "lat": "42.2497066",
+    "long": "-83.6530229",
+    "address": "2660 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959694",
+    "lat": "42.2497749",
+    "long": "-83.6533900",
+    "buildingName": "Mr Muffler",
+    "address": "2684 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959699",
+    "lat": "42.2489133",
+    "long": "-83.6524894",
+    "buildingName": "Pita Pita Mediterranean Grill",
+    "address": "2649 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959700",
+    "lat": "42.2492256",
+    "long": "-83.6469776",
+    "buildingName": "Walgreens",
+    "address": "2170 Washtenaw Avenue"
+  },
+  {
+    "ID": "9335959701",
+    "lat": "42.2477847",
+    "long": "-83.6456144",
+    "buildingName": "Gene Butman",
+    "address": "2105 Washtenaw Avenue"
+  },
+  {
+    "ID": "12440441901",
+    "lat": "42.2507759",
+    "long": "-83.6614646",
+    "buildingName": "Chargepoint Charging Station",
+    "address": "4975 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246508512",
+    "lat": "42.2586170",
+    "long": "-83.6606093",
+    "buildingName": "Stadium Cards & Comics",
+    "address": "2061 Golfside Road"
+  },
+  {
+    "ID": "13246526041",
+    "lat": "42.2516872",
+    "long": "-83.6536762",
+    "buildingName": "Planet Fitness",
+    "address": "2748 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246526042",
+    "lat": "42.2516706",
+    "long": "-83.6549481",
+    "buildingName": "Dollar Tree",
+    "address": "2840 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246526043",
+    "lat": "42.2516624",
+    "long": "-83.6553908",
+    "address": "2850 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246526044",
+    "lat": "42.2516832",
+    "long": "-83.6542970",
+    "buildingName": "DaVita Dialysis",
+    "address": "2766 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246526045",
+    "lat": "42.2516736",
+    "long": "-83.6546333",
+    "buildingName": "Save-A-Lot",
+    "address": "2830 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246534063",
+    "lat": "42.2513551",
+    "long": "-83.6535460",
+    "buildingName": "Great Expressions Dental",
+    "address": "2738 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246534064",
+    "lat": "42.2514196",
+    "long": "-83.6535655",
+    "buildingName": "Colorful Nails",
+    "address": "2740 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246534065",
+    "lat": "42.2515008",
+    "long": "-83.6535898",
+    "buildingName": "SVS Vision",
+    "address": "2742 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246534067",
+    "lat": "42.2511025",
+    "long": "-83.6534769",
+    "buildingName": "H&R Block",
+    "address": "2724 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246534069",
+    "lat": "42.2512457",
+    "long": "-83.6535233",
+    "buildingName": "DashMart",
+    "address": "2732 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246563943",
+    "lat": "42.2511692",
+    "long": "-83.6535039",
+    "address": "2730 Washtenaw Avenue"
+  },
+  {
+    "ID": "13246576814",
+    "lat": "42.2509597",
+    "long": "-83.6534511",
+    "address": "2720 Washtenaw Avenue"
+  },
+  {
+    "ID": "13265892797",
+    "lat": "42.2490613",
+    "long": "-83.6613279",
+    "buildingName": "Masjid At-taqwa",
+    "address": "2680 Golfside Road"
+  },
+  {
+    "ID": "13272729749",
+    "lat": "42.2532185",
+    "long": "-83.6685003",
+    "buildingName": "Signarama",
+    "address": "4655 Washtenaw Avenue"
+  },
+  {
+    "ID": "13272729750",
+    "lat": "42.2531503",
+    "long": "-83.6681535",
+    "buildingName": "L.A. Insurance",
+    "address": "4667 Washtenaw Avenue"
+  },
+  {
+    "ID": "13272729752",
+    "lat": "42.2531073",
+    "long": "-83.6679233",
+    "address": "4975 Washtenaw Avenue"
+  },
+  {
+    "ID": "13272729754",
+    "lat": "42.2532011",
+    "long": "-83.6683923",
+    "buildingName": "Total by Verizon",
+    "address": "4659 Washtenaw Avenue"
+  },
+  {
+    "ID": "13278167634",
+    "lat": "42.2530613",
+    "long": "-83.6676820",
+    "buildingName": "Hair Essentials Salon Studios",
+    "address": "4695 Washtenaw Avenue"
+  },
+  {
+    "ID": "13278167635",
+    "lat": "42.2530831",
+    "long": "-83.6678041",
+    "buildingName": "Ross Medical Educational Center",
+    "address": "4687 Washtenaw Avenue"
+  },
+  {
+    "ID": "13278167636",
+    "lat": "42.2530375",
+    "long": "-83.6675711",
+    "buildingName": "Armed Forces Career Center",
+    "address": "4703 Washtenaw Avenue"
+  },
+  {
+    "ID": "13278181121",
+    "lat": "42.2529588",
+    "long": "-83.6670050",
+    "buildingName": "Citi Trends",
+    "address": "4729 Washtenaw Avenue"
+  },
+  {
+    "ID": "13452748654",
+    "lat": "42.2638249",
+    "long": "-83.6521721",
+    "buildingName": "Center for Plastic Surgery Ann Arbor",
+    "address": "5333 McAuley Drive"
+  },
+  {
+    "ID": "13474548870",
+    "lat": "42.2529774",
+    "long": "-83.6672522",
+    "address": "4725 Washtenaw Avenue"
+  },
+  {
+    "ID": "13474650768",
+    "lat": "42.2529082",
+    "long": "-83.6667636",
+    "buildingName": "Dinoland",
+    "address": "4735 Washtenaw Avenue"
+  },
+  {
+    "ID": "13474691291",
+    "lat": "42.2528627",
+    "long": "-83.6665464",
+    "address": "4741 Washtenaw Avenue"
+  },
+  {
+    "ID": "13510645258",
+    "lat": "42.2509464",
+    "long": "-83.6561122",
+    "buildingName": "Spice Palace",
+    "address": "2874 Washtenaw Avenue"
+  }
+]
