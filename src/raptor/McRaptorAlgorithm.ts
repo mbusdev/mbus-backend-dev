@@ -15,23 +15,32 @@ export interface Journey {
     }
 }
 
-/**
- * Represents a single segment of a journey, either a transit trip or a walking transfer.
- */
-export interface JourneyLeg {
-    type: 'Trip' | 'Transfer';
+interface JourneyLegCommon {
     origin: StopID;
     destination: StopID;
     startTime: number;
     endTime: number;
-    trip?: Trip;
-    transfer?: Transfer;
     duration: number;
     originID: StopID;
     destinationID: StopID;
+};
+
+export interface JourneyLegTrip extends JourneyLegCommon {
+    type: 'Trip';
+    trip: Trip;
     rt?: string;
-    stopTimes?: StopTime[];
-}
+    stopTimes: StopTime[];
+};
+
+export interface JourneyLegTransfer extends JourneyLegCommon {
+    type: 'Transfer',
+    transfer: Transfer,
+};
+
+/**
+ * Represents a single segment of a journey, either a transit trip or a walking transfer.
+ */
+export type JourneyLeg = JourneyLegTransfer | JourneyLegTrip;
 
 /**
  * Implementation of the McRAPTOR (Multi-Criteria Round-Based Public Transit Routing) algorithm.
@@ -360,8 +369,8 @@ export class McRaptorAlgorithm {
 
         for (const j of allJourneys) {
             const tripsSignature = j.legs
-                .filter(l => l.type === 'Trip' && l.trip)
-                .map(l => l.trip!.tripId)
+                .filter((l) => l.type === 'Trip')
+                .map(l => l.trip.tripId)
                 .join('|');
 
             if (!tripsSignature) {
