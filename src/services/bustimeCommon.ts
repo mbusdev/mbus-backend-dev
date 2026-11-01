@@ -97,6 +97,11 @@ export function makeBusRouteLines(rt: string, pattern: Pattern, isRide: boolean)
 }
 
 function routeStopRotation(points: BusRouteLine['points'], stopIndex: number) {
+    if (points.length <= 6) {
+        // If the route is super short, return 0 to avoid errors
+        return 0;
+    }
+
     const currentStop = points[stopIndex];
 
     const averageLocation = (points: BusRouteLine['points']): [number, number] => {
