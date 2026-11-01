@@ -139,6 +139,8 @@ function routeStopRotation(points: BusRouteLine['points'], stopIndex: number) {
 /**
  * Function to calculate rotation angle between two geographical points
  * (used for bus stop icon orientation)
+ *
+ * Result is given in degrees towards north from due east in range [0, 360).
  */
 export function pointRotation(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const dLat = lat2 - lat1;
@@ -148,7 +150,7 @@ export function pointRotation(lat1: number, lon1: number, lat2: number, lon2: nu
     const x = dLon * (Math.cos(lat1 * Math.PI / 180.0));
     const y = dLat;
 
-    let angle = Math.atan2(x, y) * 180.0 / Math.PI;
+    let angle = Math.atan2(y, x) * 180.0 / Math.PI;
 
     // Normalize to [0, 360)
     if (angle < 0) angle += 360;
