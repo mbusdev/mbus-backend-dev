@@ -198,7 +198,7 @@ describe('API Endpoints', () => {
             if (axios.isAxiosError(error) && error.response) {
                 expect(error.response.status).toBe(400);
                 expect(error.response.data).toHaveProperty('error');
-                expect(error.response.data.error).toContain('coordinates are required');
+                expect(error.response.data.error).toContain('invalid query params');
                 console.log('GET /plan-journey (missing params): Correctly returned 400.');
             } else {
                 throw error;
