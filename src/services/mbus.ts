@@ -1,7 +1,8 @@
-import axios from 'axios';
 import * as process from "node:process";
+import axios from 'axios';
 import dotenv from "dotenv";
-import { Pattern, PatternsArraySchema } from './bustimeCommon';
+import * as z from 'zod';
+import * as bustime from './bustimeCommon';
 
 dotenv.config();
 
@@ -45,13 +46,13 @@ export async function fetchRoutes() {
 }
 
 /** Fetches route patterns (path points) for a specific route. */
-export async function fetchPatterns(rt: string): Promise<Pattern[]> {
+export async function fetchPatterns(rt: string): Promise<bustime.Pattern[]> {
     try {
         const res = await client.get('/getpatterns', {
             params: { requestType: 'getpatterns', rt: rt, rtpidatafeed: 'bustime' }
         });
         const resData = res.data['bustime-response']?.ptr as unknown;
-        const patterns = PatternsArraySchema.parse(resData);
+        const patterns = z.array(bustime.PatternSchema).parse(resData);
         return patterns;
     } catch (e) {
         console.error("Fetch Patterns failed", e);
@@ -60,13 +61,13 @@ export async function fetchPatterns(rt: string): Promise<Pattern[]> {
 }
 
 /** Fetches predictions for multiple stop IDs. */
-export async function fetchPredictions(stopIds: string[], routes: string[]) {
+export async function fetchPredictions(stopIds: string[], routes: string[]): Promise<Array<bustime.GetPredictionsResponse | null>> {
     const chunks = [];
     for (let i = 0; i < stopIds.length; i += 10) chunks.push(stopIds.slice(i, i + 10));
 
     const promises = chunks.map(async chunk => {
         try {
-            const res = await client.get('/getpredictions', {
+            const res = await client.get<unknown>('/getpredictions', {
                 params: {
                     requestType: 'getpredictions',
                     stpid: chunk.join(','),
@@ -75,9 +76,10 @@ export async function fetchPredictions(stopIds: string[], routes: string[]) {
                     unixTime: true,
                 }
             });
-            return res.data;
+            return bustime.GetPredictionsResponseSchema.parse(res.data);
         } catch (e) {
-            return [];
+            console.warn("/getpredictions call failed:", e);
+            return null;
         }
     });
 
