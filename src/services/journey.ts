@@ -1,6 +1,7 @@
 import * as state from '../state/transitState';
 import * as walking from '../walking/walkingMap';
 import { McRaptorAlgorithm, Journey, JourneyLeg } from "../raptor/McRaptorAlgorithm";
+import { StopTime, Trip } from '@/raptor/types';
 
 /**
  * Plans a journey between two coordinates using the McRaptor algorithm.
@@ -75,12 +76,44 @@ export async function planJourney(
     return processJourneys(journeys, oLat, oLon, dLat, dLon);
 }
 
+interface FormattedLegCommon {
+    origin_id: string,
+    origin: string,
+    destination_id: string,
+    destination: string,
+    destinationName: string,
+    startTime: number,
+    endTime: number,
+    duration: number,
+    originID: string,
+    destinationID: string,
+};
+
+export interface FormattedLegWalk extends
+    FormattedLegCommon,
+    Partial<Omit<walking.WalkingResponse, "duration" | "distance">> // leaves just the path_coords field for now
+{
+    mode: 'walk'
+};
+
+export interface FormattedLegBus extends FormattedLegCommon {
+    mode: 'bus',
+    stopTimes: StopTime[],
+    trip: Trip,
+    tripId: string,
+    rt: string,
+    vid: string | null,
+};
+
+export type FormattedLeg = FormattedLegWalk | FormattedLegBus
+
 async function processJourneys(journeys: Journey[], oLat: number, oLon: number, dLat: number, dLon: number) {
 
     const processLeg = async (leg: JourneyLeg) => {
-        const isWalk = !leg.trip;
+        const isWalk = leg.type === 'Transfer';
 
-        const formattedLeg: any = {
+        let formattedLeg: FormattedLeg;
+        const formattedLegCommon: FormattedLegCommon = {
             origin_id: leg.origin,
             origin: leg.origin === 'VIRTUAL_ORIGIN' ? 'Start' : (leg.origin === 'VIRTUAL_DESTINATION' ? 'End' : (state.stopIdToName[leg.origin] || leg.origin)),
             destination_id: leg.destination,
@@ -89,28 +122,26 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
             startTime: Math.round(leg.startTime),
             endTime: Math.round(leg.endTime),
             duration: Math.round(leg.duration),
-            mode: isWalk ? 'walk' : 'bus',
             originID: leg.originID,
             destinationID: leg.destinationID,
-            stopTimes: leg.stopTimes,
-            trip: leg.trip,
-            rt: leg.rt
         };
 
-        if (leg.trip) {
-            formattedLeg.tripId = leg.trip.tripId;
-            formattedLeg.vid = leg.trip.vid;
-            if (!formattedLeg.rt) {
-                const firstStop = leg.trip.stopTimes[0];
-                formattedLeg.rt = firstStop.rt || state.tatripidToRt[leg.trip.tripId] || 'UNKNOWN';
-            }
-        }
-
-        if (isWalk) {
+        if (!isWalk) {
+            formattedLeg = {
+                ...formattedLegCommon,
+                mode: 'bus',
+                stopTimes: leg.stopTimes,
+                trip: leg.trip,
+                tripId: leg.trip.tripId,
+                vid: leg.trip.vid,
+                // fallback to route of the first stop or the route associated with the trip id
+                rt: leg.rt || leg.trip.stopTimes[0].rt || state.tatripidToRt[leg.trip.tripId] || 'UNKNOWN'
+            };
+        } else {
             const cached = walking.getCachedWalk(leg.origin, leg.destination);
 
             if (cached) {
-                Object.assign(formattedLeg, cached);
+                formattedLeg = {...formattedLegCommon, ...cached, mode: 'walk'}
             } else {
                 const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? { lat: oLat, lon: oLon } : state.cachedStopLocations[leg.origin];
                 const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? { lat: dLat, lon: dLon } : state.cachedStopLocations[leg.destination];
@@ -119,10 +150,12 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
                     try {
                         const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
                         data.duration = Math.round(data.duration);
-                        Object.assign(formattedLeg, data);
+                        formattedLeg = {...formattedLegCommon, ...data, mode: 'walk'}
                     } catch (e) {
-                        formattedLeg.path_coords = [];
+                        formattedLeg = {...formattedLegCommon, path_coords: [], mode: 'walk'}
                     }
+                } else {
+                    formattedLeg = {...formattedLegCommon, mode: 'walk'}
                 }
             }
         }
@@ -144,8 +177,8 @@ async function processJourneys(journeys: Journey[], oLat: number, oLon: number, 
     }));
 
     return processedList
-        .filter((j: any) => j !== null)
-        .sort((a: any, b: any) =>
+        .filter((j) => j !== null)
+        .sort((a, b) =>
             a.arrivalTime - b.arrivalTime ||
             a.criteria.walkingDistance - b.criteria.walkingDistance
         );
