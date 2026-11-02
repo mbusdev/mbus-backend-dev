@@ -174,7 +174,7 @@ export const emptyFormat: {
  * avoid features not supported in openapi (e.g. advanced path matchers)
  * @param format - zod schemas of the parts of the request and response, use
  * `emptyFormat` to fill in default values
- * @param handler - route handler
+ * @param handler - route handler returning a response directly or a promise
  * @param docs - information that should end up in the openapi spec
  *
  * @returns the handler function that got passed to `router.get` internally,
@@ -189,7 +189,7 @@ export function addGetRoute<
     router: express.Router,
     path: string,
     format: { params: P, query: Q, resBody: RB },
-    handler: (params: z.infer<P>, query: z.infer<Q>) => Promise<HandlerReturn<z.infer<RB>>>,
+    handler: (params: z.infer<P>, query: z.infer<Q>) => Promise<HandlerReturn<z.infer<RB>>> | HandlerReturn<z.infer<RB>>,
     docs?: {
         /** a short description of what is route does, becomes the title */
         summary?: string,
@@ -261,7 +261,7 @@ export function addGetRoute<
  * avoid features not supported in openapi (e.g. advanced path matchers)
  * @param format - zod schemas of the parts of the request and response, use
  * `emptyFormat` to fill in default values
- * @param handler - route handler
+ * @param handler - route handler returning a response directly or a promise
  * @param docs - information that should end up in the openapi spec
  *
  * @returns the handler function that got passed to `router.post` internally,
@@ -277,7 +277,7 @@ export function addPostRoute<
     router: express.Router,
     path: string,
     format: { params: P, query: Q, reqBody: B, resBody: RB },
-    handler: (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => Promise<HandlerReturn<z.infer<RB>>>,
+    handler: (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => Promise<HandlerReturn<z.infer<RB>>> | HandlerReturn<z.infer<RB>>,
     docs?: {
         /** a short description of what is route does, becomes the title */
         summary?: string,
