@@ -7,6 +7,7 @@ import * as process from "node:process";
 import { MaxPriorityQueue } from '@datastructures-js/priority-queue';
 import * as fs from 'fs';
 import * as path from 'path';
+import { makeBusRouteLines } from './bustimeCommon';
 
 const DEFAULT_ROUTES = ["BB", "CN", "CS", "CSX", "DD", "MX", "NE", "NW", "NX", "OS", "NES", "WS", "WX"];
 const DEFAULT_RIDE_ROUTES = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "42", "43", "44", "45", "46", "47", "61", "62", "63", "64", "65", "66", "67", "68", "104"];
@@ -32,13 +33,15 @@ export async function initializeRoutes() {
         await Promise.all(routesData.map(async (r: any) => {
             state.validRoutes.add(r.rt);
             const patterns = await mbus.fetchPatterns(r.rt);
-            if (patterns) state.cachedRoutes[r.rt] = patterns;
+            state.cachedRoutes[r.rt] = patterns.map((p) => makeBusRouteLines(r.rt, p, false)).flat(1);
+            state.cachedRoutesLegacy[r.rt] = patterns;
         }));
 
         await Promise.all(rideRoutesData.map(async (r: any) => {
             state.validRideRoutes.add(r.rt);
             const patterns = await rideBus.fetchPatterns(r.rt);
-            if (patterns) state.cachedRideRoutes[r.rt] = patterns;
+            state.cachedRideRoutes[r.rt] = patterns.map((p) => makeBusRouteLines(r.rt, p, true)).flat(1);
+            state.cachedRideRoutesLegacy[r.rt] = patterns;
         }));
 
         buildStopLocationMap();
@@ -57,11 +60,10 @@ export async function rebuildGraph() {
     try {
         console.log(`Rebuilding graph...`);
         const allStopIds = new Set<string>();
-        Object.values(state.cachedRoutes).forEach((patterns) => {
-            patterns.forEach((p) => p.pt.forEach((pt) => {
-                if (pt.stpid) allStopIds.add(pt.stpid);
-            }));
-        });
+        Object.values(state.cachedRoutes)
+            .flat(1)
+            .flatMap((line) => line.stops)
+            .forEach(({ index: _, stop }) => allStopIds.add(stop.id));
 
         const rawPreds = await mbus.fetchPredictions(Array.from(allStopIds), DEFAULT_ROUTES);
         const formattedPreds = processPredictions(rawPreds);
@@ -74,11 +76,10 @@ export async function rebuildGraph() {
         
         // extra stuff to update the busses for the ride
         const rideStopIds = new Set<string>();
-        Object.values(state.cachedRideRoutes).forEach((patterns) => {
-            patterns.forEach((p) => p.pt.forEach((pt) => {
-                if (pt.stpid) rideStopIds.add(pt.stpid);
-            }));
-        });
+        Object.values(state.cachedRideRoutes)
+            .flat(1)
+            .flatMap((line) => line.stops)
+            .forEach(({ index: _, stop }) => rideStopIds.add(stop.id));
         const rawRidePreds = await rideBus.fetchPredictions(Array.from(rideStopIds), DEFAULT_RIDE_ROUTES);
         const formattedRidePreds = processRidePredictions(rawRidePreds);
         populateRideLookupMaps(formattedRidePreds);
@@ -100,13 +101,10 @@ export async function rebuildGraph() {
  * @param preds List of processed predictions
  */
 function populateLookupMaps(preds: any[]) {
-    Object.values(state.cachedRoutes).forEach((patterns) => {
-        patterns.forEach((p) => p.pt.forEach((pt) => {
-            if (pt.stpid && pt.stpnm) {
-                state.stopIdToName[pt.stpid] = pt.stpnm;
-            }
-        }));
-    });
+    Object.values(state.cachedRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) => state.stopIdToName[stop.id] = stop.name);
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             if (stop.stpid && stop.stpnm) {
@@ -130,13 +128,10 @@ function populateLookupMaps(preds: any[]) {
  * @param preds List of processed predictions from the ride
  */
 function populateRideLookupMaps(preds: any[]) {
-    Object.values(state.cachedRideRoutes).forEach((patterns) => {
-        patterns.forEach((p) => p.pt.forEach((pt) => {
-            if (pt.stpid && pt.stpnm) {
-                state.rideStopIdToName[pt.stpid] = pt.stpnm;
-            }
-        }));
-    });
+    Object.values(state.cachedRideRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) => state.rideStopIdToName[stop.id] = stop.name);
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             if (stop.stpid && stop.stpnm) {
@@ -152,13 +147,12 @@ function populateRideLookupMaps(preds: any[]) {
  */
 function buildStopLocationMap() {
     const locs: Record<string, any> = {};
-    Object.values(state.cachedRoutes).forEach((patterns) => {
-        patterns.forEach((p) => p.pt.forEach((pt) => {
-            if (pt.stpid && pt.lat) {
-                locs[pt.stpid] = { name: pt.stpnm, lat: pt.lat, lon: pt.lon };
-            }
-        }));
-    });
+    Object.values(state.cachedRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) =>
+            locs[stop.id] = { name: stop.name, lat: stop.location.lat, lon: stop.location.lon }
+        );
     state.setCachedStopLocations(locs);
     walking.buildStopNodeMap(locs);
 }
@@ -168,13 +162,11 @@ function buildStopLocationMap() {
  */
 function buildRideStops() {
     const locs: Record<string, any> = {};
-    Object.values(state.cachedRideRoutes).forEach((patterns) => {
-        patterns.forEach((p) => p.pt.forEach((pt) => {
-            if (pt.stpid && pt.lat) {
-                locs[pt.stpid] = { name: pt.stpnm, lat: pt.lat, lon: pt.lon };
-            }
-        }));
-    });
+    Object.values(state.cachedRideRoutes)
+        .flat(1)
+        .flatMap((line) => line.stops)
+        .forEach(({ index: _, stop }) =>
+            locs[stop.id] = { name: stop.name, lat: stop.location.lat, lon: stop.location.lon });
     state.setCachedRideStopLocations(locs);
 }
 
@@ -244,13 +236,11 @@ function processPredictions(rawChunks: any[]) {
     const routeInfoFilter: Record<string, { stpid: string; rtdir: string }[]> = {};
     for (const [routeName, routeList] of Object.entries(state.cachedRoutes)) {
         for (const route of routeList) {
-            const rtdir = route.rtdir;
+            const rtdir = route.routeDirection;
             const routeKey = routeName + rtdir;
             if (!routeInfoFilter[routeKey]) routeInfoFilter[routeKey] = [];
-            for (const point of route.pt) {
-                if (point.typ !== "W" && point.stpid) {
-                    routeInfoFilter[routeKey].push({ stpid: point.stpid, rtdir });
-                }
+            for (const { index: _, stop } of route.stops) {
+                routeInfoFilter[routeKey].push({ stpid: stop.id, rtdir });
             }
         }
     }
