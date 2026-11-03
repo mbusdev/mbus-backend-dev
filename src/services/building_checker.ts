@@ -44,7 +44,7 @@ const urls = Object.fromEntries(
 export async function updateBuildings() {
   const osmDataDir = './osm_data';
   const buildingDataDir = './src/assets/buildings';
-  
+
   // Create directories if they don't exist
   if (!fs.existsSync(osmDataDir)) {
     fs.mkdirSync(osmDataDir, { recursive: true });
@@ -58,11 +58,11 @@ export async function updateBuildings() {
       const response = await axios.get(url, { headers: { 'Accept': 'application/xml' } });
       const xmlData = response.data;
       const xmlSize = Buffer.byteLength(xmlData, 'utf-8');
-      
+
       // Check if existing osm_data file exists and compare size
       const osmFilePath = path.join(osmDataDir, `${name}.json`);
       let shouldUpdate = true;
-      
+
       if (fs.existsSync(osmFilePath)) {
         const existingContent = fs.readFileSync(osmFilePath, 'utf-8');
         const existingSize = Buffer.byteLength(existingContent, 'utf-8');
@@ -72,14 +72,14 @@ export async function updateBuildings() {
           shouldUpdate = false;
         }
       }
-      
+
       if (shouldUpdate) {
         // Parse XML to JSON
         const json = parser.parse(xmlData);
-        
+
         // Save to osm_data directory
         fs.writeFileSync(osmFilePath, JSON.stringify(json, null, 2));
-        
+
         // Also save to building-data directory
         const buildingFilePath = path.join(buildingDataDir, `${name}.json`);
         fs.writeFileSync(buildingFilePath, JSON.stringify(json, null, 2));
@@ -92,17 +92,17 @@ export async function updateBuildings() {
       console.error(`  Failed to fetch ${name}: ${error.message}`);
       }
     }
-    
+
     // Wait 1 minute between requests to avoid rate limiting
     const delayMs = 60000; // 1 minute
     await new Promise(resolve => setTimeout(resolve, delayMs));
   }
-  
+
 }
 
-/** 
+/**
  * Specifically the address of a building
- * */ 
+ */
 export interface LocationAddress {
   house_number?: string;
   road?: string;
@@ -112,10 +112,9 @@ export interface LocationAddress {
   country?: string;
 }
 
-
-/** 
+/**
  * OSM data of a location, includes the address and bundles other metadata
- * */
+ */
 export interface LocationEntry {
   osm_id: number;
   name: string;
@@ -125,9 +124,10 @@ export interface LocationEntry {
   tags: Record<string, string>;
   address: LocationAddress;
 }
+
 /**
  * Fallback if a building has no address
- * @param lat lattitude
+ * @param lat latitude
  * @param lon longitude
  * @returns a new location address
  */
@@ -228,9 +228,9 @@ out body;`;
   return locations;
 }
 
-/** 
+/**
  * A "building" object in the JSON file. These will be taken from the XML while formatting to schema.
-*/
+ */
 interface BuildingEntry {
   ID: string;
   lat: string;
