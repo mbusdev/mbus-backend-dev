@@ -100,8 +100,10 @@ export async function updateBuildings() {
   
 }
 
-
-interface LocationAddress {
+/** 
+ * Specifically the address of a building
+ * */ 
+export interface LocationAddress {
   house_number?: string;
   road?: string;
   city?: string;
@@ -110,7 +112,11 @@ interface LocationAddress {
   country?: string;
 }
 
-interface LocationEntry {
+
+/** 
+ * OSM data of a location, includes the address and bundles other metadata
+ * */
+export interface LocationEntry {
   osm_id: number;
   name: string;
   latitude: number;
@@ -119,7 +125,12 @@ interface LocationEntry {
   tags: Record<string, string>;
   address: LocationAddress;
 }
-
+/**
+ * Fallback if a building has no address
+ * @param lat lattitude
+ * @param lon longitude
+ * @returns a new location address
+ */
 async function reverseGeocode(lat: number, lon: number): Promise<LocationAddress> {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
   const response = await axios.get(url, {
@@ -217,7 +228,9 @@ out body;`;
   return locations;
 }
 
-
+/** 
+ * A "building" object in the JSON file. These will be taken from the XML while formatting to schema.
+*/
 interface BuildingEntry {
   ID: string;
   lat: string;

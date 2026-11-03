@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-interface BuildingEntry {
+export interface BuildingEntry {
   ID: string;
   lat: string;
   long: string;
