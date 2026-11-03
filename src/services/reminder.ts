@@ -3,6 +3,7 @@ import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 
 import * as state from "@/state/transitState";
+import * as meta from "./metadata";
 import { BaseEvent, DelayEvent, eventsEqual, toKey, Key, RegistrationToken, ThresholdEvent, fromKey, delayEvent, thresholdEvent } from "./reminderTypes";
 
 export * from "./reminderTypes";
@@ -374,6 +375,11 @@ function minutes(x: number): string {
     return `${x} minutes`;
 }
 
+/** Returns the full name of a route (e.g. "Commuter North" for "CN"), or the route id if there is no known name. */
+function routeName(rtid: string): string {
+    return meta.staticData.routeIdToName[rtid] || rtid;
+}
+
 function processRemindersHelper(
     reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
@@ -388,7 +394,7 @@ function processRemindersHelper(
             sendNotifToAll(
                 {
                     title: 'Bus Arrival Reminder',
-                    body: `${event.rtid} is ${minutes(event.threshold)} away from ${stopName}`
+                    body: `${routeName(event.rtid)} is ${minutes(event.threshold)} away from ${stopName}`
                 },
                 tokens
             );
@@ -396,7 +402,7 @@ function processRemindersHelper(
             sendNotifToAll(
                 {
                     title: 'Bus Arrival Reminder',
-                    body: `${event.rtid} is less than ${minutes(event.threshold)} away from ${stopName}`
+                    body: `${routeName(event.rtid)} is less than ${minutes(event.threshold)} away from ${stopName}`
                 },
                 tokens
             );
@@ -407,7 +413,7 @@ function processRemindersHelper(
         const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendToAll(
             {
-                notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
+                notification: { title: 'Bus Arriving', body: `${routeName(event.rtid)} is almost at ${stopName}` },
             },
             tokens
         );
@@ -418,7 +424,7 @@ function processRemindersHelper(
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
-                body: `The ${event.rtid} bus en route to ${stopName} got delayed by `
+                body: `The ${routeName(event.rtid)} bus en route to ${stopName} got delayed by `
                     + `${minutes(event.currPred - event.prevPred)}. New time is ${minutes(event.currPred)}.`
             },
             tokens
@@ -430,7 +436,7 @@ function processRemindersHelper(
         sendNotifToAll(
             {
                 title: `Bus Disappeared`,
-                body: `The ${event.rtid} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
+                body: `The ${routeName(event.rtid)} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
             },
             tokens
         );
@@ -515,5 +521,6 @@ export function infoToUseForRoute(rtid: string): {
 /** exported for tests */
 export const testing = {
     ReminderSubscriptions,
-    eventsEqual
+    eventsEqual,
+    routeName
 };
