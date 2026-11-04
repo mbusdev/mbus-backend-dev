@@ -11,6 +11,7 @@ import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
 import { BusRouteLineSchema } from "../services/bustimeCommon";
 import * as documented from "./documented";
+import { PlanJourneyQuerySchema } from './planningSchemas';
 
 /**
  * Express router for the MBus API v3.
@@ -358,18 +359,7 @@ documented.addGetRoute(
     documented.globalContext, router, '/plan-journey',
     {
         ...documented.emptyFormat,
-        query: z.object({
-            originLat: z.coerce.number(),
-            originLon: z.coerce.number(),
-            destLat: z.coerce.number(),
-            destLon: z.coerce.number(),
-            walkingPenalty: z.optional(z.string())
-                .transform((x) => x === undefined ? undefined : parseFloat(x))
-                .pipe(z.optional(z.number())),
-            range: z.optional(z.string())
-                .transform((x) => x === undefined ? undefined : parseInt(x))
-                .pipe(z.optional(z.number())),
-        }),
+        query: PlanJourneyQuerySchema,
         resBody: z.object({ journeys: z.array(journeyService.ProcessedJourneySchema) }),
     },
     async (_, { originLat, originLon, destLat, destLon, walkingPenalty, range }) => {
