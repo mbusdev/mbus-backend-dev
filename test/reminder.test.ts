@@ -201,6 +201,12 @@ describe('Reminders', () => {
         expect(reminders.atTheStop.size).toBe(1);
     });
 
+    it('should use full route names in messages and fall back to the route id', () => {
+        expect(t.routeName("CN")).toBe("Commuter North");
+        expect(t.routeName("3")).toBe("Huron River");
+        expect(t.routeName("not-a-route")).toBe("not-a-route");
+    });
+
     it('should get unix timestamp from ride bus api', async () => {
         configDotenv();
         const RIDE_API_KEY = process.env.RIDE_API_KEY;
