@@ -31,7 +31,7 @@ documented.addGetRoute(
     { description: 'get all cached ride route patterns' },
 )
 
-documented.addGetRoute(
+export const planWalking = documented.addGetRoute(
     ctx, router, '/plan-walking',
     {
         ...documented.emptyFormat,
