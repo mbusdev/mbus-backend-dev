@@ -18,19 +18,19 @@ function patch(file: string): Action {
     return { of: 'patch', file };
 }
 
-const mockBe2: Config = {
-    baseBranch: 'dev',
-    outputBranch: 'mock-backend-2-test',
-    actions: [
-        merge('turn-by-turn-and-walk-rerouting'),
-        merge('mock-floor-plans-visuals'),
-        merge('nav/plan-journey-bus-polylines'),
-        merge('mock-turn-by-turn'),
-        patch('../mock-be-patches/eliminate_duplicate.diff'),
-        merge('plan-journey-field-removal'),
-        merge('origin/hadley-wv-hotfix'),
-    ]
-};
+// const mockBe2: Config = {
+//     baseBranch: 'dev',
+//     outputBranch: 'mock-backend-2-test',
+//     actions: [
+//         merge('turn-by-turn-and-walk-rerouting'),
+//         merge('mock-floor-plans-visuals'),
+//         merge('nav/plan-journey-bus-polylines'),
+//         merge('mock-turn-by-turn'),
+//         patch('../mock-be-patches/eliminate_duplicate.diff'),
+//         merge('plan-journey-field-removal'),
+//         merge('origin/hadley-wv-hotfix'),
+//     ]
+// };
 
 const staging1: Config = {
     baseBranch: 'staging/base',
@@ -44,7 +44,6 @@ const staging2: Config = {
     baseBranch: 'staging/1',
     outputBranch: 'staging/2',
     actions: [
-        merge('origin/hadley-wv-hotfix'),
         merge('origin/turn-by-turn-and-walk-rerouting'),
         merge('origin/plan-journey-field-removal'),
         merge('origin/grant-2'),
@@ -55,7 +54,7 @@ const develop1: Config = {
     baseBranch: 'staging/2',
     outputBranch: 'develop/1',
     actions: [
-        // TODO: dev floor plans route
+        // dev only stuff goes here
     ]
 }
 
