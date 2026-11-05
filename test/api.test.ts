@@ -214,4 +214,30 @@ describe('API Endpoints', () => {
             }
         }
     });
+
+    it('should plan a journey from a bus (stub)', async () => {
+        const response = await axios.get(`${V4_BASE_URL}/plan-journey-from-bus`, {
+            params: { rt: 'BB', lastStopId: 'C250', progress: 0.5, destLat: 42.2780, destLon: -83.7382 },
+        });
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.data.journeys)).toBe(true);
+        expect(response.data.journeys.length).toBeGreaterThan(0);
+        expect(response.data.journeys[0].legs[0]).toMatchObject({ mode: 'bus', rt: 'BB', origin_id: 'C250' });
+    });
+
+    it('should return 400 for out of range progress in plan-journey-from-bus', async () => {
+        try {
+            await axios.get(`${V4_BASE_URL}/plan-journey-from-bus`, {
+                params: { rt: 'BB', lastStopId: 'C250', progress: 1.5, destLat: 42.2780, destLon: -83.7382 },
+            });
+            expect.fail('Expected plan-journey-from-bus to return 400 for progress > 1, but it succeeded.');
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                expect(error.response.status).toBe(400);
+                expect(error.response.data.error).toContain('progress');
+            } else {
+                throw error;
+            }
+        }
+    });
 });

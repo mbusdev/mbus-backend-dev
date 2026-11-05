@@ -45,7 +45,7 @@ jobs:
         run: npm i
         working-directory: ${{ github.workspace }}
       - name: Typecheck
-        run: tsc --noEmit
+        run: npx tsc --noEmit
         working-directory: ${{ github.workspace }}
 
   Typedoc:
