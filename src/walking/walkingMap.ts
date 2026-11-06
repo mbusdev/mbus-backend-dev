@@ -30,7 +30,7 @@ export interface BatchWalkingResult {
 }
 
 const CACHE_FILE = path.resolve(process.cwd(), 'src/assets/landmark_dist.json');
-const WALKING_SPEED_M_S = 5000 / 3600;
+export const WALKING_SPEED_M_S = 5000 / 3600;
 const WALKING_CACHE_PATH = "src/assets/walkingCache.json";
 const DEBUG = false;
 const LANDMARK_DISTANCES = new Map<string, Map<string, number>>();
