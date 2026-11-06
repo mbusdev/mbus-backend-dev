@@ -52,14 +52,31 @@ export const ArriveInstructionSchema = z.object({
     type: z.literal('arrive'),
 }).meta({ id: 'ArriveInstruction' });
 
-/** What to tell the user to do at a step. */
+/**
+ * What to tell the user to do at a step.
+ *
+ * The OpenAPI discriminator makes generated clients pick the variant by `type`; without it,
+ * swagger_parser tries each variant in order and decodes everything as the first one that fits.
+ */
 export const DirectionInstructionSchema = z.discriminatedUnion('type', [
     DepartInstructionSchema,
     TurnInstructionSchema,
     ContinueInstructionSchema,
     CrossInstructionSchema,
     ArriveInstructionSchema,
-]).meta({ id: 'DirectionInstruction' });
+]).meta({
+    id: 'DirectionInstruction',
+    discriminator: {
+        propertyName: 'type',
+        mapping: {
+            depart: '#/components/schemas/DepartInstruction',
+            turn: '#/components/schemas/TurnInstruction',
+            continue: '#/components/schemas/ContinueInstruction',
+            cross: '#/components/schemas/CrossInstruction',
+            arrive: '#/components/schemas/ArriveInstruction',
+        },
+    },
+});
 
 export type DirectionInstruction = z.infer<typeof DirectionInstructionSchema>;
 

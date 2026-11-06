@@ -103,4 +103,15 @@ describe('JSON schema', () => {
         const shared = keySets.reduce((acc, keys) => acc.filter(k => keys.includes(k)));
         expect(shared).toEqual(['type']);
     });
+
+    it('maps every instruction type to its variant in the discriminator', () => {
+        const { $defs } = z.toJSONSchema(DirectionInstructionSchema) as any;
+        const { oneOf, discriminator } = $defs.DirectionInstruction;
+        expect(discriminator.propertyName).toBe('type');
+        const expected = Object.fromEntries(oneOf.map((v: { $ref: string }) => {
+            const name = v.$ref.replace('#/$defs/', '');
+            return [$defs[name].properties.type.const, `#/components/schemas/${name}`];
+        }));
+        expect(discriminator.mapping).toEqual(expected);
+    });
 });
