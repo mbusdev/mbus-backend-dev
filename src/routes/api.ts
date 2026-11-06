@@ -8,6 +8,9 @@ import * as meta from '../services/metadata';
 import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
+import * as onBusService from '../services/onBus';
+import { haversine } from '../walking/loadMap';
+import { LocationSample } from '../raptor/types';
 import { startBackgroundJobs } from '../jobs';
 
 /**
@@ -364,15 +367,35 @@ export function getNearestStops(req: express.Request, res: express.Response) {
 }
 router.get('/nearest-stops', getNearestStops);
 
+/** Parses a locationTrail provided as a JSON query string or a request body array. */
+function parseLocationTrail(raw: unknown): LocationSample[] {
+    let parsed: unknown = raw;
+    if (typeof raw === 'string') {
+        try {
+            parsed = JSON.parse(raw);
+        } catch {
+            return [];
+        }
+    }
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((s: any) =>
+        s && typeof s.lat === 'number' && typeof s.lon === 'number' && typeof s.timestamp === 'number'
+    );
+}
+
 /**
  * Plans a journey between origin and destination coordinates.
+ * Optionally starts the journey from a bus the user is riding: pass
+ * `originVid` (vehicle ID), `onBus=true`, and `locationTrail` (URL-encoded
+ * JSON array of recent location samples) for motion validation.
  * @param req - Express request
  * @param res - Express response
- * @returns JSON object with `journeys` array containing possible routes.
+ * @returns JSON object with `journeys` array and, when on-bus routing was
+ * requested, an `originContext` describing how the origin was resolved.
  */
 export async function planJourney(req: express.Request, res: express.Response) {
     try {
-        const { originLat, originLon, destLat, destLon, walkingPenalty, range } = req.query;
+        const { originLat, originLon, destLat, destLon, walkingPenalty, range, originVid, onBus, locationTrail } = req.query;
 
         if (!originLat || !originLon || !destLat || !destLon) {
             res.status(400).json({ error: 'coordinates are required' });
@@ -382,23 +405,108 @@ export async function planJourney(req: express.Request, res: express.Response) {
         const now = new Date();
         const secondsSinceMidnight = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
-        const results = await journeyService.planJourney(
+        // On-bus mode: explicit onBus=true, or implied by originVid unless onBus=false
+        const onBusFlag = typeof onBus === 'string' ? onBus.toLowerCase() : undefined;
+        const onBusEnabled = onBusFlag === 'true' || onBusFlag === '1'
+            || (!!originVid && onBusFlag !== 'false' && onBusFlag !== '0');
+
+        let onBusOptions: journeyService.OnBusOptions | undefined;
+        if (onBusEnabled) {
+            const trailRaw = locationTrail !== undefined ? locationTrail : (req.body ? req.body.locationTrail : undefined);
+            onBusOptions = {
+                vid: originVid ? String(originVid) : undefined,
+                locationTrail: parseLocationTrail(trailRaw)
+            };
+        }
+
+        const result = await journeyService.planJourney(
             parseFloat(originLat as string), parseFloat(originLon as string),
             parseFloat(destLat as string), parseFloat(destLon as string),
             secondsSinceMidnight,
             {
                 walkingPenalty: walkingPenalty ? parseFloat(walkingPenalty as string) : undefined,
-                range: range ? parseInt(range as string) : undefined
+                range: range ? parseInt(range as string) : undefined,
+                onBus: onBusOptions
             }
         );
 
-        res.json({ journeys: results });
+        res.json({
+            journeys: result.journeys,
+            ...(result.originContext ? { originContext: result.originContext } : {})
+        });
     } catch (error) {
         console.error("Journey plan error:", error);
         res.status(500).json({ error: 'Journey planning failed' });
     }
 }
 router.get('/plan-journey', planJourney);
+
+const LocationSampleSchema = z.object({
+    lat: z.number(),
+    lon: z.number(),
+    timestamp: z.number(),
+    speed: z.number().optional(),
+    heading: z.number().optional(),
+});
+const DetectOnBusBody = z.object({
+    lat: z.number(),
+    lon: z.number(),
+    locationTrail: z.array(LocationSampleSchema).default([]),
+    candidateVid: z.string().optional(),
+});
+
+/**
+ * Classifies whether the user is on a bus, near one, or waiting at a stop,
+ * based on their current position and recent location trail.
+ * @param req - Express request, expects `DetectOnBusBody` in the body
+ * @param res - Express response
+ * @returns JSON object with `status`, `onBus`, and matched bus details.
+ */
+export function detectOnBus(req: express.Request, res: express.Response) {
+    const result = DetectOnBusBody.safeParse(req.body);
+    if (!result.success) {
+        res.status(400).json({ error: result.error.message });
+        return;
+    }
+    try {
+        const { lat, lon, locationTrail, candidateVid } = result.data;
+        const classification = onBusService.classifyOnBusStatus(lat, lon, locationTrail, candidateVid);
+
+        const response: any = {
+            status: classification.status,
+            onBus: classification.status === 'on_bus',
+            confidence: classification.confidence,
+            reason: classification.reason,
+        };
+
+        if (classification.vid) {
+            response.vid = classification.vid;
+            const bus = state.curBusPositions.buses.find(b => (b.vid || b.id) === classification.vid);
+            if (bus) {
+                const busLat = parseFloat(bus.lat);
+                const busLon = parseFloat(bus.lon);
+                if (!isNaN(busLat) && !isNaN(busLon)) {
+                    response.busLat = busLat;
+                    response.busLon = busLon;
+                    response.distanceMeters = Math.round(haversine(lat, lon, busLat, busLon));
+                }
+                if (bus.rt) response.rt = bus.rt;
+                if (bus.des) response.des = bus.des;
+            }
+            const trip = graphBuilder.findTripByVid(classification.vid);
+            if (trip) {
+                response.tripId = trip.tripId;
+                if (!response.rt) response.rt = state.tatripidToRt[trip.tripId];
+            }
+        }
+
+        res.json(response);
+    } catch (error) {
+        console.error('detect-on-bus error:', error);
+        res.status(500).json({ error: 'Detection failed' });
+    }
+}
+router.post('/detect-on-bus', detectOnBus);
 
 /**
  * Saves the current graph state to a file (DEV mode only).
