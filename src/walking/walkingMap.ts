@@ -30,7 +30,7 @@ export interface BatchWalkingResult {
 }
 
 const CACHE_FILE = path.resolve(process.cwd(), 'src/assets/landmark_dist.json');
-export const WALKING_SPEED_M_S = 5000 / 3600;
+const WALKING_SPEED_M_S = 5000 / 3600;
 const WALKING_CACHE_PATH = "src/assets/walkingCache.json";
 const DEBUG = false;
 const LANDMARK_DISTANCES = new Map<string, Map<string, number>>();
@@ -313,6 +313,14 @@ export function buildStopNodeMap(locations: Record<string, { lat: number, lon: n
  * @param destLon - Longitude of destination.
  */
 export async function getWalkingResponse(originLat: number, originLon: number, destLat: number, destLon: number): Promise<WalkingResponse> {
+    if (originLat === destLat && originLon === destLon) {
+        return {
+            distance: 0,
+            duration: 0,
+            path_coords: [{ lat: originLat, lon: originLon }, { lat: destLat, lon: destLon }],
+        };
+    }
+
     if (graphNodes.size === 0) {
         console.warn("Graph not loaded. Calling initializeGraph() now.");
         initializeGraph();
