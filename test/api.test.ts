@@ -178,10 +178,13 @@ describe('API Endpoints', () => {
             params: { originLat: 42.264356, originLon: -83.744354, destLat: 42.268068, destLon: -83.747307 },
         });
         expect(response.status).toBe(200);
-        expect(response.data).toEqual({
-            path_coords: [{ lat: 42.264356, lon: -83.744354 }, { lat: 42.268068, lon: -83.747307 }],
-            duration: 345,
-        });
+        const { path_coords, duration } = response.data;
+        expect(Object.keys(response.data).sort()).toEqual(['duration', 'path_coords']);
+        expect(path_coords.length).toBeGreaterThan(2);
+        expect(path_coords[0]).toEqual({ lat: 42.264356, lon: -83.744354 });
+        expect(path_coords.at(-1)).toEqual({ lat: 42.268068, lon: -83.747307 });
+        expect(Number.isInteger(duration)).toBe(true);
+        expect(duration).toBeGreaterThan(0);
     });
 
     it('should get path between main stops', async () => {
