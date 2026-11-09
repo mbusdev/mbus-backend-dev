@@ -1,9 +1,9 @@
+import { loadEnvFile } from "process";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 
 import * as state from "@/state/transitState";
 import { BaseEvent, DelayEvent, eventsEqual, toKey, Key, RegistrationToken, ThresholdEvent, fromKey, delayEvent, thresholdEvent } from "./reminderTypes";
-import { loadEnvFile } from "process";
 
 export * from "./reminderTypes";
 

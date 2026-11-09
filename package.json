@@ -31,11 +31,5 @@
         "@vitest/coverage-v8": "^4.1.10",
         "typedoc": "^0.28.15",
         "vitest": "^4.1.10"
-    },
-    "allowScripts": {
-        "esbuild@0.28.2": true,
-        "protobufjs@7.6.6": true,
-        "fsevents@2.3.3": true,
-        "@firebase/util@1.15.3": true
     }
 }
