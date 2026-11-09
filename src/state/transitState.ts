@@ -4,6 +4,53 @@ import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
 export const curBusPositions = { buses: [] as any[] };
 /** Current positions of all ride buses. */
 export const curRidePositions = { buses: [] as any[] };
+
+/** A single historical GPS sample for a bus. */
+export type BusPositionSample = {
+    lat: number,
+    lon: number,
+    /** Epoch milliseconds (poll time). */
+    timestamp: number,
+    /** Heading in degrees from the vehicle's hdg field, if available. */
+    heading?: number
+};
+
+/** Maximum age of bus position history samples, in milliseconds. */
+export const BUS_HISTORY_MAX_AGE_MS = 60_000;
+
+/** Recent position samples per vehicle ID (ring buffer, last ~60s). */
+export const busPositionHistory: Record<string, BusPositionSample[]> = {};
+
+/** Appends current bus positions to the per-vid history and prunes old samples. */
+export function recordBusPositionHistory(buses: any[], now: number = Date.now()) {
+    const seen = new Set<string>();
+    for (const bus of buses) {
+        const vid = bus.vid || bus.id;
+        const lat = parseFloat(bus.lat);
+        const lon = parseFloat(bus.lon);
+        if (!vid || isNaN(lat) || isNaN(lon)) continue;
+        seen.add(vid);
+
+        const sample: BusPositionSample = { lat, lon, timestamp: now };
+        const hdg = parseFloat(bus.hdg);
+        if (!isNaN(hdg)) sample.heading = hdg;
+
+        if (!busPositionHistory[vid]) busPositionHistory[vid] = [];
+        busPositionHistory[vid].push(sample);
+        busPositionHistory[vid] = busPositionHistory[vid].filter(
+            s => now - s.timestamp <= BUS_HISTORY_MAX_AGE_MS
+        );
+    }
+    // Drop history for vehicles no longer reporting
+    for (const vid of Object.keys(busPositionHistory)) {
+        if (!seen.has(vid)) {
+            const samples = busPositionHistory[vid];
+            if (!samples.length || now - samples[samples.length - 1].timestamp > BUS_HISTORY_MAX_AGE_MS) {
+                delete busPositionHistory[vid];
+            }
+        }
+    }
+}
 /** Cache of route patterns and static data. */
 export const cachedRoutes: Record<string, any> = {};
 /** Cache of route patterns and static data for the ride. */

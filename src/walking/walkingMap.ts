@@ -537,9 +537,14 @@ export function getCachedWalk(originId: string, destId: string): WalkingResponse
 
 initializeGraph();
 if (existsSync(WALKING_CACHE_PATH)) {
-    const file = readFileSync(WALKING_CACHE_PATH, "utf8");
-    Object.assign(walkingCache, JSON.parse(file));
-    console.log("Loaded walkingCache.json");
+    try {
+        const file = readFileSync(WALKING_CACHE_PATH, "utf8");
+        Object.assign(walkingCache, JSON.parse(file));
+        console.log("Loaded walkingCache.json");
+    } catch (err) {
+        // A truncated cache (e.g. from a failed write on a full disk) must not crash startup
+        console.warn("walkingCache.json is corrupt — ignoring it and rebuilding the cache", err);
+    }
 } else {
     console.log("walkingCache.json does not exist — using empty cache");
 }
