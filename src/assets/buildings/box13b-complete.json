@@ -1,0 +1,185 @@
+[
+  {
+    "ID": "3123196137",
+    "lat": "42.2170343",
+    "long": "-83.5623655",
+    "buildingName": "Howards Hoagies",
+    "address": "2013 McCartney Avenue"
+  },
+  {
+    "ID": "7838475075",
+    "lat": "42.2324507",
+    "long": "-83.6022498",
+    "buildingName": "Siddiqui Medical & Dental Clinic",
+    "address": "428 South Grove Street"
+  },
+  {
+    "ID": "8439710161",
+    "lat": "42.2305502",
+    "long": "-83.5982351",
+    "buildingName": "Citgo",
+    "address": "745 South Grove Street"
+  },
+  {
+    "ID": "8439710163",
+    "lat": "42.2306308",
+    "long": "-83.5980359",
+    "buildingName": "Grove Mini Mart",
+    "address": "745 South Grove Street"
+  },
+  {
+    "ID": "8590080330",
+    "lat": "42.2175620",
+    "long": "-83.5405505",
+    "buildingName": "Dollar General",
+    "address": "2037 Rawsonville Road"
+  },
+  {
+    "ID": "8590080332",
+    "lat": "42.2156521",
+    "long": "-83.5451111",
+    "buildingName": "Mobil Mart",
+    "address": "2120 Rawsonville Road"
+  },
+  {
+    "ID": "8590080333",
+    "lat": "42.2156918",
+    "long": "-83.5448483",
+    "buildingName": "Mobil",
+    "address": "2120 Rawsonville Road"
+  },
+  {
+    "ID": "8832827525",
+    "lat": "42.2162494",
+    "long": "-83.5409244",
+    "buildingName": "Little Caesars",
+    "address": "2081 Rawsonville Rd"
+  },
+  {
+    "ID": "223686849",
+    "lat": "42.2323745",
+    "long": "-83.5639853",
+    "buildingName": "New Covenant Missionary Baptist",
+    "address": "2345 Tyler Road"
+  },
+  {
+    "ID": "460519017",
+    "lat": "42.2349156",
+    "long": "-83.5882660",
+    "buildingName": "BP",
+    "address": "1166 Ecorse Road"
+  },
+  {
+    "ID": "460519032",
+    "lat": "42.2347717",
+    "long": "-83.5882113",
+    "buildingName": "Ecorse BP",
+    "address": "1166 Ecorse Road"
+  },
+  {
+    "ID": "530795410",
+    "lat": "42.2169226",
+    "long": "-83.5675606",
+    "buildingName": "Domino's",
+    "address": "2121 South Grove Road"
+  },
+  {
+    "ID": "544168719",
+    "lat": "42.2156695",
+    "long": "-83.5713519",
+    "buildingName": "Lakeshore Clubhouse",
+    "address": "2500 Lakeview Drive"
+  },
+  {
+    "ID": "871538784",
+    "lat": "42.2321212",
+    "long": "-83.5699180",
+    "buildingName": "Whitehead Memorial Church of God in Christ",
+    "address": "2069 Tyler Road"
+  },
+  {
+    "ID": "871556564",
+    "lat": "42.2323020",
+    "long": "-83.5705276",
+    "buildingName": "New West Willow Neighborhood Association Community Resource Center",
+    "address": "2057 Tyler Road"
+  },
+  {
+    "ID": "896361972",
+    "lat": "42.2153525",
+    "long": "-83.5629337",
+    "address": "2375 South Grove Street"
+  },
+  {
+    "ID": "902844920",
+    "lat": "42.2289864",
+    "long": "-83.5910237",
+    "address": "1143 Georgina Drive"
+  },
+  {
+    "ID": "902845780",
+    "lat": "42.2255930",
+    "long": "-83.5927646",
+    "address": "1450 Jeffery Street"
+  },
+  {
+    "ID": "908949630",
+    "lat": "42.2347314",
+    "long": "-83.5831366",
+    "buildingName": "Mobil",
+    "address": "1396 Ecorse Road"
+  },
+  {
+    "ID": "908949631",
+    "lat": "42.2345826",
+    "long": "-83.5831346",
+    "buildingName": "Al's Mobil",
+    "address": "1396 Ecorse Road"
+  },
+  {
+    "ID": "908949632",
+    "lat": "42.2348913",
+    "long": "-83.5914947",
+    "buildingName": "Midway Sunoco",
+    "address": "1024 Ecorse Road"
+  },
+  {
+    "ID": "908949633",
+    "lat": "42.2350292",
+    "long": "-83.5915915",
+    "buildingName": "Sunoco",
+    "address": "1024 Ecorse Road"
+  },
+  {
+    "ID": "920182158",
+    "lat": "42.2348478",
+    "long": "-83.5863648",
+    "buildingName": "Ice Cream Time",
+    "address": "1240 Ecorse Road"
+  },
+  {
+    "ID": "920182700",
+    "lat": "42.2343504",
+    "long": "-83.5903905",
+    "buildingName": "George School",
+    "address": "1076 Ecorse Road"
+  },
+  {
+    "ID": "1057028185",
+    "lat": "42.2154081",
+    "long": "-83.5905688",
+    "address": "5030 Spinnaker Way"
+  },
+  {
+    "ID": "1057028187",
+    "lat": "42.2155350",
+    "long": "-83.5898027",
+    "address": "5010 Spinnaker Way"
+  },
+  {
+    "ID": "1057028188",
+    "lat": "42.2156169",
+    "long": "-83.5894689",
+    "address": "5000 Spinnaker Way"
+  }
+]

@@ -1,0 +1,317 @@
+[
+  {
+    "ID": "28991808",
+    "lat": "42.2328031",
+    "long": "-83.7477761",
+    "buildingName": "Zingerman's Bakehouse",
+    "address": "3711 Plaza Drive"
+  },
+  {
+    "ID": "367812830",
+    "lat": "42.2429580",
+    "long": "-83.7508572",
+    "buildingName": "Briarwood Family Medicine",
+    "address": "1801 Briarwood Circle"
+  },
+  {
+    "ID": "2873352844",
+    "lat": "42.2447808",
+    "long": "-83.7576245",
+    "buildingName": "Moe's Southwest Grill",
+    "address": "857 West Eisenhower Parkway"
+  },
+  {
+    "ID": "3074088121",
+    "lat": "42.2537776",
+    "long": "-83.7521357",
+    "address": "2264 South Main Street"
+  },
+  {
+    "ID": "3879079110",
+    "lat": "42.2537019",
+    "long": "-83.7513641",
+    "buildingName": "Busch's Fresh Food Market",
+    "address": "2240 South Main Street"
+  },
+  {
+    "ID": "4026754149",
+    "lat": "42.2325862",
+    "long": "-83.7480719",
+    "buildingName": "Zingerman's Creamery",
+    "address": "3723 Plaza Drive"
+  },
+  {
+    "ID": "4029305341",
+    "lat": "42.2312242",
+    "long": "-83.7477761",
+    "buildingName": "Maker Works",
+    "address": "3765 Plaza Drive"
+  },
+  {
+    "ID": "4029305342",
+    "lat": "42.2324263",
+    "long": "-83.7483049",
+    "buildingName": "Zingerman's Coffee Company",
+    "address": "3723 Plaza Drive"
+  },
+  {
+    "ID": "4186033242",
+    "lat": "42.2533070",
+    "long": "-83.7509496",
+    "buildingName": "CVS Pharmacy",
+    "address": "2228 South Main Street"
+  },
+  {
+    "ID": "4401673951",
+    "lat": "42.2444940",
+    "long": "-83.7540350",
+    "buildingName": "Charles Schwab",
+    "address": "760 West Eisenhower Parkway"
+  },
+  {
+    "ID": "4401673952",
+    "lat": "42.2446330",
+    "long": "-83.7539921",
+    "buildingName": "Liberty Mutual Insurance",
+    "address": "760 West Eisenhower Parkway"
+  },
+  {
+    "ID": "4796797813",
+    "lat": "42.2691982",
+    "long": "-83.7510008",
+    "address": "1002 Myron Court"
+  },
+  {
+    "ID": "4796797814",
+    "lat": "42.2690723",
+    "long": "-83.7510111",
+    "address": "1006 Myron Court"
+  },
+  {
+    "ID": "4796797815",
+    "lat": "42.2690868",
+    "long": "-83.7507663",
+    "address": "1007 Myron Court"
+  },
+  {
+    "ID": "4796797855",
+    "lat": "42.2698779",
+    "long": "-83.7523201",
+    "address": "401 Wilder Place"
+  },
+  {
+    "ID": "4797434568",
+    "lat": "42.2695337",
+    "long": "-83.7544623",
+    "address": "522 West Hoover Avenue"
+  },
+  {
+    "ID": "4797434569",
+    "lat": "42.2695376",
+    "long": "-83.7544248",
+    "address": "520 West Hoover Avenue"
+  },
+  {
+    "ID": "4797434570",
+    "lat": "42.2695451",
+    "long": "-83.7543047",
+    "address": "518 West Hoover Avenue"
+  },
+  {
+    "ID": "4797434966",
+    "lat": "42.2696441",
+    "long": "-83.7549444",
+    "address": "910 Edgewood Place"
+  },
+  {
+    "ID": "4797434993",
+    "lat": "42.2703040",
+    "long": "-83.7543383",
+    "address": "901 Edgewood Place"
+  },
+  {
+    "ID": "4797435029",
+    "lat": "42.2711699",
+    "long": "-83.7548821",
+    "address": "820 Edgewood Place"
+  },
+  {
+    "ID": "4797435030",
+    "lat": "42.2711709",
+    "long": "-83.7549840",
+    "address": "822 Edgewood Place"
+  },
+  {
+    "ID": "4797435047",
+    "lat": "42.2709163",
+    "long": "-83.7547969",
+    "address": "828 Edgewood Place"
+  },
+  {
+    "ID": "4797435048",
+    "lat": "42.2709193",
+    "long": "-83.7548868",
+    "address": "830 Edgewood Place"
+  },
+  {
+    "ID": "4804825496",
+    "lat": "42.2705480",
+    "long": "-83.7485100",
+    "address": "833 Brown Street"
+  },
+  {
+    "ID": "4806632901",
+    "lat": "42.2692085",
+    "long": "-83.7496437",
+    "address": "110 East Hoover Avenue"
+  },
+  {
+    "ID": "4806632902",
+    "lat": "42.2692144",
+    "long": "-83.7495793",
+    "address": "112 East Hoover Avenue"
+  },
+  {
+    "ID": "4810686440",
+    "lat": "42.2707066",
+    "long": "-83.7536690",
+    "address": "820 3rd Street"
+  },
+  {
+    "ID": "4856568628",
+    "lat": "42.2677132",
+    "long": "-83.7514822",
+    "address": "308 West Keech Avenue"
+  },
+  {
+    "ID": "4856568637",
+    "lat": "42.2673150",
+    "long": "-83.7521191",
+    "address": "405 West Keech Avenue"
+  },
+  {
+    "ID": "4933438931",
+    "lat": "42.2682876",
+    "long": "-83.7521666",
+    "address": "321 Pauline Boulevard"
+  },
+  {
+    "ID": "4933438932",
+    "lat": "42.2682191",
+    "long": "-83.7521693",
+    "address": "323 Pauline Boulevard"
+  },
+  {
+    "ID": "4934466599",
+    "lat": "42.2557375",
+    "long": "-83.7517900",
+    "buildingName": "Ann Arbor Orthodontics",
+    "address": "2084 South Main Street"
+  },
+  {
+    "ID": "4934466600",
+    "lat": "42.2558606",
+    "long": "-83.7517417",
+    "buildingName": "Arbor Professional Solutions",
+    "address": "2090 South Main Street"
+  },
+  {
+    "ID": "4934466607",
+    "lat": "42.2558606",
+    "long": "-83.7514453",
+    "buildingName": "Allstate Insurance",
+    "address": "2092 South Main Street"
+  },
+  {
+    "ID": "4934466608",
+    "lat": "42.2558021",
+    "long": "-83.7510685",
+    "buildingName": "South Main Orthopaedics",
+    "address": "2098 South Main Street"
+  },
+  {
+    "ID": "4937714706",
+    "lat": "42.2656566",
+    "long": "-83.7567233",
+    "address": "1215 Hutchins Avenue"
+  },
+  {
+    "ID": "4937714718",
+    "lat": "42.2661558",
+    "long": "-83.7578908",
+    "address": "1212 Franklin Boulevard"
+  },
+  {
+    "ID": "5060708371",
+    "lat": "42.2688505",
+    "long": "-83.7553540",
+    "address": "628 Pauline Boulevard"
+  },
+  {
+    "ID": "5060708412",
+    "lat": "42.2691283",
+    "long": "-83.7563443",
+    "address": "1002 Fifth Street"
+  },
+  {
+    "ID": "5469533571",
+    "lat": "42.2644192",
+    "long": "-83.7527189",
+    "address": "450 West Stadium Boulevard"
+  },
+  {
+    "ID": "8695533145",
+    "lat": "42.2704662",
+    "long": "-83.7496397",
+    "address": "107 East Davis Avenue"
+  },
+  {
+    "ID": "10957951943",
+    "lat": "42.2709822",
+    "long": "-83.7567667",
+    "address": "811 Hutchins Avenue"
+  },
+  {
+    "ID": "10957961339",
+    "lat": "42.2701977",
+    "long": "-83.7568452",
+    "address": "901 Hutchins Avenue"
+  },
+  {
+    "ID": "10957995312",
+    "lat": "42.2705755",
+    "long": "-83.7564930",
+    "address": "704 West Davis Avenue"
+  },
+  {
+    "ID": "10957995313",
+    "lat": "42.2701865",
+    "long": "-83.7564461",
+    "address": "705 West Davis Avenue"
+  },
+  {
+    "ID": "10957995314",
+    "lat": "42.2702037",
+    "long": "-83.7567147",
+    "address": "707 West Davis Avenue"
+  },
+  {
+    "ID": "10958034427",
+    "lat": "42.2714184",
+    "long": "-83.7576078",
+    "address": "808 Hutchins Avenue"
+  },
+  {
+    "ID": "12557933433",
+    "lat": "42.2693321",
+    "long": "-83.7510187",
+    "address": "117 West Hoover Avenue"
+  },
+  {
+    "ID": "13279080938",
+    "lat": "42.2652491",
+    "long": "-83.7506083",
+    "buildingName": "Bunek Dental Studio",
+    "address": "1310 South Main Street"
+  }
+]

@@ -1,0 +1,154 @@
+[
+  {
+    "ID": "367813128",
+    "lat": "42.2863272",
+    "long": "-83.8159499",
+    "buildingName": "IHA WestArbor Primary Care",
+    "address": "4350 Jackson Road"
+  },
+  {
+    "ID": "1014636800",
+    "lat": "42.2848656",
+    "long": "-83.8377617",
+    "buildingName": "Burger King",
+    "address": "151 South Zeeb Road"
+  },
+  {
+    "ID": "2921398834",
+    "lat": "42.2821286",
+    "long": "-83.8066812",
+    "buildingName": "Auto Tech Center",
+    "address": "213 Aprill Drive"
+  },
+  {
+    "ID": "4564175911",
+    "lat": "42.3012320",
+    "long": "-83.8279940",
+    "address": "1142 Sullivan Drive"
+  },
+  {
+    "ID": "4922423700",
+    "lat": "42.2816648",
+    "long": "-83.8176048",
+    "address": "424 Little Lake Drive"
+  },
+  {
+    "ID": "5946217094",
+    "lat": "42.2875861",
+    "long": "-83.8284197",
+    "buildingName": "Base Camp",
+    "address": "5060 Jackson Road"
+  },
+  {
+    "ID": "5946217095",
+    "lat": "42.2878464",
+    "long": "-83.8284047",
+    "buildingName": "Huron Pet Supply",
+    "address": "5060 Jackson Road"
+  },
+  {
+    "ID": "8441897388",
+    "lat": "42.2934754",
+    "long": "-83.8396002",
+    "buildingName": "Tim Hortons",
+    "address": "325 North Zeeb Road"
+  },
+  {
+    "ID": "8441897389",
+    "lat": "42.2935533",
+    "long": "-83.8395949",
+    "buildingName": "BP Shop",
+    "address": "325 North Zeeb Road"
+  },
+  {
+    "ID": "8441897390",
+    "lat": "42.2934938",
+    "long": "-83.8392717",
+    "buildingName": "BP",
+    "address": "325 North Zeeb Road"
+  },
+  {
+    "ID": "8441897395",
+    "lat": "42.2845976",
+    "long": "-83.8023725",
+    "buildingName": "Scio Fuel",
+    "address": "3535 Jackson Road"
+  },
+  {
+    "ID": "8441897399",
+    "lat": "42.2847276",
+    "long": "-83.8023819",
+    "buildingName": "Marathon",
+    "address": "3535 Jackson Road"
+  },
+  {
+    "ID": "9724817647",
+    "lat": "42.2869448",
+    "long": "-83.8339731",
+    "buildingName": "Emergency Veterinary Hospital",
+    "address": "5245 Jackson Road"
+  },
+  {
+    "ID": "9807443899",
+    "lat": "42.2831322",
+    "long": "-83.8026796",
+    "buildingName": "Dozer Coffee",
+    "address": "112 Jackson Plaza"
+  },
+  {
+    "ID": "9807443905",
+    "lat": "42.2831173",
+    "long": "-83.8027708",
+    "buildingName": "HOMES Can Shop & Smooj Lab",
+    "address": "112 Jackson Plaza"
+  },
+  {
+    "ID": "9957555059",
+    "lat": "42.2859716",
+    "long": "-83.8393001",
+    "buildingName": "Starbucks",
+    "address": "120 South Zeeb Road"
+  },
+  {
+    "ID": "11125657797",
+    "lat": "42.2871302",
+    "long": "-83.8393274",
+    "buildingName": "Panda Express",
+    "address": "80 South Zeeb Road"
+  },
+  {
+    "ID": "11291733069",
+    "lat": "42.2879088",
+    "long": "-83.8274972",
+    "buildingName": "Overture Audio",
+    "address": "5040 Jackson Road"
+  },
+  {
+    "ID": "11955360065",
+    "lat": "42.2866702",
+    "long": "-83.8185870",
+    "buildingName": "Benjamin Franklin Plumbing of Ann Arbor",
+    "address": "4470 Jackson Road"
+  },
+  {
+    "ID": "12768584421",
+    "lat": "42.2846786",
+    "long": "-83.8391810",
+    "buildingName": "Leo's Coney Island",
+    "address": "160 South Zeeb Road"
+  },
+  {
+    "ID": "13188754419",
+    "lat": "42.2876270",
+    "long": "-83.8398156",
+    "buildingName": "Tropical Smoothie Cafe",
+    "address": "5609 Jackson Road"
+  },
+  {
+    "ID": "13188754420",
+    "lat": "42.2861707",
+    "long": "-83.8393219",
+    "buildingName": "Jimmy John's",
+    "address": "120 South Zeeb Road"
+  }
+]
