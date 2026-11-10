@@ -1,8 +1,5 @@
 import axios from 'axios';
 import * as process from "node:process";
-import { loadEnvFile } from "process";
-
-loadEnvFile();
 
 const API_KEY = process.env.MBUS_API_KEY;
 const BASE_URL = process.env.MBUS_URL || 'https://mbus.ltp.umich.edu/bustime/api/v3/';
