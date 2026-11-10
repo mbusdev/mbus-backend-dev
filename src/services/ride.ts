@@ -2,9 +2,6 @@
 
 import axios from 'axios';
 import * as process from "node:process";
-import { loadEnvFile } from "process";
-
-// loadEnvFile();
 
 const RIDE_API_KEY = process.env.RIDE_API_KEY;
 const BASE_URL = process.env.RIDE_URL || 'https://rt.theride.org/bustime/api/v3/';
