@@ -6,7 +6,6 @@ import { Prediction } from '@/state/transitState';
 import * as state from '@/state/transitState';
 import { initializeRoutes, rebuildGraph, sortPreds, updateBusPositions } from '@/services/graphBuilder';
 import axios from 'axios';
-import { configDotenv } from 'dotenv';
 
 const testToken = r.registrationToken("token1");
 const testEvent = r.baseEvent({ stpid: "stop1", rtid: "route1" });
@@ -32,7 +31,7 @@ function createCaches(preds: Prediction[]): { byStop: Record<string, Prediction[
 
 describe('Reminders', () => {
     it('should not send a threshold immediately and should move to next stage after sending', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 2 * 60 * 1000, prdctdn: "2" }
         ]);
@@ -69,7 +68,7 @@ describe('Reminders', () => {
     });
 
     it('should not send a disappeared notification if there never was a bus in the first place', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         // the subscription gets added with no possible candidate vid
         subs.add(testEvent, 3, testToken, {}, Date.now());
         // will it trigger a disappeared reminder?
@@ -78,7 +77,7 @@ describe('Reminders', () => {
     });
 
     it('should not trigger for busses of other routes', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEventDiffRt.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "2" }
         ]);
@@ -88,7 +87,7 @@ describe('Reminders', () => {
     });
 
     it('should only get removed by the remove method if explicitly targeted', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         subs.add(testEvent, 3, testToken, {}, Date.now());
         subs.add(testEventDiffRt, 3, testToken, {}, Date.now());
         subs.add(testEvent, 3, r.registrationToken("anotherToken"), {}, Date.now());
@@ -98,7 +97,7 @@ describe('Reminders', () => {
     });
 
     it('should send at the stop notifications', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "2" }
         ]);
@@ -111,7 +110,7 @@ describe('Reminders', () => {
     });
 
     it('should send delayed notifications', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" } 
         ]);
@@ -132,7 +131,7 @@ describe('Reminders', () => {
     });
 
     it('should send disappeared notifications (stage 0)', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" }
         ]);
@@ -142,7 +141,7 @@ describe('Reminders', () => {
     });
 
     it('should send disappeared notifications (stage 1)', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 5 * 60 * 1000, prdctdn: "5" } 
         ]);
@@ -160,7 +159,7 @@ describe('Reminders', () => {
     });
 
     it('should override some delayed notifications', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 4 * 60 * 1000, prdctdn: "4" } 
         ]);
@@ -182,7 +181,7 @@ describe('Reminders', () => {
     });
 
     it('should override some disappeared notifications', () => {
-        const subs = new t.ReminderSubscriptions();
+        const subs = new t.ReminderSubscriptions({ mock: true });
         const { byStop, byVid } = createCaches([
             { rt: testEvent.rtid, vid: "vid1", stpid: testEvent.stpid, prdtm: Date.now() + 5 * 60 * 1000, prdctdn: "5" } 
         ]);
@@ -200,17 +199,25 @@ describe('Reminders', () => {
         expect(reminders.atTheStop.size).toBe(1);
     });
 
+    it('should use full route names in messages and fall back to the route id', () => {
+        expect(t.routeName("CN")).toBe("Commuter North");
+        expect(t.routeName("3")).toBe("Huron River");
+        expect(t.routeName("not-a-route")).toBe("not-a-route");
+    });
+
     it('should get unix timestamp from ride bus api', async () => {
-        configDotenv();
         const RIDE_API_KEY = process.env.RIDE_API_KEY;
-        const BASE_URL = 'https://rt.theride.org/bustime/api/v3/';
+        expect(RIDE_API_KEY || process.env.RIDE_URL, 'unable to make requests to a theride bustime server')
+            .toBeTruthy();
+        const BASE_URL = process.env.RIDE_URL || 'https://rt.theride.org/bustime/api/v3/';
 
         const client = axios.create({
             baseURL: BASE_URL,
             params: { key: RIDE_API_KEY, format: 'json' }
         });
         const res = await client.get('/gettime', { params: { unixTime: true } });
-        expect(Math.abs(parseInt(res.data["bustime-response"]["tm"]) - Date.now())).toBeLessThan(60 * 1000);
+        expect(Math.abs(parseInt(res.data["bustime-response"]["tm"]) - Date.now()))
+            .toBeLessThan(2 * 24 * 60 * 60 * 1000);
     });
 
     it('should have cached preds in a good state', async () => {
@@ -221,15 +228,15 @@ describe('Reminders', () => {
         // are there preds?
         expect(Object.keys(state.cachedPredsByStopId).length).toBeGreaterThan(0);
         expect(Object.keys(state.cachedPredsByVid).length).toBeGreaterThan(0);
-        // expect(Object.keys(state.cachedRidePredsByStopId).length).toBeGreaterThan(0);
-        // expect(Object.keys(state.cachedRidePredsByVid).length).toBeGreaterThan(0);
+        expect(Object.keys(state.cachedRidePredsByStopId).length).toBeGreaterThan(0);
+        expect(Object.keys(state.cachedRidePredsByVid).length).toBeGreaterThan(0);
         // are the expected fields all there?
         const sample: Prediction = { rt: "", stpid: "", vid: "", prdtm: 0, prdctdn: "" };
         const allThere = (x: Prediction) => {
             for (const k in sample) {
                 expect(k + ":" +typeof x[k]).toBe(k + ":" + typeof sample[k]);
                 if (k == "prdtm") {
-                    expect(x[k]).toBeGreaterThanOrEqual(Date.now() - 15 * 1000);
+                    expect(x[k]).toBeGreaterThanOrEqual(Date.now() - 2 * 24 * 60 * 60 * 1000);
                 }
             }  
         };

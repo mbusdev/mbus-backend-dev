@@ -1,16 +1,16 @@
-import dotenv from "dotenv";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 
 import * as state from "@/state/transitState";
+import * as meta from "./metadata";
 import { BaseEvent, DelayEvent, eventsEqual, toKey, Key, RegistrationToken, ThresholdEvent, fromKey, delayEvent, thresholdEvent } from "./reminderTypes";
 
 export * from "./reminderTypes";
 
-dotenv.config()
-
-// Initialize Firebase
-initializeApp({ credential: applicationDefault() });
+export function initializeReminders() {
+    // Initialize Firebase
+    initializeApp({ credential: applicationDefault() });
+}
 
 /** Waiting for a prediction of the right `event` to have a arrival timestamp that is at or after `mustBeAfter` and an
  *  arrival time less than `thresh`. A bus is xx minutes from the stop notification is then sent. To handle delayed and
@@ -61,7 +61,7 @@ function prdctdnToNum(prdctdn: string): number {
 }
 
 /** result of ReminderSubscriptons.process */
-type RemindersToTrigger = {
+export type RemindersToTrigger = {
     /** can be sent in bulk based off of route, stop, and threshold (or route, stop, and prdctdn) */
     reminder: Map<Key<ThresholdEvent>, Set<RegistrationToken>>,
     /** can be sent in bulk based off of what route and stop */
@@ -74,12 +74,15 @@ type RemindersToTrigger = {
 };
 
 /** Subscriptions go through a pipeline, see types above for details. */
-class ReminderSubscriptions {
+export class ReminderSubscriptions {
     subscriptions: Array<{
         token: RegistrationToken, subscription: PreThreshold | PostThreshold
-    }>
+    }>;
+    pure: boolean;
 
-    constructor() {
+    /** set mock to true for tests that don't involve firebase */
+    constructor(options: { mock: boolean }) {
+        this.pure = options.mock;
         this.subscriptions = [];
     }
 
@@ -87,7 +90,14 @@ class ReminderSubscriptions {
         event and token are removed.
         REQUIRES: `predsByStopId` has predictions sorted by arrival timestamp
     */
-    add(event: BaseEvent, thresh: number, token: RegistrationToken, predsByStopId: Record<string, state.Prediction[]>, now: number) {
+    add(
+        event: BaseEvent,
+        thresh: number,
+        token: RegistrationToken,
+        predsByStopId: Record<string, state.Prediction[]>,
+        now: number,
+        options?: { noUpdate: boolean },
+    ) {
         console.log("Adding a reminder subscription");
         const predictions = predsByStopId[event.stpid];
         const subscription = preThreshold(event, thresh, null, now);
@@ -103,18 +113,19 @@ class ReminderSubscriptions {
             }
         }
         // remove existing
-        this.remove(event, token, true);
+        this.remove(event, token, { noUpdate: true });
         this.subscriptions.push({ token, subscription });
+        if (options?.noUpdate || this.pure) return;
         sendReminderUpdateToAll(new Set([token]));
     }
 
     /** removes all subscriptions that involve both `event` and `token` */
-    remove(event: BaseEvent, token: RegistrationToken, noUpdate?: boolean) {
+    remove(event: BaseEvent, token: RegistrationToken, options?: { noUpdate: boolean }) {
         console.log("Removing a reminder subscription");
         this.subscriptions = this.subscriptions
             .filter((s) => s.token != token || !eventsEqual(s.subscription.event, event))
-        if (!noUpdate)
-            sendReminderUpdateToAll(new Set([token]));
+        if (options?.noUpdate || this.pure) return;
+        sendReminderUpdateToAll(new Set([token]));
     }
 
     /**  updates the status of all registrations, returning an object representing the
@@ -323,8 +334,8 @@ class ReminderSubscriptions {
     }
 }
 
-export const universityReminderSubscriptions = new ReminderSubscriptions();
-export const rideReminderSubscriptions = new ReminderSubscriptions();
+export const universityReminderSubscriptions = new ReminderSubscriptions({ mock: false});
+export const rideReminderSubscriptions = new ReminderSubscriptions({ mock: false});
 
 export function processUniversityReminders() {
     try {
@@ -361,11 +372,16 @@ function minutes(x: number): string {
     return `${x} minutes`;
 }
 
+/** Returns the full name of a route (e.g. "Commuter North" for "CN"), or the route id if there is no known name. */
+function routeName(rtid: string): string {
+    return meta.staticData.routeIdToName[rtid] || rtid;
+}
+
 function processRemindersHelper(
     reminderSubscriptions: ReminderSubscriptions,
     predsByStopId: Record<string, state.Prediction[] | undefined>,
     predsByVid: Record<string, state.Prediction[] | undefined>,
-    stopIdToName: Record<string, string>
+    stopIdToName: Record<string, string>,
 ) {
     const notifications = reminderSubscriptions.process(predsByStopId, predsByVid, Date.now());
     for (const [eventKey, tokens] of notifications.reminder) {
@@ -375,7 +391,7 @@ function processRemindersHelper(
             sendNotifToAll(
                 {
                     title: 'Bus Arrival Reminder',
-                    body: `${event.rtid} is ${minutes(event.threshold)} away from ${stopName}`
+                    body: `${routeName(event.rtid)} is ${minutes(event.threshold)} away from ${stopName}`
                 },
                 tokens
             );
@@ -383,7 +399,7 @@ function processRemindersHelper(
             sendNotifToAll(
                 {
                     title: 'Bus Arrival Reminder',
-                    body: `${event.rtid} is less than ${minutes(event.threshold)} away from ${stopName}`
+                    body: `${routeName(event.rtid)} is less than ${minutes(event.threshold)} away from ${stopName}`
                 },
                 tokens
             );
@@ -394,7 +410,7 @@ function processRemindersHelper(
         const stopName = stopIdToName[event.stpid] ?? event.stpid;;
         sendToAll(
             {
-                notification: { title: 'Bus Arriving', body: `${event.rtid} is almost at ${stopName}` },
+                notification: { title: 'Bus Arriving', body: `${routeName(event.rtid)} is almost at ${stopName}` },
             },
             tokens
         );
@@ -405,7 +421,7 @@ function processRemindersHelper(
         sendNotifToAll(
             {
                 title: `Bus Delayed`,
-                body: `The ${event.rtid} bus en route to ${stopName} got delayed by `
+                body: `The ${routeName(event.rtid)} bus en route to ${stopName} got delayed by `
                     + `${minutes(event.currPred - event.prevPred)}. New time is ${minutes(event.currPred)}.`
             },
             tokens
@@ -417,7 +433,7 @@ function processRemindersHelper(
         sendNotifToAll(
             {
                 title: `Bus Disappeared`,
-                body: `The ${event.rtid} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
+                body: `The ${routeName(event.rtid)} bus en route to ${stopName} disappeared! Set a new reminder if desired.`
             },
             tokens
         );
@@ -502,5 +518,6 @@ export function infoToUseForRoute(rtid: string): {
 /** exported for tests */
 export const testing = {
     ReminderSubscriptions,
-    eventsEqual
+    eventsEqual,
+    routeName
 };
