@@ -9,8 +9,7 @@ import express from 'express';
 import * as z from 'zod';
 import * as state from '@/state/transitState';
 import { BusRouteLineSchema } from '@/services/bustimeCommon';
-import { haversine } from '@/walking/loadMap';
-import { WALKING_SPEED_M_S } from '@/walking/walkingMap';
+import { getWalkingResponse } from '@/walking/walkingMap';
 import * as documented from './documented';
 import { PlanJourneyQuerySchema, PlanWalkingResponseSchema } from './planningSchemas';
 
@@ -40,10 +39,10 @@ export const planWalking = documented.addGetRoute(
     },
     async (_, { originLat, originLon, destLat, destLon }) => {
         try {
-            const distance = haversine(originLat, originLon, destLat, destLon);
+            const data = await getWalkingResponse(originLat, originLon, destLat, destLon);
             return documented.makeSuccessResponse({
-                path_coords: [{ lat: originLat, lon: originLon }, { lat: destLat, lon: destLon }],
-                duration: Math.round(distance / WALKING_SPEED_M_S),
+                path_coords: data.path_coords,
+                duration: Math.round(data.duration),
             });
         } catch (error) {
             console.error('Walking plan error:', error);
@@ -52,7 +51,8 @@ export const planWalking = documented.addGetRoute(
     },
     {
         summary: 'Plan a walking path',
-        description: 'Returns a straight-line placeholder with duration estimated in seconds at 5 km/h. ' +
+        description: 'Returns a walking path on the local walking graph with duration estimated in seconds at 5 km/h. ' +
+            'Falls back to a straight line if no graph path is found. ' +
             'walkingPenalty and range are accepted for compatibility with /plan-journey and ignored. ' +
             'Errors return { error: string } with status 400 for invalid query parameters or 500 for unexpected failures.',
     },
