@@ -6,7 +6,6 @@ import { Prediction } from '@/state/transitState';
 import * as state from '@/state/transitState';
 import { initializeRoutes, rebuildGraph, sortPreds, updateBusPositions } from '@/services/graphBuilder';
 import axios from 'axios';
-import { configDotenv } from 'dotenv';
 
 const testToken = r.registrationToken("token1");
 const testEvent = r.baseEvent({ stpid: "stop1", rtid: "route1" });
@@ -207,7 +206,6 @@ describe('Reminders', () => {
     });
 
     it('should get unix timestamp from ride bus api', async () => {
-        configDotenv();
         const RIDE_API_KEY = process.env.RIDE_API_KEY;
         expect(RIDE_API_KEY || process.env.RIDE_URL, 'unable to make requests to a theride bustime server')
             .toBeTruthy();

@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import { getMessaging } from "firebase-admin/messaging";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 
@@ -7,8 +6,6 @@ import * as meta from "./metadata";
 import { BaseEvent, DelayEvent, eventsEqual, toKey, Key, RegistrationToken, ThresholdEvent, fromKey, delayEvent, thresholdEvent } from "./reminderTypes";
 
 export * from "./reminderTypes";
-
-dotenv.config()
 
 export function initializeReminders() {
     // Initialize Firebase
