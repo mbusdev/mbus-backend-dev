@@ -179,7 +179,7 @@ describe('API Endpoints', () => {
         });
         expect(response.status).toBe(200);
         const { path_coords, duration } = response.data;
-        expect(Object.keys(response.data).sort()).toEqual(['duration', 'path_coords']);
+        expect(Object.keys(response.data).sort()).toEqual(['directions', 'duration', 'path_coords']);
         expect(path_coords.length).toBeGreaterThan(2);
         expect(path_coords[0]).toEqual({ lat: 42.264356, lon: -83.744354 });
         expect(path_coords.at(-1)).toEqual({ lat: 42.268068, lon: -83.747307 });

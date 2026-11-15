@@ -36,7 +36,7 @@ describe('planWalking', () => {
         const result = await planWalking({ params: {}, query, body: {} });
         expect(getWalkingResponse).toHaveBeenCalledWith(42.264356, -83.744354, 42.268068, -83.747307);
         expect(result.status).toBe(200);
-        expect(result.json).toEqual({ path_coords: data.path_coords, duration: 398 });
+        expect(result.json).toEqual({ path_coords: data.path_coords, duration: 398, directions: expect.any(Array) });
         expect(data.duration).toBe(397.6);
         expect(PlanWalkingResponseSchema.parse(result.json)).toEqual(result.json);
     });
@@ -50,6 +50,10 @@ describe('planWalking', () => {
             json: {
                 path_coords: [{ lat: 42.264356, lon: -83.744354 }, { lat: 42.264356, lon: -83.744354 }],
                 duration: 0,
+                directions: [
+                    { path_index: 0, distance: 0, onto: null, landmark: null, instruction: { type: 'depart' } },
+                    { path_index: 1, distance: 0, onto: null, landmark: null, instruction: { type: 'arrive' } },
+                ],
             },
         });
     });
@@ -60,8 +64,12 @@ describe('planWalking', () => {
         const withOptions = await planWalking({
             params: {}, query: { ...query, walkingPenalty: '8', range: '300' }, body: {},
         });
-        expect(withOptions).toEqual(result);
-        expect(result.json).toEqual({ path_coords: data.path_coords, duration: Math.round(data.duration) });
+        expect(withOptions.status).toBe(result.status);
+        for (const response of [result, withOptions]) {
+            expect(response.json).toEqual({
+                path_coords: data.path_coords, duration: Math.round(data.duration), directions: expect.any(Array),
+            });
+        }
     });
 
     it('should return 500 when walking planning fails', async () => {
@@ -106,10 +114,11 @@ describe('planWalking', () => {
         });
         expect(spec.components.schemas.PlanWalkingResponse).toMatchObject({
             type: 'object',
-            required: ['path_coords', 'duration'],
+            required: ['path_coords', 'duration', 'directions'],
             properties: {
                 path_coords: { type: 'array', items: { $ref: '#/components/schemas/LatLon' } },
                 duration: { type: 'number' },
+                directions: { $ref: '#/components/schemas/Directions' },
             },
         });
         expect(route.description).toContain('local walking graph');
