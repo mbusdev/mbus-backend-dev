@@ -14,9 +14,9 @@ const DEFAULT_RIDE_ROUTES = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "
 /** Fetches and updates current bus positions in state. */
 export async function updateBusPositions() {
     const buses = await mbus.fetchVehicles(DEFAULT_ROUTES);
-    state.curBusPositions.buses = buses;
+    state.setCurBusPositions(buses);
     const ridesBusses = await rideBus.fetchVehicles(DEFAULT_RIDE_ROUTES);
-    state.curRidePositions.buses = ridesBusses;
+    state.setCurRideBusPositions(ridesBusses);
 }
 
 /** Initializes route data, caching patterns and stop locations. */
@@ -24,21 +24,19 @@ export async function initializeRoutes() {
     if (process.env.DEV_CACHE === 'true') return;
 
     try {
-        const routesData = await mbus.fetchRoutes();
-        state.validRoutes.clear();
-        const rideRoutesData = await rideBus.fetchRoutes();
-        state.validRideRoutes.clear();
+    const routesData = await mbus.fetchRoutes();
+    state.setValidRoutes(routesData.map((r: any) => r.rt));
+    const rideRoutesData = await rideBus.fetchRoutes();
+    state.setValidRideRoutes(rideRoutesData.map((r: any) => r.rt));
 
         await Promise.all(routesData.map(async (r: any) => {
-            state.validRoutes.add(r.rt);
             const patterns = await mbus.fetchPatterns(r.rt);
-            if (patterns) state.cachedRoutes[r.rt] = patterns;
+            if (patterns) state.setCachedRoute(r.rt, patterns);
         }));
 
         await Promise.all(rideRoutesData.map(async (r: any) => {
-            state.validRideRoutes.add(r.rt);
             const patterns = await rideBus.fetchPatterns(r.rt);
-            if (patterns) state.cachedRideRoutes[r.rt] = patterns;
+            if (patterns) state.setCachedRideRoute(r.rt,  patterns);
         }));
 
         buildStopLocationMap();
@@ -99,18 +97,21 @@ export async function rebuildGraph() {
  * Populates lookup maps for stop names and trip-to-route mappings.
  * @param preds List of processed predictions
  */
+
 function populateLookupMaps(preds: any[]) {
+    const stopNames: Record<string, string> = {};
+    const tripRoutes: Record<string, string> = {};
     Object.values(state.cachedRoutes).forEach((patterns: any) => {
         patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
             if (pt.stpid && pt.stpnm) {
-                state.stopIdToName[pt.stpid] = pt.stpnm;
+                stopNames[pt.stpid] = pt.stpnm;
             }
         }));
     });
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             if (stop.stpid && stop.stpnm) {
-                state.stopIdToName[stop.stpid] = stop.stpnm;
+                stopNames[stop.stpid] = stop.stpnm;
             }
         });
     });
@@ -119,31 +120,35 @@ function populateLookupMaps(preds: any[]) {
         if (trip.tatripid && trip.stops.length > 0) {
             const firstStopWithRt = trip.stops.find((s: any) => s.rt);
             if (firstStopWithRt) {
-                state.tatripidToRt[trip.tatripid] = firstStopWithRt.rt;
+                tripRoutes[trip.tatripid] = firstStopWithRt.rt;
             }
         }
     });
+    state.updateLookupMaps(stopNames, tripRoutes);
 }
 
 /**
  * Populates the lookup map for ride stop names
  * @param preds List of processed predictions from the ride
  */
+const stopNames: Record<string, string> = {};
 function populateRideLookupMaps(preds: any[]) {
+    const stopNames: Record<string, string> = {};
     Object.values(state.cachedRideRoutes).forEach((patterns: any) => {
         patterns?.forEach((p: any) => p.pt?.forEach((pt: any) => {
             if (pt.stpid && pt.stpnm) {
-                state.rideStopIdToName[pt.stpid] = pt.stpnm;
+                stopNames[pt.stpid] = pt.stpnm;
             }
         }));
     });
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             if (stop.stpid && stop.stpnm) {
-                state.rideStopIdToName[stop.stpid] = stop.stpnm;
+                stopNames[stop.stpid] = stop.stpnm;
             }
         });
     });
+    state.updateRideLookupMap(stopNames);
 }
 
 /**
@@ -184,23 +189,32 @@ function buildRideStops() {
  */
 async function buildWalkingTransfers() {
     const stops = Object.keys(state.cachedStopLocations);
-    stops.forEach(s => {
-        state.cachedGraph.transfers[s] = [];
-        state.cachedGraph.interchange[s] = 30;
+    state.updateCacheGraph(draft =>{
+        stops.forEach(s => {
+            draft.transfers[s] = [];
+            draft.interchange[s] = 30;
+        });
     });
+
 
     await walking.ensureCacheForStops(new Set(stops), state.cachedStopLocations);
 
-    stops.forEach(origin => {
-        stops.forEach(dest => {
-            if (origin === dest) return;
-            const walk = walking.getCachedWalk(origin, dest);
-            if (walk) {
-                state.cachedGraph.transfers[origin].push({
-                    origin, destination: dest, duration: walk.duration,
-                    startTime: 0, endTime: Number.MAX_SAFE_INTEGER
-                });
-            }
+    state.updateCacheGraph(draft => {
+        stops.forEach(origin => {
+            stops.forEach(dest => {
+                if (origin === dest) return;
+                const walk = walking.getCachedWalk(origin, dest);
+
+                if(walk) {
+                    draft.transfers[origin].push ({
+                        origin,
+                        destination: dest,
+                        duration: walk.duration,
+                        startTime: 0,
+                        endTime: Number.MAX_SAFE_INTEGER
+                    });
+                }
+            });
         });
     });
 }
@@ -302,16 +316,10 @@ function processPredictions(rawChunks: any[]) {
             );
             if (!isValidFollowUp) continue;
 
-            if (!state.routeTimingCache[rt]) state.routeTimingCache[rt] = {};
             const fromKey = from.stpid + (from.rtdir || "");
-            if (!state.routeTimingCache[rt][fromKey]) state.routeTimingCache[rt][fromKey] = {};
-            state.routeTimingCache[rt][fromKey] = {
-                [to.stpid]: {
-                    diff: diff,
-                    rtdir: to.rtdir,
-                    rtNext: to.rt
-                }
-            };
+            state.setRouteTiming(
+            rt, fromKey, to.stpid, diff, to.rtdir, to.rt
+            );
         }
     });
 
@@ -396,8 +404,8 @@ function processRidePredictions(rawChunks: any[]) {
  * @param preds List of processed predictions
  */
 function updatePredictionLookups(preds: any[]) {
-    for (const key in state.cachedPredsByVid) delete state.cachedPredsByVid[key];
-    for (const key in state.cachedPredsByStopId) delete state.cachedPredsByStopId[key];
+    const byVid: Record<string, state.Prediction[] >= {};
+    const byStopId: Record<string, state.Prediction[] >= {};
 
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
@@ -405,18 +413,20 @@ function updatePredictionLookups(preds: any[]) {
 
             const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid, des: trip.des };
 
-            if (!state.cachedPredsByStopId[stop.stpid]) state.cachedPredsByStopId[stop.stpid] = [];
-            state.cachedPredsByStopId[stop.stpid].push(predObj);
+            if (!byStopId[stop.stpid]) byStopId[stop.stpid] = [];
+            byStopId[stop.stpid].push(predObj);
 
             if (trip.vid) {
-                if (!state.cachedPredsByVid[trip.vid]) state.cachedPredsByVid[trip.vid] = [];
-                state.cachedPredsByVid[trip.vid].push(predObj);
+                if (!byVid[trip.vid]) byVid[trip.vid] = [];
+                byVid[trip.vid].push(predObj);
             }
         });
     });
     // sort
-    sortPreds(state.cachedPredsByStopId);
-    sortPreds(state.cachedPredsByVid);
+    sortPreds(byStopId);
+    sortPreds(byVid);
+
+    state.setPredictionLookups(byVid, byStopId);
 }
 
 
@@ -426,25 +436,27 @@ function updatePredictionLookups(preds: any[]) {
  * @param preds List of processed predictions
  */
 function updateRideLookups(preds: any[]) {
-    for (const key in state.cachedRidePredsByVid) delete state.cachedRidePredsByVid[key];
-    for (const key in state.cachedRidePredsByStopId) delete state.cachedRidePredsByStopId[key];
+    const byVid: Record<string, state.Prediction[] >= {};
+    const byStopId: Record<string, state.Prediction[] >= {};
 
     preds.forEach((trip: any) => {
         trip.stops.forEach((stop: any) => {
             const predObj = { ...stop, vid: trip.vid, tatripid: trip.tatripid, des: trip.des };
 
-            if (!state.cachedRidePredsByStopId[stop.stpid]) state.cachedRidePredsByStopId[stop.stpid] = [];
-            state.cachedRidePredsByStopId[stop.stpid].push(predObj);
+            if (!byStopId[stop.stpid]) byStopId[stop.stpid] = [];
+            byStopId[stop.stpid].push(predObj);
 
             if (trip.vid) {
-                if (!state.cachedRidePredsByVid[trip.vid]) state.cachedRidePredsByVid[trip.vid] = [];
-                state.cachedRidePredsByVid[trip.vid].push(predObj);
+                if (!byVid[trip.vid]) byVid[trip.vid] = [];
+                byVid[trip.vid].push(predObj);
             }
         });
     });
     // sort
-    sortPreds(state.cachedRidePredsByStopId);
-    sortPreds(state.cachedRidePredsByVid);
+    sortPreds(byStopId);
+    sortPreds(byVid);
+
+    state.setRidePredictionLookups(byVid, byStopId);
 }
 
 /** Sorts every prediction list contained in `x` by arrival timestamp */
