@@ -1,0 +1,198 @@
+[
+  {
+    "ID": "305088494",
+    "lat": "42.2878453",
+    "long": "-83.7443373",
+    "buildingName": "Casey's Tavern",
+    "address": "304 Depot Street"
+  },
+  {
+    "ID": "2760098962",
+    "lat": "42.2829039",
+    "long": "-83.7469199",
+    "buildingName": "People's Food Co-op",
+    "address": "216 North Fourth Avenue"
+  },
+  {
+    "ID": "3072793304",
+    "lat": "42.2823456",
+    "long": "-83.7370514",
+    "buildingName": "Jimmy John's",
+    "address": "929 East Ann Street"
+  },
+  {
+    "ID": "4598137001",
+    "lat": "42.2843468",
+    "long": "-83.7467462",
+    "buildingName": "Spun",
+    "address": "410 North Fourth Avenue"
+  },
+  {
+    "ID": "4904474853",
+    "lat": "42.2814021",
+    "long": "-83.7394755",
+    "address": "801 East Huron Street"
+  },
+  {
+    "ID": "4904474854",
+    "lat": "42.2815316",
+    "long": "-83.7395332",
+    "address": "106 North Thayer Street"
+  },
+  {
+    "ID": "4917115634",
+    "lat": "42.2840161",
+    "long": "-83.7412138",
+    "address": "403 North State Street"
+  },
+  {
+    "ID": "4917115635",
+    "lat": "42.2839943",
+    "long": "-83.7413587",
+    "address": "617 Lawrence Street"
+  },
+  {
+    "ID": "4997286406",
+    "lat": "42.2828561",
+    "long": "-83.7469801",
+    "buildingName": "Cafe Verde",
+    "address": "216 North Fourth Avenue"
+  },
+  {
+    "ID": "4997286407",
+    "lat": "42.2827033",
+    "long": "-83.7470243",
+    "buildingName": "Motte & Bailey Booksellers",
+    "address": "208 North Fourth Avenue"
+  },
+  {
+    "ID": "4997286408",
+    "lat": "42.2824605",
+    "long": "-83.7470050",
+    "buildingName": "TeaHaus",
+    "address": "200 North Fourth Avenue"
+  },
+  {
+    "ID": "4997286409",
+    "lat": "42.2825043",
+    "long": "-83.7470367",
+    "buildingName": "TeaHaus",
+    "address": "200 North Fourth Avenue"
+  },
+  {
+    "ID": "4997286410",
+    "lat": "42.2824549",
+    "long": "-83.7470416",
+    "address": "200 North Fourth Avenue"
+  },
+  {
+    "ID": "5323881253",
+    "lat": "42.2845451",
+    "long": "-83.7464035",
+    "buildingName": "Pizza Pazza",
+    "address": "407 North Fifth Avenue"
+  },
+  {
+    "ID": "5333551994",
+    "lat": "42.2834597",
+    "long": "-83.7477867",
+    "buildingName": "Q LTD",
+    "address": "113 Catherine Street"
+  },
+  {
+    "ID": "5333551995",
+    "lat": "42.2833469",
+    "long": "-83.7478350",
+    "address": "111 Catherine Street"
+  },
+  {
+    "ID": "5333551996",
+    "lat": "42.2833487",
+    "long": "-83.7478966",
+    "buildingName": "Q LTD",
+    "address": "109 Catherine Street"
+  },
+  {
+    "ID": "7024286688",
+    "lat": "42.2877959",
+    "long": "-83.7431905",
+    "buildingName": "Ann Arbor",
+    "address": "325 Depot Street"
+  },
+  {
+    "ID": "7041626486",
+    "lat": "42.2816715",
+    "long": "-83.7442147",
+    "buildingName": "Ahmo’s Gyros & Deli",
+    "address": "341 East Huron Street"
+  },
+  {
+    "ID": "7080710081",
+    "lat": "42.2827225",
+    "long": "-83.7470398",
+    "buildingName": "Encore Records",
+    "address": "208 North Fourth Street"
+  },
+  {
+    "ID": "8058162855",
+    "lat": "42.2846985",
+    "long": "-83.7463989",
+    "buildingName": "Miss Kim",
+    "address": "415 North Fifth Avenue"
+  },
+  {
+    "ID": "11385044384",
+    "lat": "42.2878421",
+    "long": "-83.7432597",
+    "buildingName": "Ann Arbor",
+    "address": "325 Depot Street"
+  },
+  {
+    "ID": "12552300475",
+    "lat": "42.2846214",
+    "long": "-83.7450905",
+    "address": "422 Detroit Street"
+  },
+  {
+    "ID": "12552300476",
+    "lat": "42.2846981",
+    "long": "-83.7451513",
+    "buildingName": "Zingerman's Deli",
+    "address": "422 Detroit Street"
+  },
+  {
+    "ID": "12552300477",
+    "lat": "42.2845500",
+    "long": "-83.7452712",
+    "buildingName": "Zingerman's Next Door Café",
+    "address": "418 Detroit Street"
+  },
+  {
+    "ID": "12842602123",
+    "lat": "42.2810560",
+    "long": "-83.7475415",
+    "buildingName": "Bløm Mead + Cider",
+    "address": "100 South Fourth Avenue"
+  },
+  {
+    "ID": "12842602124",
+    "lat": "42.2810511",
+    "long": "-83.7474352",
+    "buildingName": "Curious Coffee",
+    "address": "100 South Fourth Avenue"
+  },
+  {
+    "ID": "12955269101",
+    "lat": "42.2833264",
+    "long": "-83.7461107",
+    "buildingName": "North Star Lounge",
+    "address": "301 North Fifth Avenue"
+  },
+  {
+    "ID": "13550849784",
+    "lat": "42.2843173",
+    "long": "-83.7468683",
+    "buildingName": "Your Media Exchange",
+    "address": "410 North Fourth Avenue"
+  }
+]

@@ -13,7 +13,8 @@
             "@/*": [
                 "./src/*"
             ]
-        }
+        },
+        "types": ["node"]
     },
     "exclude": [
         "src/legacy"

@@ -149,7 +149,7 @@ router.get('/getVehicleImage/:route', getVehicleImage);
  * @returns JSON file containing building data.
  */
 export function getBuildingLocations(req: express.Request, res: express.Response) {
-    res.sendFile(path.resolve(process.cwd(), 'src/assets/building-data.json'));
+    res.sendFile(path.resolve(process.cwd(), 'src/assets/buildings/merged-buildings.json'));
 }
 router.get('/getBuildingLocations', getBuildingLocations);
 
