@@ -6,6 +6,7 @@ import { Prediction } from '@/state/transitState';
 import * as state from '@/state/transitState';
 import { initializeRoutes, rebuildGraph, sortPreds, updateBusPositions } from '@/services/graphBuilder';
 import axios from 'axios';
+import { fromKey } from '@/types';
 
 const testToken = r.registrationToken("token1");
 const testEvent = r.baseEvent({ stpid: "stop1", rtid: "route1" });
@@ -57,7 +58,7 @@ describe('Reminders', () => {
         expect(
             remindersLater.reminder.get(
                 Array.from(remindersLater.reminder.keys())
-                    .find((thresholdEvent) => r.sameBaseEvent(r.fromKey(thresholdEvent), testEvent))!
+                    .find((thresholdEvent) => r.sameBaseEvent(fromKey(thresholdEvent), testEvent))!
             )!.has(testToken)
         )
             .toBe(true);

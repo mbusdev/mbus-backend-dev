@@ -1,14 +1,12 @@
 {
     "compilerOptions": {
-        "target": "es2021",
-        "module": "esnext",
-        "moduleResolution": "bundler",
+        "target": "es2023",
+        "module": "preserve",
         "esModuleInterop": true,
         "resolveJsonModule": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "skipLibCheck": true,
-        // "baseUrl": "./",
         "paths": {
             "@/*": [
                 "./src/*"

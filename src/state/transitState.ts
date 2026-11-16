@@ -1,13 +1,23 @@
+import { Key } from "@/types";
 import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
+import * as bustime from '@/services/bustimeCommon';
 
 /** Current positions of all buses. */
 export const curBusPositions = { buses: [] as any[] };
 /** Current positions of all ride buses. */
 export const curRidePositions = { buses: [] as any[] };
 /** Cache of route patterns and static data. */
-export const cachedRoutes: Record<string, any> = {};
+// TODO: rename to cachedMbusRoutes
+export const cachedRoutes: Record<string, bustime.BusRouteLine[]> = {};
 /** Cache of route patterns and static data for the ride. */
-export const cachedRideRoutes: Record<string, any> = {};
+export const cachedRideRoutes: Record<string, bustime.BusRouteLine[]> = {};
+
+/** Poly lines to use when constructing the path taken by a bus leg */
+export const cachedStopToStopPaths: Map<Key<{ rt: string, from: string, to: string }>, bustime.LatLon[]> = new Map();
+
+// Remove when support for mb2 is dropped
+export const cachedRoutesLegacy: Record<string, bustime.Pattern[]> = {};
+export const cachedRideRoutesLegacy: Record<string, bustime.Pattern[]> = {};
 
 /** Represents a bus prediction. */
 export type Prediction = {
@@ -21,7 +31,7 @@ export type Prediction = {
     prdtm: number,
     /** minutes until arrival, or 'DUE' (corresponding to 1 minute) */
     prdctdn: string
-} & Record<string, any>;
+} & Record<string, unknown>;
 
 /** Predictions indexed by vehicle ID. */
 export const cachedPredsByVid: Record<string, Prediction[]> = {};
@@ -51,7 +61,8 @@ export let cachedStopLocations: Record<string, { name: string, lat: number, lon:
 export let cachedRideStopLocations: Record<string, { name: string, lat: number, lon: number }> = {};
 
 /** Cache of timing differences between stops for extrapolation. */
-export const routeTimingCache: Record<string, Record<string, Record<string, { diff: number, rtdir: string, rtNext: string }>>> = {
+export const routeTimingCache: Record<string, Record<string, Record<string,
+    { diff: number, rtdir: string, rtNext: string }>>> = {
     "CN": {
         "N434NORTHBOUND": {
             "N500": { "diff": 5, "rtdir": "SOUTHBOUND", "rtNext": "CS" }

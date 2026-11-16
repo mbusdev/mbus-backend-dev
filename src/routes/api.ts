@@ -10,6 +10,7 @@ import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
 import * as walking from '../walking/walkingMap';
+import * as documented from "./documented";
 
 /**
  * Express router for the MBus API v3.
@@ -188,27 +189,15 @@ export function getRidePositions(req: express.Request, res: express.Response) {
 }
 router.get('/getRidePositions', getRidePositions);
 
-/**
- * Returns all cached route patterns.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `routes` mapping route IDs to patterns.
- */
-export function getAllRoutes(req: express.Request, res: express.Response) {
-    res.json({ routes: state.cachedRoutes });
-}
-router.get('/getAllRoutes', getAllRoutes);
+// remove when mb2 support is dropped
+router.get('/getAllRoutes', (_, res) => {
+    res.json({ routes: state.cachedRoutesLegacy })
+});
 
-/**
- * Returns all cached ride route patterns.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `routes` mapping route IDs to patterns.
- */
-export function getAllRideRoutes(req: express.Request, res: express.Response) {
-    res.json({ routes: state.cachedRideRoutes });
-}
-router.get('/getAllRideRoutes', getAllRideRoutes);
+// remove when mb2 support is dropped
+router.get('/getAllRideRoutes', (_, res) => {
+    res.json({ routes: state.cachedRideRoutesLegacy });
+});
 
 /**
  * Returns the route timing cache used for extrapolation.
@@ -365,41 +354,44 @@ export function getNearestStops(req: express.Request, res: express.Response) {
 }
 router.get('/nearest-stops', getNearestStops);
 
-/**
- * Plans a journey between origin and destination coordinates.
- * @param req - Express request
- * @param res - Express response
- * @returns JSON object with `journeys` array containing possible routes.
- */
-export async function planJourney(req: express.Request, res: express.Response) {
-    try {
-        const { originLat, originLon, destLat, destLon, walkingPenalty, range } = req.query;
+documented.addGetRoute(
+    documented.globalContext, router, '/plan-journey',
+    {
+        ...documented.emptyFormat,
+        query: z.object({
+            originLat: z.coerce.number(),
+            originLon: z.coerce.number(),
+            destLat: z.coerce.number(),
+            destLon: z.coerce.number(),
+            walkingPenalty: z.optional(z.string())
+                .transform((x) => x === undefined ? undefined : parseFloat(x))
+                .pipe(z.optional(z.number())),
+            range: z.optional(z.string())
+                .transform((x) => x === undefined ? undefined : parseInt(x))
+                .pipe(z.optional(z.number())),
+        }),
+        resBody: z.object({ journeys: z.array(journeyService.ProcessedJourneySchema) }),
+    },
+    async (_, { originLat, originLon, destLat, destLon, walkingPenalty, range }) => {
+        try {
+            const now = new Date();
+            const secondsSinceMidnight = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
 
-        if (!originLat || !originLon || !destLat || !destLon) {
-            res.status(400).json({ error: 'coordinates are required' });
-            return;
+            const results = await journeyService.planJourney(
+                originLat, originLon,
+                destLat, destLon,
+                secondsSinceMidnight,
+                { walkingPenalty, range },
+            );
+
+            return documented.makeSuccessResponse({ journeys: results });
+        } catch (error) {
+            console.error("Journey plan error:", error);
+            return documented.makeFailureResponse(500, 'Journey planning failed');
         }
-
-        const now = new Date();
-        const secondsSinceMidnight = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
-
-        const results = await journeyService.planJourney(
-            parseFloat(originLat as string), parseFloat(originLon as string),
-            parseFloat(destLat as string), parseFloat(destLon as string),
-            secondsSinceMidnight,
-            {
-                walkingPenalty: walkingPenalty ? parseFloat(walkingPenalty as string) : undefined,
-                range: range ? parseInt(range as string) : undefined
-            }
-        );
-
-        res.json({ journeys: results });
-    } catch (error) {
-        console.error("Journey plan error:", error);
-        res.status(500).json({ error: 'Journey planning failed' });
-    }
-}
-router.get('/plan-journey', planJourney);
+    },
+    { description: 'Plans a journey between origin and destination coordinates.' },
+);
 
 export const PlanWalkingQuery = z.object({
    originLat: z.coerce.number(), originLon: z.coerce.number(),
@@ -457,7 +449,7 @@ export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
         min_supported_version: "2.0.2",
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
-        persistant_message: { title: "", subtitle: ""},
+        persistant_message: { title: "", subtitle: "" },
         one_time_message: { title: "", subtitle: "" },
         // lat/lon specify a pin to show on the map, showTime/endTime should be either empty or in ISO format
         banner_message: { url: "https://www.maizebus.com/#/banner", shortTitle: "JOIN", latitude: 0.0, longitude:0.0, showTime: "2026-09-16T03:40:00Z", endTime: "2026-09-17T00:00:00Z" },
@@ -515,22 +507,12 @@ router.get('/get-key-stops', getKeyStops);
 // Notifications / Reminders
 
 const SetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string(), thresh: z.number() });
-/**
- * @param req - Express request, expects `SetReminderBody` in the body
- * @param res - Express response, error message as string if error occurs
- */
-export function setReminder(req: express.Request, res: express.Response) {
-    const result = SetReminderBody.safeParse(req.body);
-    if (!result.success) {
-        res.status(400);
-        res.send(result.error.message);
-    } else {
-        const { token, stpid, rtid, thresh } = result.data;
+documented.addPostRoute(
+    documented.globalContext, router, '/setReminder', { ...documented.emptyFormat, reqBody: SetReminderBody },
+    async (_, __, { token, stpid, rtid, thresh }) => {
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
-            res.status(400);
-            res.send(`Invalid route ${rtid}`);
-            return;
+            return documented.makeFailureResponse(400, `Invalid route ${rtid}`);
         }
         const { reminderSubscriptions, predsByStopId } = info;
         reminderSubscriptions.add(
@@ -540,11 +522,9 @@ export function setReminder(req: express.Request, res: express.Response) {
             predsByStopId,
             Date.now(),
         );
-        res.sendStatus(200);
+        return documented.makeSuccessResponse({});
     }
-
-}
-router.post('/setReminder', setReminder);
+);
 
 const UnsetReminderBody = z.object({ token: z.string(), stpid: z.string(), rtid: z.string() });
 /**
@@ -557,7 +537,7 @@ export function unsetReminder(req: express.Request, res: express.Response) {
         res.status(400);
         res.send(result.error.message);
     } else {
-        const { token ,stpid, rtid } = result.data;
+        const { token, stpid, rtid } = result.data;
         const info = reminderService.infoToUseForRoute(rtid);
         if (info === null) {
             res.status(400);
@@ -595,47 +575,47 @@ export function swapToken(req: express.Request, res: express.Response) {
 }
 router.post('/swapToken', swapToken);
 
-export interface ActiveReminderInfo {
-    stpid: string
-    rtid: string
-    thresh: number | null
-    eta: number | null
-};
+const Token = z.string().meta({ id: "Token" })
+const ActiveReminder = z.object({
+    stpid: z.string(),
+    rtid: z.string(),
+    thresh: z.number().nullable(),
+    eta: z.number().nullable(),
+}).meta({ id: "Reminder" });
 
-/**
- * @param req - Express request, token is path encoded
- * @param res - Express response 
- */
-export function activeRemindersForToken(
-    req: express.Request,
-    res: express.Response<{ reminders: Array<ActiveReminderInfo> }>
-) {
-    const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold):
-        ActiveReminderInfo =>
+documented.addGetRoute(
+    documented.globalContext, router, '/activeReminders/:token',
     {
-        return {
-            stpid: r.event.stpid,
-            rtid: r.event.rtid,
-            thresh: r.stage === 0 ? r.thresh : null,
-            eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+        params: z.object({ token: Token }),
+        query: z.object(),
+        resBody: z.object({ reminders: z.array(ActiveReminder) }),
+    },
+    async ({ token }, _) => {
+        const regTok = reminderService.registrationToken(token);
+        const subscriptionInfo = (r: reminderService.PreThreshold | reminderService.PostThreshold) => {
+            return {
+                stpid: r.event.stpid,
+                rtid: r.event.rtid,
+                thresh: r.stage === 0 ? r.thresh : null,
+                eta: r.stage === 0 ? r.candidateVidPredPrev : r.vidPredPrev
+            };
         };
-    };
-    const token = reminderService.registrationToken(req.params.registrationToken);
-    console.log(`Got request for active reminders of ${token}`);
-    res.status(200);
-    const universityReminders = reminderService
-        .universityReminderSubscriptions
-        .activeRemindersFor(token)
-        .map(subscriptionInfo);
-    const rideReminders = reminderService
-        .rideReminderSubscriptions
-        .activeRemindersFor(token)
-        .map(subscriptionInfo);
-    res.send({
-        reminders: universityReminders.concat(rideReminders)
-    });
-}
-router.get('/activeReminders/:registrationToken', activeRemindersForToken);
+        console.log(`Got request for active reminders of ${token}`);
+        const universityReminders = reminderService
+            .universityReminderSubscriptions
+            .activeRemindersFor(regTok)
+            .map(subscriptionInfo);
+        const rideReminders = reminderService
+            .rideReminderSubscriptions
+            .activeRemindersFor(regTok)
+            .map(subscriptionInfo);
+        return documented.makeSuccessResponse({ reminders: universityReminders.concat(rideReminders) });
+    },
+    {
+        summary: "active reminders",
+        description: `big long description idk, gets the reminders associated with a **registration token**, which is gotten from fcm or smth`
+    },
+)
 
 const ModifyRemindersBody = z.object({
     token: z.string(),
@@ -673,7 +653,7 @@ export function modifyReminders(req: express.Request, res: express.Response) {
                     reminderService.registrationToken(token),
                     predsByStopId,
                     Date.now()
-                );            
+                );
             } else {
                 reminderSubscriptions.remove(
                     event, reminderService.registrationToken(token)
@@ -698,7 +678,7 @@ export function notifyMeLater(req: express.Request, res: express.Response) {
     }
     setTimeout(() => {
         console.log(`sending test push notification to ${registrationToken}`);
-        reminderService.sendNotifToAll({ title: "hi", body: "hello world!"}, new Set([registrationToken]));
+        reminderService.sendNotifToAll({ title: "hi", body: "hello world!" }, new Set([registrationToken]));
     }, 0);
     res.sendStatus(200);
 }
