@@ -47,7 +47,7 @@ const staging2: Config = {
         merge('origin/turn-by-turn-and-walk-rerouting'),
         merge('origin/plan-journey-field-removal'),
         merge('origin/fix/78-sync-handlers'),
-        merge('origin/feat/plan-walking'),
+        merge('origin/feat/plan-walking-paths'),
     ]
 }
 
