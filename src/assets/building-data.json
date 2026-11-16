@@ -72,7 +72,7 @@
     "plusCode": ""
   },
   {
-    "buildingName": "Angel Hall",
+    "buildingName": "Angell Hall",
     "abbrev": "AH",
     "lat": 42.2767642,
     "long": -83.73998921,
@@ -128,8 +128,8 @@
   {
     "buildingName": "Burton Memorial Tower",
     "abbrev": "BMT",
-    "lat": 42.27539443,
-    "long": -83.73833416,
+    "lat": 42.27941566,
+    "long": -83.73869509,
     "address": "881 UNIVERSITY AVE Ann Arbor, MI 48109",
     "altName": "SMTD",
     "plusCode": ""
@@ -515,8 +515,8 @@
   {
     "buildingName": "Modern Languages Building",
     "abbrev": "MLB",
-    "lat": 42.28024107,
-    "long": -83.73896747,
+    "lat": 42.27987481,
+    "long": -83.73906048,
     "address": "812 E Washington St, Ann Arbor, MI 48104",
     "altName": "",
     "plusCode": ""
@@ -1289,8 +1289,8 @@
   {
     "buildingName": "Revelli Hall",
     "abbrev": "REVELLI",
-    "lat": 42.269397,
-    "long": -83.74418705,
+    "lat": 42.26925008,
+    "long": -83.74469299,
     "address": "350 E Hoover Ave, Ann Arbor, MI 48104",
     "altName": "",
     "plusCode": ""
@@ -1332,7 +1332,7 @@
     "plusCode": ""
   },
   {
-    "buildingName": "UM Golf Course",
+    "buildingName": "U-M Golf Course",
     "abbrev": "",
     "lat": 42.26303545,
     "long": -83.74372547,
@@ -1379,8 +1379,8 @@
   {
     "buildingName": "Alice Lloyd Hall",
     "abbrev": "ALH",
-    "lat": 42.2817001,
-    "long": -83.73060124,
+    "lat": 42.28146933,
+    "long": -83.73136282,
     "address": "100 Observatory St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1406,8 +1406,8 @@
   {
     "buildingName": "Couzens Hall",
     "abbrev": "COUZENS",
-    "lat": 42.28211521,
-    "long": -83.73235833,
+    "lat": 42.28204703,
+    "long": -83.73291820,
     "address": "1300 E Ann St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1415,8 +1415,8 @@
   {
     "buildingName": "East Quadrangle",
     "abbrev": "EQ",
-    "lat": 42.27308378,
-    "long": -83.73428847,
+    "lat": 42.27273954,
+    "long": -83.73547778,
     "address": "701 E University Ave, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1424,8 +1424,8 @@
   {
     "buildingName": "Fletcher Hall",
     "abbrev": "",
-    "lat": 42.27039727,
-    "long": -83.74154741,
+    "lat": 42.27017556,
+    "long": -83.74293711,
     "address": "915 Sybil St, Ann Arbor, MI 48104",
     "altName": "",
     "plusCode": ""
@@ -1433,17 +1433,17 @@
   {
     "buildingName": "Henderson House",
     "abbrev": "",
-    "lat": 42.27211777,
-    "long": -83.72963132,
+    "lat": 42.27196087,
+    "long": -83.73185746,
     "address": "1330 Hill St, Ann Arbor, MI 48104",
     "altName": "",
     "plusCode": ""
   },
   {
-    "buildingName": "Martha Cook Residence",
+    "buildingName": "Martha Cook Building",
     "abbrev": "",
-    "lat": 42.27513165,
-    "long": -83.73680059,
+    "lat": 42.27477596,
+    "long": -83.73798115,
     "address": "906 S University Ave, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1451,8 +1451,8 @@
   {
     "buildingName": "Martha Cook Dining Hall",
     "abbrev": "",
-    "lat": 42.27513165,
-    "long": -83.73680059,
+    "lat": 42.27477596,
+    "long": -83.73798115,
     "address": "906 S University Ave, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1460,8 +1460,8 @@
   {
     "buildingName": "Mary Markley Hall",
     "abbrev": "MARKLEY",
-    "lat": 42.2811272,
-    "long": -83.72784914,
+    "lat": 42.28089755,
+    "long": -83.72890417,
     "address": "1482 E Medical Center Dr, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1469,8 +1469,8 @@
   {
     "buildingName": "Mary Markley Dining Hall",
     "abbrev": "MARKLEY",
-    "lat": 42.2811272,
-    "long": -83.72784914,
+    "lat": 42.28089755,
+    "long": -83.72890417,
     "address": "1482 E Medical Center Dr, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1486,7 +1486,7 @@
   },
   {
     "buildingName": "Mosher-Jordan Dining Hall",
-    "abbrev": "MOJO DINING HALL",
+    "abbrev": "MOSHER",
     "lat": 42.28046284,
     "long": -83.73135953,
     "address": "200 Observatory St, Ann Arbor, MI 48109",
@@ -1595,8 +1595,8 @@
   {
     "buildingName": "South Quad",
     "abbrev": "SQ",
-    "lat": 42.27418293,
-    "long": -83.74133633,
+    "lat": 42.27400291,
+    "long": -83.74175881,
     "address": "600 E Madison St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -1604,8 +1604,8 @@
   {
     "buildingName": "South Quad Dining Hall",
     "abbrev": "SQ",
-    "lat": 42.27418293,
-    "long": -83.74133633,
+    "lat": 42.27400291,
+    "long": -83.74175881,
     "address": "600 E Madison St, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
