@@ -2126,8 +2126,8 @@
   {
     "buildingName": "Michigan League",
     "abbrev": "LEAG",
-    "lat": 42.27934989,
-    "long": -83.73648259,
+    "lat": 42.27902941,
+    "long": -83.73750009,
     "address": "911 N University Ave, Ann Arbor, MI 48109",
     "altName": "",
     "plusCode": ""
@@ -2354,6 +2354,24 @@
     "lat": 42.28018350076211, 
     "long": -83.73062491302349, 
     "address": "201 Observatory St, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Hadley Family Recreation and Well-being Center",
+    "abbrev": "HFRWC",
+    "lat": 42.27819050742687, 
+    "long": -83.73262719446947,
+    "address": "401 Washtenaw Ave, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Wolverine Village",
+    "abbrev": "",
+    "lat": 42.26962296435815, 
+    "long": -83.7452066241159, 
+    "address": "355 Hill St, Ann Arbor, MI 48104",
     "altName": "",
     "plusCode": ""
   }
