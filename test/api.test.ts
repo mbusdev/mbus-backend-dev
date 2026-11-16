@@ -173,6 +173,20 @@ describe('API Endpoints', () => {
     });
 
     // --- Journey Planning ---
+    it('should get a walking plan from the v4 endpoint', async () => {
+        const response = await axios.get(`${V4_BASE_URL}/plan-walking`, {
+            params: { originLat: 42.264356, originLon: -83.744354, destLat: 42.268068, destLon: -83.747307 },
+        });
+        expect(response.status).toBe(200);
+        const { path_coords, duration } = response.data;
+        expect(Object.keys(response.data).sort()).toEqual(['duration', 'path_coords']);
+        expect(path_coords.length).toBeGreaterThan(2);
+        expect(path_coords[0]).toEqual({ lat: 42.264356, lon: -83.744354 });
+        expect(path_coords.at(-1)).toEqual({ lat: 42.268068, lon: -83.747307 });
+        expect(Number.isInteger(duration)).toBe(true);
+        expect(duration).toBeGreaterThan(0);
+    });
+
     it('should get path between main stops', async () => {
         try {
             const response = await axios.get(`${BASE_URL}/plan-journey?originLat=42.264356&originLon=-83.744353999999&destLat=42.268067999999&destLon=-83.747307000001`);

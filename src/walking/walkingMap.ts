@@ -321,6 +321,14 @@ export function buildStopNodeMap(locations: Record<string, { lat: number, lon: n
  * @param destLon - Longitude of destination.
  */
 export async function getWalkingResponse(originLat: number, originLon: number, destLat: number, destLon: number): Promise<WalkingResponse> {
+    if (originLat === destLat && originLon === destLon) {
+        return {
+            distance: 0,
+            duration: 0,
+            path_coords: [{ lat: originLat, lon: originLon }, { lat: destLat, lon: destLon }],
+        };
+    }
+
     if (graphNodes.size === 0) {
         console.warn("Graph not loaded. Calling initializeGraph() now.");
         initializeGraph();
