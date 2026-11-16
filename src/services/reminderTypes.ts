@@ -13,8 +13,8 @@ export function fromKey<T>(key: Key<T>): T {
     return JSON.parse(key);
 }
 
-/** internal */
-type CoreEvent = {
+/** @internal */
+export type CoreEvent = {
     stpid: string,
     rtid: string,
 }

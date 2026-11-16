@@ -378,11 +378,7 @@ function processRidePredictions(rawChunks: any[]) {
                 stop.rtdir = prd.rtdir;
                 stop.rt = prd.rt;
                 stop.prdctdn = prd.prdctdn === "DUE" ? "1" : prd.prdctdn;
-                // console.log(prd.prdtm);
-                // prdtm is in format YYYYMMDD HH:MM:SS
-                // stop.prdtm = parseInt(prd.prdtm);
-                // TODO: use actual timestamp
-                stop.prdtm = Date.now() + (parseInt(stop.prdctdn) + 0.5) * 60 * 1000;
+                stop.prdtm = parseInt(prd.prdtm);
             });
         }
         return acc;

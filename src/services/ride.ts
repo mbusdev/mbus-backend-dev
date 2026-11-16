@@ -2,9 +2,6 @@
 
 import axios from 'axios';
 import * as process from "node:process";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const RIDE_API_KEY = process.env.RIDE_API_KEY;
 const BASE_URL = process.env.RIDE_URL || 'https://rt.theride.org/bustime/api/v3/';
@@ -70,7 +67,6 @@ export async function fetchPredictions(stopIds: string[], routes: string[]) {
                     stpid: chunk.join(','),
                     rt: routes.join(','),
                     tmres: 's',
-                    // theride doesn't seem to support unix timestamps so this doesn't do anything
                     unixTime: true,
                 }
             });
