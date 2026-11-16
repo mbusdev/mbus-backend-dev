@@ -431,7 +431,7 @@ export function getStartupInfo(req: express.Request, res: express.Response) {
     res.json({
         min_supported_version: "2.0.2",
         why_update_message: { title: "Update Needed", subtitle: "You need to update to the latest version for the app to work properly." },
-        persistant_message: { title: "", subtitle: ""},
+        persistant_message: { title: "Partial Outage", subtitle: "AAATA's bus data service isn't working, so TheRide predictions and tracking won't work. We apologize for the inconvenience." },
         one_time_message: { title: "", subtitle: "" },
         // lat/lon specify a pin to show on the map, showTime/endTime should be either empty or in ISO format
         banner_message: { url: "https://www.maizebus.com/#/banner", shortTitle: "JOIN", latitude: 0.0, longitude:0.0, showTime: "2026-09-16T03:40:00Z", endTime: "2026-09-17T00:00:00Z" },
