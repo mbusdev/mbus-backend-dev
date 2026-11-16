@@ -1,13 +1,41 @@
 import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
+import {produce, freeze, enableMapSet, type Draft} from "immer";
+enableMapSet();
 
 /** Current positions of all buses. */
-export const curBusPositions = { buses: [] as any[] };
+export let curBusPositions = freeze ({ buses: [] as any[]}, true);
 /** Current positions of all ride buses. */
-export const curRidePositions = { buses: [] as any[] };
+export let curRidePositions = freeze ({ buses: [] as any[]}, true);
+/** Updates the current bus positions */
+export function setCurBusPositions(buses: any[]) {
+    curBusPositions = produce(curBusPositions, draft => {
+        draft.buses = buses;
+    });
+}
+/** Updates the current ride bus positions */
+export function setCurRideBusPositions(buses: any[]) {
+    curRidePositions = produce(curRidePositions, draft => {
+        draft.buses = buses;
+    });
+}
 /** Cache of route patterns and static data. */
-export const cachedRoutes: Record<string, any> = {};
+export let cachedRoutes: Record<string, any> = freeze({}, true);
 /** Cache of route patterns and static data for the ride. */
-export const cachedRideRoutes: Record<string, any> = {};
+export let cachedRideRoutes: Record<string, any> = freeze({}, true);
+
+/** Updates Cache Routes */
+export function setCachedRoute(routeId: string, patterns: any) {
+    cachedRoutes = produce(cachedRoutes, draft => {
+        draft[routeId] = patterns;
+    });
+}
+
+/** Updates the cached ride routes */
+export function setCachedRideRoute(routeId: string, patterns: any) {
+    cachedRideRoutes = produce(cachedRideRoutes, draft => {
+        draft[routeId] = patterns;
+    });
+}
 
 /** Represents a bus prediction. */
 export type Prediction = {
@@ -24,34 +52,82 @@ export type Prediction = {
 } & Record<string, any>;
 
 /** Predictions indexed by vehicle ID. */
-export const cachedPredsByVid: Record<string, Prediction[]> = {};
+export let cachedPredsByVid: Record<string, Prediction[]> = freeze({}, true);
 /** Predictions indexed by ride vehicle ID. */
-export const cachedRidePredsByVid: Record<string, Prediction[]> = {};
+export let cachedRidePredsByVid: Record<string, Prediction[]> = freeze({}, true);
 /** Predictions indexed by stop ID. */
-export const cachedPredsByStopId: Record<string, Prediction[]> = {};
+export let cachedPredsByStopId: Record<string, Prediction[]> = freeze({}, true);
 /** Predictions indexed by ride stop ID. */
-export const cachedRidePredsByStopId: Record<string, Prediction[]> = {};
+export let cachedRidePredsByStopId: Record<string, Prediction[]> = freeze({}, true);
 
-/** Map of stop IDs to their human-readable names. */
-export const stopIdToName: Record<string, string> = {};
-/** Map of ride stop IDs to their human-readable names. */
-export const rideStopIdToName: Record<string, string> = {};
-/** Map of trip IDs to route names. */
-export const tatripidToRt: Record<string, string> = {};
+export function setPredictionLookups(
+    byVid: Record<string, Prediction[]>,
+    byStopId: Record<string, Prediction[]>
+) {
+    cachedPredsByVid = produce(cachedPredsByVid, () => byVid);
+    cachedPredsByStopId = produce(cachedPredsByStopId, () => byStopId);
+}
+
+export function setRidePredictionLookups(
+    byVid: Record<string, Prediction[]>,
+    byStopId: Record<string, Prediction[]>
+) {
+    cachedRidePredsByVid = produce(
+        cachedRidePredsByVid,
+        () => byVid
+    );
+    cachedRidePredsByStopId = produce(
+        cachedRidePredsByStopId,
+        () => byStopId
+    );
+}
+
+export let stopIdToName: Record<string, string> = freeze({}, true);
+export let rideStopIdToName: Record<string, string> = freeze({}, true);
+export let tatripidToRt: Record<string, string> = freeze({}, true);
+
+export function updateLookupMaps(
+    stopNames: Record<string, string>,
+    tripRoutes: Record<string, string>
+) {
+    stopIdToName = produce(stopIdToName, draft => {
+        Object.assign(draft, stopNames);
+    });
+
+    tatripidToRt = produce(tatripidToRt, draft => {
+        Object.assign(draft, tripRoutes);
+    });
+}
+
+export function updateRideLookupMap(
+    stopNames: Record<string, string>
+) {
+    rideStopIdToName = produce(rideStopIdToName, draft => {
+        Object.assign(draft, stopNames);
+    });
+}
 
 /** The current transit graph used for routing. */
-export let cachedGraph: {
+export type TransitGraph ={
     trips: Trip[];
     transfers: TransfersByOrigin;
     interchange: Interchange;
-} = { trips: [], transfers: {}, interchange: {} };
+}
+
+export let cachedGraph: TransitGraph = freeze ({
+    trips: [],
+    transfers: {},
+    interchange: {},
+}, true);
+
 
 /** Cache of stop locations (lat/lon). */
-export let cachedStopLocations: Record<string, { name: string, lat: number, lon: number }> = {};
-export let cachedRideStopLocations: Record<string, { name: string, lat: number, lon: number }> = {};
+export let cachedStopLocations: Record<string, { name: string, lat: number, lon: number }> = freeze({}, true);
+export let cachedRideStopLocations: Record<string, { name: string, lat: number, lon: number }> = freeze({}, true);
+
 
 /** Cache of timing differences between stops for extrapolation. */
-export const routeTimingCache: Record<string, Record<string, Record<string, { diff: number, rtdir: string, rtNext: string }>>> = {
+export let routeTimingCache: Record<string, Record<string, Record<string, { diff: number, rtdir: string, rtNext: string }>>> = freeze({
     "CN": {
         "N434NORTHBOUND": {
             "N500": { "diff": 5, "rtdir": "SOUTHBOUND", "rtNext": "CS" }
@@ -62,22 +138,68 @@ export const routeTimingCache: Record<string, Record<string, Record<string, { di
             "S001": { "diff": 5, "rtdir": "NORTHBOUND", "rtNext": "CN" }
         }
     }
-};
+}, true);
+
+export function setRouteTiming (
+     rt: string,
+    fromKey: string,
+    toStopId: string,
+    diff: number,
+    rtdir: string,
+    rtNext: string
+) {
+    routeTimingCache = produce(routeTimingCache, draft => {
+        if(!draft[rt]) draft[rt] = {};
+
+        draft[rt][fromKey] = {
+            [toStopId]: {
+                diff,
+                rtdir,
+                rtNext
+            }
+        };
+    });
+}
 
 /** Set of currently valid route IDs. */
-export const validRoutes = new Set<string>();
+export let validRoutes = freeze(new Set<string>(), true);
 /** Set of currently valid ride route IDs. */
-export const validRideRoutes = new Set<string>();
+export let validRideRoutes = freeze(new Set<string>(), true);
+/** Replace the valid route ID */
+export function setValidRoutes(routes: string[]) {
+    validRoutes = produce(validRoutes, draft =>{
+        draft.clear();
+        routes.forEach(route => draft.add(route));
+    });
+}
 
+export function setValidRideRoutes(routes: string[]) {
+    validRideRoutes = produce(validRideRoutes, draft =>{
+        draft.clear();
+        routes.forEach(route => draft.add(route));
+    });
+}
 /** Updates the cached graph. */
-export function setCachedGraph(newGraph: typeof cachedGraph) {
-    cachedGraph = newGraph;
+export function setCachedGraph(newGraph: TransitGraph) {
+    cachedGraph = produce(cachedGraph, draft => {
+        draft.trips = newGraph.trips;
+        draft.transfers = newGraph.transfers;
+        draft.interchange = newGraph.interchange;
+    });
 }
-/** Updates the cached stop locations. */
+
+export function updateCacheGraph(
+    update: (draft: Draft<TransitGraph>) => void
+) {
+    cachedGraph = produce(cachedGraph, update);
+}
+
+/** Updates the cached stop locations with a frozen copy. */
 export function setCachedStopLocations(newLocs: typeof cachedStopLocations) {
-    cachedStopLocations = newLocs;
+    cachedStopLocations = freeze(structuredClone(newLocs), true);
 }
-/** Updates the cached ride stop locations. */
+
+/** Updates the cached Ride stop locations with a frozen copy. */
 export function setCachedRideStopLocations(newLocs: typeof cachedRideStopLocations) {
-    cachedRideStopLocations = newLocs;
+    cachedRideStopLocations = freeze(structuredClone(newLocs), true);
 }
