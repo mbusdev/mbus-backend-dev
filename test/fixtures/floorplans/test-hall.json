@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "building": "Test Hall",
+  "buildingId": "test-hall",
+  "floors": [
+    {
+      "id": "th-f1",
+      "name": "1",
+      "pxPerMeter": 20,
+      "width": 200,
+      "height": 100,
+      "walls": [
+        { "start": [0, 0], "end": [200, 0] },
+        { "start": [200, 0], "end": [200, 100] }
+      ],
+      "nav": {
+        "nodes": [{ "id": "th-n1", "x": 50, "y": 50 }],
+        "edges": []
+      },
+      "pois": [
+        { "id": "th-p1", "x": 50, "y": 50, "type": "room", "name": "101", "roomId": "th-r1", "navNodeId": "th-n1" }
+      ],
+      "rooms": [
+        { "id": "th-r1", "name": "101", "type": "room", "polygon": [[0, 0], [100, 0], [100, 100], [0, 100]], "poiId": "th-p1" }
+      ],
+      "outline": [[0, 0], [200, 0], [200, 100], [0, 100]]
+    },
+    {
+      "id": "th-f2",
+      "name": "2",
+      "pxPerMeter": 20,
+      "width": 200,
+      "height": 100,
+      "walls": [],
+      "nav": { "nodes": [], "edges": [] },
+      "pois": [],
+      "rooms": [],
+      "outline": [[0, 0], [200, 0], [200, 100], [0, 100]]
+    }
+  ],
+  "interFloorEdges": [],
+  "externalLinks": []
+}

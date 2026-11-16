@@ -38,6 +38,39 @@ To run the backend, run `npm start`.
 
 By default, the service runs on port 3000. To define a port for the service to run on, define an environment variable called `PORT` before running the backend.
 
+## Authentication (floor plans)
+
+Bus tracking, stops, routes and reminders are public. Everything under `/mbus/api/v3/floorplans/*` requires a
+signed-in umich.edu Google account. Requires Node 22 or newer.
+
+- `POST /mbus/api/v3/auth/google` with `{ idToken }` (a Google ID token) returns `{ accessToken, refreshToken, user }`.
+  The account's hosted domain must be `umich.edu`.
+- Gated requests send `Authorization: Bearer <accessToken>`. A 401 carries `code` `NO_TOKEN`, `INVALID_TOKEN` or
+  `TOKEN_EXPIRED`; on `TOKEN_EXPIRED` the client refreshes.
+- `POST /mbus/api/v3/auth/refresh` with `{ refreshToken }` returns a new pair and revokes the old refresh token.
+  Presenting an already used refresh token signs the user out everywhere.
+- `POST /mbus/api/v3/auth/logout` with `{ refreshToken }` revokes it.
+
+Set `JWT_SECRET` and `GOOGLE_CLIENT_IDS` in `.env` (see `.env_example`); without them these routes respond 503 and
+the rest of the API is unaffected. Users and refresh tokens are stored in `data/auth.sqlite`, which is created on
+first start and must survive deploys. Back it up with `sqlite3 data/auth.sqlite ".backup backup.sqlite"`, not by
+copying the file while the server runs.
+
+### Floor plans
+
+- `GET /mbus/api/v3/floorplans` returns `{ buildings: [{ buildingId, building, floors: [{ id, name }] }] }`.
+- `GET /mbus/api/v3/floorplans/:buildingId` returns that building's floor plan JSON.
+
+Floor plan files are not in git. Put one JSON file per building in `data/floorplans/` (or `FLOORPLANS_DIR`) and
+restart the server; a building is addressed by the `buildingId` inside its file, not by the file name. Each file
+is minified and gzipped once at startup, and responses carry an `ETag`, so a client that sends `If-None-Match`
+gets an empty 304 while its copy is current.
+
+Floor plan handlers belong in `src/routes/floorplans.ts`, where the gate is applied to the whole router. Never
+expose the floor plan directory with `express.static`.
+
+The auth and floor plan tests need no running server: `npx vitest run test/auth.test.ts`
+
 ## Documentation
 
 This project uses TSDoc for code documentation.
