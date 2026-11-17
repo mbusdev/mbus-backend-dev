@@ -1512,7 +1512,7 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Quad",
+    "buildingName": "North Quadrangle",
     "abbrev": "NQ",
     "lat": 42.28059786,
     "long": -83.7401702,
@@ -1521,7 +1521,7 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Quad Dining Hall",
+    "buildingName": "North Quadrangle Dining Hall",
     "abbrev": "NQ",
     "lat": 42.28059786,
     "long": -83.7401702,
@@ -1593,7 +1593,7 @@
     "plusCode": ""
   },
   {
-    "buildingName": "South Quad",
+    "buildingName": "South Quadrangle",
     "abbrev": "SQ",
     "lat": 42.27400291,
     "long": -83.74175881,
@@ -1602,7 +1602,7 @@
     "plusCode": ""
   },
   {
-    "buildingName": "South Quad Dining Hall",
+    "buildingName": "South Quadrangle Dining Hall",
     "abbrev": "SQ",
     "lat": 42.27400291,
     "long": -83.74175881,
