@@ -17,7 +17,7 @@ const client = axios.create({
 });
 
 /** Fetches vehicle positions for the given routes. */
-export async function fetchVehicles(routes: string[]) {
+export async function fetchVehicles(routes: string[]): Promise<bustime.Vehicle[]> {
     const chunks = [];
     for (let i = 0; i < routes.length; i += 10) chunks.push(routes.slice(i, i + 10));
 
@@ -26,7 +26,8 @@ export async function fetchVehicles(routes: string[]) {
             const res = await client.get('/getvehicles', {
                 params: { requestType: 'getvehicles', rt: chunk.join(',') },
             });
-            return res.data['bustime-response']?.vehicle || [];
+            const vehicles = res.data['bustime-response']?.vehicle || [];
+            return z.array(bustime.VehicleSchema).parse(vehicles);
         } catch (e) {
             console.warn('Fetch vehicles failed', e);
             return [];
