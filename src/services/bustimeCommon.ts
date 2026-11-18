@@ -1,4 +1,5 @@
 import z from "zod";
+import { TypeOf } from "zod/v3";
 
 // ========== patterns & bus lines =========
 
@@ -212,3 +213,13 @@ export const GetPredictionsResponseSchema = z.object({
 }).meta({ id: 'GetPredictionsResponse' });
 export type GetPredictionsResponse = z.infer<typeof GetPredictionsResponseSchema>;
 
+export const VehicleSchema = z.looseObject({
+    vid: z.string(),
+    rt: z.string(),
+    lat: z.string(),
+    lon: z.string(),
+    hdg: z.string()
+    //there are 15 more fields, will have to decide
+    //which are optional
+}).meta({ id: 'Vehicle' })
+export type Vehicle = z.infer<typeof VehicleSchema>;
