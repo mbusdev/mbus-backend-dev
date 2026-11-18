@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import { LatLonSchema } from '@/services/bustimeCommon';
+import { DirectionsSchema } from '@/walking/directions';
 
 export const PlanJourneyQuerySchema = z.object({
     originLat: z.coerce.number<string>(),
@@ -17,5 +18,6 @@ export const PlanJourneyQuerySchema = z.object({
 export const PlanWalkingResponseSchema = z.object({
     path_coords: z.array(LatLonSchema).describe('Ordered path coordinates from origin to destination.'),
     duration: z.number().describe('Walking duration in seconds, rounded to the nearest whole second.'),
+    directions: DirectionsSchema.describe('Mock turn-by-turn instructions.'),
 }).meta({ id: 'PlanWalkingResponse' });
 export type PlanWalkingResponse = z.infer<typeof PlanWalkingResponseSchema>;

@@ -10,6 +10,7 @@ import * as z from 'zod';
 import * as state from '@/state/transitState';
 import { BusRouteLineSchema } from '@/services/bustimeCommon';
 import { getWalkingResponse } from '@/walking/walkingMap';
+import { generateMockDirections } from '@/walking/mockDirections';
 import * as documented from './documented';
 import { PlanJourneyQuerySchema, PlanWalkingResponseSchema } from './planningSchemas';
 
@@ -43,6 +44,7 @@ export const planWalking = documented.addGetRoute(
             return documented.makeSuccessResponse({
                 path_coords: data.path_coords,
                 duration: Math.round(data.duration),
+                directions: generateMockDirections(data.path_coords),
             });
         } catch (error) {
             console.error('Walking plan error:', error);
@@ -53,6 +55,7 @@ export const planWalking = documented.addGetRoute(
         summary: 'Plan a walking path',
         description: 'Returns a walking path on the local walking graph with duration estimated in seconds at 5 km/h. ' +
             'Falls back to a straight line if no graph path is found. ' +
+            'Includes mock turn-by-turn directions for frontend development; instructions do not describe actual turns. ' +
             'walkingPenalty and range are accepted for compatibility with /plan-journey and ignored. ' +
             'Errors return { error: string } with status 400 for invalid query parameters or 500 for unexpected failures.',
     },

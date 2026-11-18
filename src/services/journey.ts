@@ -4,6 +4,8 @@ import * as walking from '../walking/walkingMap';
 import { McRaptorAlgorithm, Journey, JourneyLeg, JourneyLegTrip } from "@/raptor/McRaptorAlgorithm";
 import { BusRouteLine, BusStop, LatLon, LatLonSchema } from './bustimeCommon';
 import { toKey } from '@/types';
+import { DirectionsSchema } from '@/walking/directions';
+import { generateMockDirections } from '@/walking/mockDirections';
 
 /**
  * Plans a journey between two coordinates using the McRaptor algorithm.
@@ -93,6 +95,7 @@ const formattedLegCommonFields = {
 const FormattedLegWalkSchema = z.object({
     ...formattedLegCommonFields,
     path_coords: z.array(LatLonSchema),
+    directions: DirectionsSchema.describe('Mock turn-by-turn instructions indexed into this walking leg\'s path_coords.'),
     mode: z.literal('walk')
 }).meta({ id: 'FormattedLegWalk' });
 
@@ -186,9 +189,10 @@ async function processJourneys(
             };
         } else {
             const cached = walking.getCachedWalk(leg.origin, leg.destination);
+            let walkData: Pick<walking.WalkingResponse, 'path_coords'> & Partial<walking.WalkingResponse>;
 
             if (cached) {
-                formattedLeg = {...formattedLegCommon, ...cached, mode: 'walk'}
+                walkData = cached;
             } else {
                 const l1 = leg.origin === 'VIRTUAL_ORIGIN' ? { lat: oLat, lon: oLon } : state.cachedStopLocations[leg.origin];
                 const l2 = leg.destination === 'VIRTUAL_DESTINATION' ? { lat: dLat, lon: dLon } : state.cachedStopLocations[leg.destination];
@@ -196,15 +200,18 @@ async function processJourneys(
                 if (l1 && l2) {
                     try {
                         const data = await walking.getWalkingResponse(l1.lat, l1.lon, l2.lat, l2.lon);
-                        data.duration = Math.round(data.duration);
-                        formattedLeg = {...formattedLegCommon, ...data, mode: 'walk'};
+                        walkData = { ...data, duration: Math.round(data.duration) };
                     } catch (e) {
-                        formattedLeg = {...formattedLegCommon, path_coords: [], mode: 'walk'};
+                        walkData = { path_coords: [] };
                     }
                 } else {
-                    formattedLeg = {...formattedLegCommon, path_coords: [], mode: 'walk'};
+                    walkData = { path_coords: [] };
                 }
             }
+            formattedLeg = {
+                ...formattedLegCommon, ...walkData, mode: 'walk',
+                directions: generateMockDirections(walkData.path_coords),
+            };
         }
 
         return formattedLeg;

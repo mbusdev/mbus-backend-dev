@@ -380,7 +380,7 @@ documented.addGetRoute(
             return documented.makeFailureResponse(500, 'Journey planning failed');
         }
     },
-    { description: 'Plans a journey between origin and destination coordinates.' },
+    { description: 'Plans a journey between origin and destination coordinates. Walking legs include mock turn-by-turn directions for frontend development.' },
 );
 
 /**
