@@ -223,3 +223,10 @@ export const VehicleSchema = z.looseObject({
     //which are optional
 }).meta({ id: 'Vehicle' })
 export type Vehicle = z.infer<typeof VehicleSchema>;
+
+export const RouteSchema = z.looseObject({
+    rt: z.string(),
+    rtnm: z.string(),
+    rtclr: z.string()
+}).meta({ id: 'Route' })
+export type Route = z.infer<typeof RouteSchema>;
