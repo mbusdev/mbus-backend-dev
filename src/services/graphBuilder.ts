@@ -38,14 +38,14 @@ export async function initializeRoutes() {
         const rideRoutesData = await rideBus.fetchRoutes();
         state.validRideRoutes.clear();
 
-        await Promise.all(routesData.map(async (r: any) => {
+        await Promise.all(routesData.map(async (r) => {
             state.validRoutes.add(r.rt);
             const patterns = await mbus.fetchPatterns(r.rt);
             state.cachedRoutes[r.rt] = patterns.map((p) => bustime.makeBusRouteLines(r.rt, p, false)).flat(1);
             state.cachedRoutesLegacy[r.rt] = patterns;
         }));
 
-        await Promise.all(rideRoutesData.map(async (r: any) => {
+        await Promise.all(rideRoutesData.map(async (r) => {
             state.validRideRoutes.add(r.rt);
             const patterns = await rideBus.fetchPatterns(r.rt);
             state.cachedRideRoutes[r.rt] = patterns.map((p) => bustime.makeBusRouteLines(r.rt, p, true)).flat(1);
