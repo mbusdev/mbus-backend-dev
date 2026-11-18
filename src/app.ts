@@ -2,11 +2,12 @@ import express from "express";
 
 import "@/services/observability";
 import mbus from "./routes/api"
+import { addRouter, dumpReflectionInfo, reflection } from "./routes/helper";
 
 const app = express();
 
 app.use(express.json());
-app.use("/mbus/api/v3", mbus);
+addRouter(app, "/mbus/api/v3", mbus);
 app.use("/docs", express.static("docs"));
 
 const PORT = process.env.PORT || 3000;
@@ -14,4 +15,6 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    if (reflection)
+        dumpReflectionInfo();
 });
