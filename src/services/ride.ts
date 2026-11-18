@@ -38,10 +38,11 @@ export async function fetchVehicles(routes: string[]): Promise<bustime.Vehicle[]
 }
 
 /** Fetches all available routes. */
-export async function fetchRoutes() {
+export async function fetchRoutes(): Promise<bustime.Route[]> {
     try {
         const res = await client.get('/getroutes', { params: { requestType: 'getroutes' } });
-        return res.data['bustime-response']?.routes || [];
+        const routes = res.data['bustime-response']?.routes || [];
+        return z.array(bustime.RouteSchema).parse(routes);
     } catch (e) {
         console.error("Fetch Routes failed", e);
         return [];
