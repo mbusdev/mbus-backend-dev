@@ -135,15 +135,6 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 100",
-    "abbrev": "NCRC",
-    "lat": 42.29991164,
-    "long": -83.70190909,
-    "address": "1600 HURON PKWY Ann Arbor, MI 48109",
-    "altName": "",
-    "plusCode": ""
-  },
-  {
     "buildingName": "Center for Academic Innovation",
     "abbrev": "AI",
     "lat": 42.27876876,
@@ -531,8 +522,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 10",
-    "abbrev": "",
+    "buildingName": "Building 10 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -540,8 +531,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 16",
-    "abbrev": "",
+    "buildingName": "Building 16 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -549,8 +540,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 18",
-    "abbrev": "",
+    "buildingName": "Building 18 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -558,8 +549,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 28",
-    "abbrev": "",
+    "buildingName": "Building 28 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -567,8 +558,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 32",
-    "abbrev": "",
+    "buildingName": "Building 32 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -576,8 +567,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 35",
-    "abbrev": "",
+    "buildingName": "Building 35 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -585,8 +576,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 36",
-    "abbrev": "",
+    "buildingName": "Building 36 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -594,8 +585,8 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 50",
-    "abbrev": "",
+    "buildingName": "Building 50 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29977955,
     "long": -83.70635072,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -603,8 +594,53 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 520",
-    "abbrev": "",
+    "buildingName": "Building 60 - North Campus Research Complex",
+    "abbrev": "NCRC",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Building 90 - North Campus Research Complex",
+    "abbrev": "NCRC",
+    "lat": 42.29977955,
+    "long": -83.70635072,
+    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Building 100 - North Campus Research Complex",
+    "abbrev": "NCRC",
+    "lat": 42.30099900,
+    "long": -83.70320403,
+    "address": "1701-1751 Huron Pkwy, Ann Arbor, MI 48105",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Building 200 - North Campus Research Complex",
+    "abbrev": "NCRC",
+    "lat": 42.30124417,
+    "long": -83.70262123,
+    "address": "1600 Huron Pkwy, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Building 300 - North Campus Research Complex",
+    "abbrev": "NCRC",
+    "lat": 42.30065682,
+    "long": -83.70222051,
+    "address": "1600 Huron Pkwy, Ann Arbor, MI 48109",
+    "altName": "",
+    "plusCode": ""
+  },
+  {
+    "buildingName": "Building 520 - North Campus Research Complex",
+    "abbrev": "NCRC",
     "lat": 42.29997917,
     "long": -83.70304927,
     "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
@@ -612,20 +648,11 @@
     "plusCode": ""
   },
   {
-    "buildingName": "North Campus Research Complex Building 60",
-    "abbrev": "",
-    "lat": 42.29977955,
-    "long": -83.70635072,
-    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
-    "altName": "",
-    "plusCode": ""
-  },
-  {
-    "buildingName": "North Campus Research Complex Building 90",
-    "abbrev": "",
-    "lat": 42.29977955,
-    "long": -83.70635072,
-    "address": "2800 Plymouth Rd Building 18, Ann Arbor, MI 48109",
+    "buildingName": "Building 550 - North Campus Research Complex",
+    "abbrev": "NCRC",
+    "lat": 42.29988966,
+    "long": -83.70191364,
+    "address": "1600 Huron Pkwy, Ann Arbor, MI 48105",
     "altName": "",
     "plusCode": ""
   },
