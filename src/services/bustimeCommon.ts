@@ -1,5 +1,4 @@
 import z from "zod";
-import { TypeOf } from "zod/v3";
 
 // ========== patterns & bus lines =========
 
