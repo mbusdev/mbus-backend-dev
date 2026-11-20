@@ -3,9 +3,9 @@ import { Trip, TransfersByOrigin, Interchange } from "../raptor/types";
 import * as bustime from '@/services/bustimeCommon';
 
 /** Current positions of all buses. */
-export const curBusPositions = { buses: [] as any[] };
+export const curBusPositions = { buses: [] as bustime.Vehicle[] };
 /** Current positions of all ride buses. */
-export const curRidePositions = { buses: [] as any[] };
+export const curRidePositions = { buses: [] as bustime.Vehicle[] };
 /** Cache of route patterns and static data. */
 // TODO: rename to cachedMbusRoutes
 export const cachedRoutes: Record<string, bustime.BusRouteLine[]> = {};

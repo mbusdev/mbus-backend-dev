@@ -212,3 +212,20 @@ export const GetPredictionsResponseSchema = z.object({
 }).meta({ id: 'GetPredictionsResponse' });
 export type GetPredictionsResponse = z.infer<typeof GetPredictionsResponseSchema>;
 
+export const VehicleSchema = z.looseObject({
+    vid: z.string(),
+    rt: z.string(),
+    lat: z.string(),
+    lon: z.string(),
+    hdg: z.string()
+    //there are 15 more fields, will have to decide
+    //which are optional
+}).meta({ id: 'Vehicle' })
+export type Vehicle = z.infer<typeof VehicleSchema>;
+
+export const RouteSchema = z.looseObject({
+    rt: z.string(),
+    rtnm: z.string(),
+    rtclr: z.string()
+}).meta({ id: 'Route' })
+export type Route = z.infer<typeof RouteSchema>;
