@@ -15,8 +15,16 @@ const DEFAULT_RIDE_ROUTES = ["3", "4", "5", "6", "22", "23", "25", "26", "27", "
 export async function updateBusPositions() {
     const buses = await mbus.fetchVehicles(DEFAULT_ROUTES);
     state.curBusPositions.buses = buses;
+    state.recordBusPositionHistory(buses);
     const ridesBusses = await rideBus.fetchVehicles(DEFAULT_RIDE_ROUTES);
     state.curRidePositions.buses = ridesBusses;
+}
+
+/** Finds the active (non-virtual) trip in the cached graph for a vehicle ID. */
+export function findTripByVid(vid: string): Trip | null {
+    return state.cachedGraph.trips.find(
+        t => t.vid === vid && t.tripId !== 'VIRTUAL_ORIGIN_TRIP' && t.tripId !== 'VIRTUAL_DESTINATION_TRIP'
+    ) || null;
 }
 
 /** Initializes route data, caching patterns and stop locations. */
