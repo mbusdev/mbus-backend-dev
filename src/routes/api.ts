@@ -9,6 +9,7 @@ import * as journeyService from '../services/journey';
 import * as reminderService from '../services/reminder';
 import * as graphBuilder from '../services/graphBuilder';
 import { startBackgroundJobs } from '../jobs';
+import * as walking from '../walking/walkingMap';
 
 /**
  * Express router for the MBus API v3.
@@ -399,6 +400,31 @@ export async function planJourney(req: express.Request, res: express.Response) {
     }
 }
 router.get('/plan-journey', planJourney);
+
+export const PlanWalkingQuery = z.object({
+   originLat: z.coerce.number(), originLon: z.coerce.number(),
+   destLat: z.coerce.number(), destLon: z.coerce.number() 
+});
+
+/** Calculates just the new walking path and responds with a [WalkingResponse] */
+export async function planWalking(req: express.Request, res: express.Response) {
+    try {
+        const query = PlanWalkingQuery.safeParse(req.query);
+        if (!query.success) {
+            res.status(400);
+            res.send(query.error.message);
+            return;
+        }
+        const { originLat, originLon, destLat, destLon } = query.data;
+        const walkingResponse = await walking.getWalkingResponse(originLat, originLon, destLat, destLon);
+
+        res.json(walkingResponse);
+    } catch (error) {
+        console.error("Journey plan error:", error);
+        res.status(500).json({ error: 'Journey planning failed' });
+    }
+}
+router.get('/plan-walking', planWalking);
 
 /**
  * Saves the current graph state to a file (DEV mode only).
