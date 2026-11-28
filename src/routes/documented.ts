@@ -153,6 +153,8 @@ export const emptyFormat: {
     params: z.object(), query: z.object(), reqBody: z.unknown(), resBody: z.unknown(),
 };
 
+export type MaybePromise<T> = Promise<T> | T;
+
 /** Type of the functions passed to {@link addGetRoute} and friends */
 export type HandlerFunction<
     P extends StringlyZodObject,
@@ -160,8 +162,8 @@ export type HandlerFunction<
     B extends z.ZodType,
     RB extends z.ZodType,
 > = B extends z.ZodNever
-    ? (params: z.infer<P>, query: z.infer<Q>) => Promise<HandlerReturn<z.infer<RB>>>
-    : (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => Promise<HandlerReturn<z.infer<RB>>>;
+    ? (params: z.infer<P>, query: z.infer<Q>) => MaybePromise<HandlerReturn<z.infer<RB>>>
+    : (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => MaybePromise<HandlerReturn<z.infer<RB>>>;
 
 /**
  * Wrapper around router.get with built in validation and schema recording
@@ -181,7 +183,7 @@ export type HandlerFunction<
  * avoid features not supported in openapi (e.g. advanced path matchers)
  * @param format - zod schemas of the parts of the request and response, use
  * `emptyFormat` to fill in default values
- * @param handler - route handler
+ * @param handler - route handler returning a response directly or a promise
  * @param docs - information that should end up in the openapi spec
  *
  * @returns the handler function that got passed to `router.get` internally,
@@ -239,7 +241,7 @@ export function addGetRoute<
  * avoid features not supported in openapi (e.g. advanced path matchers)
  * @param format - zod schemas of the parts of the request and response, use
  * `emptyFormat` to fill in default values
- * @param handler - route handler
+ * @param handler - route handler returning a response directly or a promise
  * @param docs - information that should end up in the openapi spec
  *
  * @returns the handler function that got passed to `router.post` internally,

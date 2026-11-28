@@ -10,6 +10,62 @@ beforeAll(() => {
     }
 });
 
+it('should support a synchronous GET handler', async () => {
+    const router = express.Router();
+    const ctx = d.newContext();
+
+    const handleRequest = d.addGetRoute(
+        ctx,
+        router,
+        '/double',
+        {
+            ...d.emptyFormat,
+            query: z.object({ value: z.coerce.number() }),
+            resBody: z.number(),
+        },
+        (_, { value }) => d.makeSuccessResponse(value * 2),
+    );
+
+    const response = await handleRequest({
+        params: {},
+        query: { value: '21' },
+        body: {},
+    });
+
+    expect(response).toEqual({
+        status: 200,
+        json: 42,
+    });
+});
+
+it('should support a synchronous POST handler', async () => {
+    const router = express.Router();
+    const ctx = d.newContext();
+
+    const handleRequest = d.addPostRoute(
+        ctx,
+        router,
+        '/double',
+        {
+            ...d.emptyFormat,
+            reqBody: z.object({ value: z.number() }),
+            resBody: z.number(),
+        },
+        (_, __, { value }) => d.makeSuccessResponse(value * 2),
+    );
+
+    const response = await handleRequest({
+        params: {},
+        query: {},
+        body: { value: 21 },
+    });
+
+    expect(response).toEqual({
+        status: 200,
+        json: 42,
+    });
+});
+
 it('should handle path params (GET)', async () => {
     await testCase(
         'get',
