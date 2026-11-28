@@ -153,6 +153,16 @@ export const emptyFormat: {
     params: z.object(), query: z.object(), reqBody: z.unknown(), resBody: z.unknown(),
 };
 
+/** Type of the functions passed to {@link addGetRoute} and friends */
+export type HandlerFunction<
+    P extends StringlyZodObject,
+    Q extends StringlyZodObject,
+    B extends z.ZodType,
+    RB extends z.ZodType,
+> = B extends z.ZodNever
+    ? (params: z.infer<P>, query: z.infer<Q>) => Promise<HandlerReturn<z.infer<RB>>>
+    : (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => Promise<HandlerReturn<z.infer<RB>>>;
+
 /**
  * Wrapper around router.get with built in validation and schema recording
  *
@@ -186,7 +196,7 @@ export function addGetRoute<
     router: express.Router,
     path: string,
     format: { params: P, query: Q, resBody: RB },
-    handler: (params: z.infer<P>, query: z.infer<Q>) => Promise<HandlerReturn<z.infer<RB>>>,
+    handler: HandlerFunction<P, Q, z.ZodNever, RB>,
     docs?: {
         /** a short description of what is route does, becomes the title */
         summary?: string,
@@ -206,40 +216,11 @@ export function addGetRoute<
             summary: docs?.summary ?? "", description: docs?.description ?? "",
         });
     }
-
+    const determineResponse = makeResponseDeterminer(paramsSchema, querySchema, z.never(), handler)
     router.get(path, async (req: ExpressRequest, res: express.Response<z.infer<RB> | { error: string }>) => {
         const { status, json } = await determineResponse(req);
         res.status(status).json(json);
     });
-
-    const determineResponse = async (req: ExpressRequest): Promise<{ status: number, json: z.infer<RB> | { error: string } }> => {
-        let params = paramsSchema.safeParse(req.params);
-        if (params.error) {
-            return {
-                status: 400,
-                json: formatError('invalid path params', params.error)
-            };
-        }
-        let query = querySchema.safeParse(req.query);
-        if (query.error) {
-            return { status: 400, json: formatError('invalid query params', query.error) };
-        }
-        try {
-            const result = await handler(params.data, query.data);
-            if (result.success) {
-                return { status: result.status, json: result.json };
-            } else {
-                return { status: result.status, json: { error: result.error } };
-            }
-        } catch (e) {
-            console.error(`uncaught exception in wrapped route: ${e}`)
-            if (e instanceof Error) {
-                return { status: 500, json: { error: e.message } }
-            } else {
-                return { status: 500, json: { error: JSON.stringify(e) } }
-            }
-        }
-    }
     return determineResponse;
 }
 
@@ -274,7 +255,7 @@ export function addPostRoute<
     router: express.Router,
     path: string,
     format: { params: P, query: Q, reqBody: B, resBody: RB },
-    handler: (params: z.infer<P>, query: z.infer<Q>, body: z.infer<B>) => Promise<HandlerReturn<z.infer<RB>>>,
+    handler: HandlerFunction<P, Q, B, RB>,
     docs?: {
         /** a short description of what is route does, becomes the title */
         summary?: string,
@@ -295,26 +276,49 @@ export function addPostRoute<
         });
     }
 
+    const determineResponse = makeResponseDeterminer(paramsSchema, querySchema, reqBodySchema, handler);
     router.post(path, async (req, res: express.Response<z.infer<RB> | { error: string }>) => {
         const { status, json } = await determineResponse(req);
         res.status(status).json(json);
     });
+    return determineResponse;
+}
 
-    const determineResponse = async (req: ExpressRequest): Promise<{ status: number, json: z.infer<RB> | { error: string } }> => {
-        let params = paramsSchema.safeParse(req.params);
+/**
+ * B must be ZodNever when used with GET routes, which have handlers that
+ * don't expect a body to be passed to them.
+ */
+function makeResponseDeterminer<
+    P extends StringlyZodObject,
+    Q extends StringlyZodObject,
+    B extends z.ZodType,
+    RB extends z.ZodType,
+>(
+    paramsSchema: P, querySchema: Q, reqBodySchema: B, handler: HandlerFunction<P, Q, B, RB>,
+): (req: ExpressRequest) => Promise<{ status: number, json: z.infer<RB> | { error: string } }> {
+    return async (req: ExpressRequest) => {
+        const params = paramsSchema.safeParse(req.params);
         if (params.error) {
             return { status: 400, json: formatError('invalid path params', params.error) };
         }
-        let query = querySchema.safeParse(req.query);
+        const query = querySchema.safeParse(req.query);
         if (query.error) {
             return { status: 400, json: formatError('invalid query params', query.error) };
         }
-        let body = reqBodySchema.safeParse(req.body);
-        if (body.error) {
-            return { status: 400, json: formatError('invalid body', body.error) };
+        let body = undefined;
+        if (!(reqBodySchema instanceof z.ZodNever)) {
+            body = reqBodySchema.safeParse(req.body);
+            if (body.error) {
+                return { status: 400, json: formatError('invalid body', body.error) };
+            }
         }
         try {
-            const result = await handler(params.data, query.data, body.data);
+            // handler's type isn't fully resolved at this point, still sound as
+            // body == undefined
+            // => reqBodySchema instanceof z.ZodNever
+            // => B extends z.ZodNever
+            // => handler's 2 argument variant is active
+            const result = await handler(params.data, query.data, body?.data);
             if (result.success) {
                 return { status: result.status, json: result.json };
             } else {
@@ -323,13 +327,12 @@ export function addPostRoute<
         } catch (e) {
             console.error(`uncaught exception in wrapped route: ${e}`)
             if (e instanceof Error) {
-                return { status: 500, json: { error: e.message } }
+                return { status: 500, json: { error: e.message } };
             } else {
-                return { status: 500, json: { error: JSON.stringify(e) } }
+                return { status: 500, json: { error: JSON.stringify(e) } };
             }
         }
-    }
-    return determineResponse;
+    };
 }
 
 function formatError(title: string, error: z.ZodError) {
