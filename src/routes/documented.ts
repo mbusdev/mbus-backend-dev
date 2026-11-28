@@ -84,13 +84,10 @@
 
 import * as fs from 'node:fs/promises';
 
-import dotenv from 'dotenv';
 import express from 'express';
 import z from 'zod';
 import { JSONSchema, ToJSONSchemaParams } from 'zod/v4/core';
 import { exit } from 'node:process';
-
-dotenv.config();
 
 export const ENABLED = process.env.DOCUMENTED && true;
 const OUTPUT_FILE = process.env.DOCUMENTED_OUTPUT_FILE ?? null
